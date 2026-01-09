@@ -1,7 +1,7 @@
 # 🎯 Cha9cha9ni - Smart Family Savings Platform
 
 <div align="center">
-  <img src="assets/images/logo.png" alt="Cha9cha9ni Logo" width="200"/>
+  <img src="assets/icons/logoiconhorizental.png" alt="Cha9cha9ni Logo" width="200"/>
   
   **Empowering Tunisian Families to Save Together**
   
