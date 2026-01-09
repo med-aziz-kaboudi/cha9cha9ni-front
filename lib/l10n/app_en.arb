@@ -1,0 +1,42 @@
+{
+  "@@locale": "en",
+  "welcomeBack": "Welcome back",
+  "createNewAccount": "Create new account",
+  "alreadyHaveAccount": "Already have an account? ",
+  "dontHaveAccount": "Don't have an account? ",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "firstName": "First name *",
+  "lastName": "Last name *",
+  "enterEmail": "Enter your email *",
+  "phoneNumber": "Phone number *",
+  "enterPassword": "Enter your password *",
+  "forgotPassword": "Forgot Password?",
+  "orSignInWith": "or sign in with",
+  "orSignUpWith": "or sign up with",
+  "signInWithGoogle": "Sign in with Google",
+  "signUpWithGoogle": "Sign up with Google",
+  "passwordRequirement1": "Must contain at least 8 characters",
+  "passwordRequirement2": "Contains a number",
+  "passwordRequirement3": "Contains an uppercase letter",
+  "passwordRequirement4": "Contains a special character",
+  "termsAgreement": "By clicking \"{action}\" you agree to Cha9cha9ni ",
+  "@termsAgreement": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "termOfUse": "Term of Use ",
+  "and": "and ",
+  "privacyPolicy": "Privacy Policy",
+  "skip": "Skip",
+  "back": "Back",
+  "next": "Next",
+  "getStarted": "Get Started",
+  "onboarding1Title": "Saving Works Better\nWhen We Do It\nTogether",
+  "onboarding1Description": "Bring your family into one shared space and grow your savings step by step.",
+  "onboarding2Title": "Save\nFor the Moments\nYou Care About",
+  "onboarding2Description": "Thoughtful planning for meaningful moments, bringing peace and joy to your family."
+}
