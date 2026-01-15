@@ -107,4 +107,140 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onboarding2Description =>
       'Thoughtful planning for meaningful moments, bringing peace and joy to your family.';
+
+  @override
+  String get otpVerification => 'OTP\nVerification';
+
+  @override
+  String get verifyEmailSubtitle => 'We need to verify your email';
+
+  @override
+  String get verifyEmailDescription =>
+      'To verify your account, enter the 6 digit OTP code that we sent to your email.';
+
+  @override
+  String get verify => 'Verify';
+
+  @override
+  String get resendOTP => 'Resend OTP';
+
+  @override
+  String get resendOtp => 'Resend OTP';
+
+  @override
+  String resendOTPIn(String seconds) {
+    return 'Resend OTP in ${seconds}s';
+  }
+
+  @override
+  String get codeExpiresInfo => 'The code expires in 15 minutes';
+
+  @override
+  String get enterAllDigits => 'Please enter all 6 digits';
+
+  @override
+  String get emailVerifiedSuccess => '✅ Email verified successfully!';
+
+  @override
+  String verificationFailed(String error) {
+    return 'Verification failed: $error';
+  }
+
+  @override
+  String get verificationSuccess => 'Verification Success!';
+
+  @override
+  String get verificationSuccessSubtitle =>
+      'Your email has been verified successfully. You can now access all features.';
+
+  @override
+  String get okay => 'Okay';
+
+  @override
+  String pleaseWaitSeconds(String seconds) {
+    return 'Please wait $seconds seconds before requesting a new code';
+  }
+
+  @override
+  String get emailAlreadyVerified => 'Email already verified';
+
+  @override
+  String get userNotFound => 'User not found';
+
+  @override
+  String get invalidVerificationCode => 'Invalid verification code';
+
+  @override
+  String get verificationCodeExpired =>
+      'Verification code expired. Please request a new one.';
+
+  @override
+  String get noVerificationCode =>
+      'No verification code found. Please request a new one.';
+
+  @override
+  String get registrationSuccessful =>
+      'Registration successful! Please sign in to verify your email.';
+
+  @override
+  String get resetPassword => 'Reset Password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get enterNewPassword => 'Enter your new password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get confirmYourPassword => 'Confirm your password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get confirmPasswordRequired => 'Please confirm your password';
+
+  @override
+  String get passwordResetSuccessfully =>
+      'Password reset successfully! You can now sign in with your new password.';
+
+  @override
+  String get checkYourMailbox => 'Check Your Mailbox';
+
+  @override
+  String weHaveSentResetCodeTo(String email) {
+    return 'We have sent a 6-digit reset code to $email';
+  }
+
+  @override
+  String get pleaseEnterEmail => 'Please enter your email address';
+
+  @override
+  String get invalidEmailFormat => 'Please enter a valid email address';
+
+  @override
+  String get pleaseEnterComplete6DigitCode =>
+      'Please enter the complete 6-digit code';
+
+  @override
+  String get codeSentSuccessfully =>
+      'Code sent successfully! Please check your email.';
+
+  @override
+  String get anErrorOccurred => 'An error occurred. Please try again.';
+
+  @override
+  String get didntReceiveCode => 'Didn\'t receive code?';
+
+  @override
+  String get passwordRequired => 'Password is required';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 8 characters';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
 }

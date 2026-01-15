@@ -28,8 +28,49 @@
   "back": "Retour",
   "next": "Suivant",
   "getStarted": "Commencer",
-  "onboarding1Title": "L'épargne Fonctionne Mieux\nQuand Nous le Faisons\nEnsemble",
+  "onboarding1Title": "L'épargne Fonctionne Mieux\\nQuand Nous le Faisons\\nEnsemble",
   "onboarding1Description": "Réunissez votre famille dans un espace partagé et développez votre épargne étape par étape.",
-  "onboarding2Title": "Économisez\nPour les Moments\nQui Vous Tiennent à Cœur",
-  "onboarding2Description": "Une planification réfléchie pour des moments significatifs, apportant paix et joie à votre famille."
+  "onboarding2Title": "Économisez\\nPour les Moments\\nQui Vous Tiennent à Cœur",
+  "onboarding2Description": "Une planification réfléchie pour des moments significatifs, apportant paix et joie à votre famille.",
+  "otpVerification": "Vérification OTP",
+  "verifyEmailSubtitle": "Nous devons vérifier votre email",
+  "verifyEmailDescription": "Pour vérifier votre compte, entrez le code OTP à 6 chiffres que nous avons envoyé à votre email.",
+  "verify": "Vérifier",
+  "resendOTP": "Renvoyer le code",
+  "resendOTPIn": "Renvoyer le code dans {seconds}s",
+  "@resendOTPIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "codeExpiresInfo": "Le code expire dans 15 minutes",
+  "enterAllDigits": "Veuillez entrer les 6 chiffres",
+  "emailVerifiedSuccess": "✅ Email vérifié avec succès!",
+  "verificationFailed": "Échec de la vérification: {error}",
+  "@verificationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationSuccess": "Vérification Réussie!",
+  "verificationSuccessSubtitle": "Votre email a été vérifié avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités.",
+  "okay": "D'accord",
+  "pleaseWaitSeconds": "Veuillez attendre {seconds} secondes avant de demander un nouveau code",
+  "@pleaseWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "emailAlreadyVerified": "Email déjà vérifié",
+  "userNotFound": "Utilisateur non trouvé",
+  "invalidVerificationCode": "Code de vérification invalide",
+  "verificationCodeExpired": "Code de vérification expiré. Veuillez en demander un nouveau.",
+  "noVerificationCode": "Aucun code de vérification trouvé. Veuillez en demander un nouveau.",
+  "registrationSuccessful": "Inscription réussie ! Veuillez vous connecter pour vérifier votre email."
 }

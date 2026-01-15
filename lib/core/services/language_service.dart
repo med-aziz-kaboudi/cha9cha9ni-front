@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LanguageService {
   static const String _languageKey = 'selected_language';
-  
+
   static final LanguageService _instance = LanguageService._internal();
   factory LanguageService() => _instance;
   LanguageService._internal();

@@ -291,6 +291,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thoughtful planning for meaningful moments, bringing peace and joy to your family.'**
   String get onboarding2Description;
+
+  /// No description provided for @otpVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP\nVerification'**
+  String get otpVerification;
+
+  /// No description provided for @verifyEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We need to verify your email'**
+  String get verifyEmailSubtitle;
+
+  /// No description provided for @verifyEmailDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To verify your account, enter the 6 digit OTP code that we sent to your email.'**
+  String get verifyEmailDescription;
+
+  /// No description provided for @verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verify;
+
+  /// No description provided for @resendOTP.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get resendOTP;
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get resendOtp;
+
+  /// No description provided for @resendOTPIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP in {seconds}s'**
+  String resendOTPIn(String seconds);
+
+  /// No description provided for @codeExpiresInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'The code expires in 15 minutes'**
+  String get codeExpiresInfo;
+
+  /// No description provided for @enterAllDigits.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter all 6 digits'**
+  String get enterAllDigits;
+
+  /// No description provided for @emailVerifiedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ Email verified successfully!'**
+  String get emailVerifiedSuccess;
+
+  /// No description provided for @verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed: {error}'**
+  String verificationFailed(String error);
+
+  /// No description provided for @verificationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Success!'**
+  String get verificationSuccess;
+
+  /// No description provided for @verificationSuccessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email has been verified successfully. You can now access all features.'**
+  String get verificationSuccessSubtitle;
+
+  /// No description provided for @okay.
+  ///
+  /// In en, this message translates to:
+  /// **'Okay'**
+  String get okay;
+
+  /// No description provided for @pleaseWaitSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait {seconds} seconds before requesting a new code'**
+  String pleaseWaitSeconds(String seconds);
+
+  /// No description provided for @emailAlreadyVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email already verified'**
+  String get emailAlreadyVerified;
+
+  /// No description provided for @userNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User not found'**
+  String get userNotFound;
+
+  /// No description provided for @invalidVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid verification code'**
+  String get invalidVerificationCode;
+
+  /// No description provided for @verificationCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code expired. Please request a new one.'**
+  String get verificationCodeExpired;
+
+  /// No description provided for @noVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'No verification code found. Please request a new one.'**
+  String get noVerificationCode;
+
+  /// No description provided for @registrationSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration successful! Please sign in to verify your email.'**
+  String get registrationSuccessful;
+
+  /// No description provided for @resetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPassword;
+
+  /// No description provided for @enterNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new password'**
+  String get enterNewPassword;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @confirmYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your password'**
+  String get confirmYourPassword;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @confirmPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please confirm your password'**
+  String get confirmPasswordRequired;
+
+  /// No description provided for @passwordResetSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully! You can now sign in with your new password.'**
+  String get passwordResetSuccessfully;
+
+  /// No description provided for @checkYourMailbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Your Mailbox'**
+  String get checkYourMailbox;
+
+  /// No description provided for @weHaveSentResetCodeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We have sent a 6-digit reset code to {email}'**
+  String weHaveSentResetCodeTo(String email);
+
+  /// No description provided for @pleaseEnterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email address'**
+  String get pleaseEnterEmail;
+
+  /// No description provided for @invalidEmailFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get invalidEmailFormat;
+
+  /// No description provided for @pleaseEnterComplete6DigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the complete 6-digit code'**
+  String get pleaseEnterComplete6DigitCode;
+
+  /// No description provided for @codeSentSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent successfully! Please check your email.'**
+  String get codeSentSuccessfully;
+
+  /// No description provided for @anErrorOccurred.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again.'**
+  String get anErrorOccurred;
+
+  /// No description provided for @didntReceiveCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive code?'**
+  String get didntReceiveCode;
+
+  /// No description provided for @passwordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get passwordRequired;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordMinLength;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterYourPassword;
 }
 
 class _AppLocalizationsDelegate

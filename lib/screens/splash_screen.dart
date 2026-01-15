@@ -28,6 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(milliseconds: 300));
 
     for (int i = _startFrame + 1; i <= _endFrame; i++) {
+      if (!mounted) return; // Check mounted before each precache
+      
       final frameNumber = i.toString().padLeft(5, '0');
       final imagePath = 'assets/animations/splash screen/30/Comp 1_$frameNumber.png';
       await precacheImage(AssetImage(imagePath), context);

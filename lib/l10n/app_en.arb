@@ -38,5 +38,73 @@
   "onboarding1Title": "Saving Works Better\nWhen We Do It\nTogether",
   "onboarding1Description": "Bring your family into one shared space and grow your savings step by step.",
   "onboarding2Title": "Save\nFor the Moments\nYou Care About",
-  "onboarding2Description": "Thoughtful planning for meaningful moments, bringing peace and joy to your family."
+  "onboarding2Description": "Thoughtful planning for meaningful moments, bringing peace and joy to your family.",
+  "otpVerification": "OTP\nVerification",
+  "verifyEmailSubtitle": "We need to verify your email",
+  "verifyEmailDescription": "To verify your account, enter the 6 digit OTP code that we sent to your email.",
+  "verify": "Verify",
+  "resendOTP": "Resend OTP",
+  "resendOtp": "Resend OTP",
+  "resendOTPIn": "Resend OTP in {seconds}s",
+  "@resendOTPIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "codeExpiresInfo": "The code expires in 15 minutes",
+  "enterAllDigits": "Please enter all 6 digits",
+  "emailVerifiedSuccess": "✅ Email verified successfully!",
+  "verificationFailed": "Verification failed: {error}",
+  "@verificationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationSuccess": "Verification Success!",
+  "verificationSuccessSubtitle": "Your email has been verified successfully. You can now access all features.",
+  "okay": "Okay",
+  "pleaseWaitSeconds": "Please wait {seconds} seconds before requesting a new code",
+  "@pleaseWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "emailAlreadyVerified": "Email already verified",
+  "userNotFound": "User not found",
+  "invalidVerificationCode": "Invalid verification code",
+  "verificationCodeExpired": "Verification code expired. Please request a new one.",
+  "noVerificationCode": "No verification code found. Please request a new one.",
+  "registrationSuccessful": "Registration successful! Please sign in to verify your email.",
+  "resetPassword": "Reset Password",
+  "newPassword": "New Password",
+  "enterNewPassword": "Enter your new password",
+  "confirmPassword": "Confirm Password",
+  "confirmYourPassword": "Confirm your password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "confirmPasswordRequired": "Please confirm your password",
+  "passwordResetSuccessfully": "Password reset successfully! You can now sign in with your new password.",
+  "checkYourMailbox": "Check Your Mailbox",
+  "weHaveSentResetCodeTo": "We have sent a 6-digit reset code to {email}",
+  "@weHaveSentResetCodeTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterEmail": "Please enter your email address",
+  "invalidEmailFormat": "Please enter a valid email address",
+  "pleaseEnterComplete6DigitCode": "Please enter the complete 6-digit code",
+  "codeSentSuccessfully": "Code sent successfully! Please check your email.",
+  "anErrorOccurred": "An error occurred. Please try again.",
+  "didntReceiveCode": "Didn't receive code?",
+  "passwordRequired": "Password is required",
+  "passwordMinLength": "Password must be at least 8 characters",
+  "enterYourPassword": "Enter your password"
 }

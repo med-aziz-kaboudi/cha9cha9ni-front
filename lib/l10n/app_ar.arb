@@ -31,5 +31,73 @@
   "onboarding1Title": "التوفير يصبح أفضل\nعندما نقوم به\nمعًا",
   "onboarding1Description": "اجمع عائلتك في مساحة واحدة مشتركة وعزز مدخراتك خطوة بخطوة.",
   "onboarding2Title": "وفّر\nللحظات التي\nتهمك",
-  "onboarding2Description": "التخطيط المدروس للحظات المميزة، يجلب السلام والفرح لعائلتك."
+  "onboarding2Description": "التخطيط المدروس للحظات المميزة، يجلب السلام والفرح لعائلتك.",
+  "otpVerification": "التحقق من الرمز",
+  "verifyEmailSubtitle": "نحتاج للتحقق من بريدك الإلكتروني",
+  "verifyEmailDescription": "للتحقق من حسابك، أدخل رمز التحقق المكون من 6 أرقام الذي أرسلناه إلى بريدك الإلكتروني.",
+  "verify": "تحقق",
+  "resendOTP": "إعادة إرسال الرمز",
+  "resendOtp": "إعادة إرسال الرمز",
+  "resendOTPIn": "إعادة إرسال الرمز خلال {seconds} ثانية",
+  "@resendOTPIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "codeExpiresInfo": "ينتهي صلاحية الرمز خلال 15 دقيقة",
+  "enterAllDigits": "الرجاء إدخال جميع الأرقام الستة",
+  "emailVerifiedSuccess": "✅ تم التحقق من البريد الإلكتروني بنجاح!",
+  "verificationFailed": "فشل التحقق: {error}",
+  "@verificationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationSuccess": "تم التحقق بنجاح!",
+  "verificationSuccessSubtitle": "تم التحقق من بريدك الإلكتروني بنجاح. يمكنك الآن الوصول إلى جميع الميزات.",
+  "okay": "حسناً",
+  "pleaseWaitSeconds": "يرجى الانتظار {seconds} ثانية قبل طلب رمز جديد",
+  "@pleaseWaitSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "emailAlreadyVerified": "البريد الإلكتروني مُفعّل بالفعل",
+  "userNotFound": "المستخدم غير موجود",
+  "invalidVerificationCode": "رمز التحقق غير صحيح",
+  "verificationCodeExpired": "انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.",
+  "noVerificationCode": "لا يوجد رمز تحقق. يرجى طلب رمز جديد.",
+  "registrationSuccessful": "تم التسجيل بنجاح! يرجى تسجيل الدخول للتحقق من بريدك الإلكتروني.",
+  "resetPassword": "إعادة تعيين كلمة المرور",
+  "newPassword": "كلمة المرور الجديدة",
+  "enterNewPassword": "أدخل كلمة المرور الجديدة",
+  "confirmPassword": "تأكيد كلمة المرور",
+  "confirmYourPassword": "أكد كلمة المرور",
+  "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+  "confirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+  "passwordResetSuccessfully": "تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.",
+  "checkYourMailbox": "تفقد بريدك الإلكتروني",
+  "weHaveSentResetCodeTo": "لقد أرسلنا رمز إعادة التعيين المكون من 6 أرقام إلى {email}",
+  "@weHaveSentResetCodeTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterEmail": "يرجى إدخال عنوان بريدك الإلكتروني",
+  "invalidEmailFormat": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+  "pleaseEnterComplete6DigitCode": "يرجى إدخال الرمز المكون من 6 أرقام كاملاً",
+  "codeSentSuccessfully": "تم إرسال الرمز بنجاح! يرجى التحقق من بريدك الإلكتروني.",
+  "anErrorOccurred": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+  "didntReceiveCode": "لم تتلق الرمز؟",
+  "passwordRequired": "كلمة المرور مطلوبة",
+  "passwordMinLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل",
+  "enterYourPassword": "أدخل كلمة المرور"
 }

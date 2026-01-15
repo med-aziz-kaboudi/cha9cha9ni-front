@@ -107,4 +107,140 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get onboarding2Description =>
       'التخطيط المدروس للحظات المميزة، يجلب السلام والفرح لعائلتك.';
+
+  @override
+  String get otpVerification => 'التحقق من الرمز';
+
+  @override
+  String get verifyEmailSubtitle => 'نحتاج للتحقق من بريدك الإلكتروني';
+
+  @override
+  String get verifyEmailDescription =>
+      'للتحقق من حسابك، أدخل رمز التحقق المكون من 6 أرقام الذي أرسلناه إلى بريدك الإلكتروني.';
+
+  @override
+  String get verify => 'تحقق';
+
+  @override
+  String get resendOTP => 'إعادة إرسال الرمز';
+
+  @override
+  String get resendOtp => 'إعادة إرسال الرمز';
+
+  @override
+  String resendOTPIn(String seconds) {
+    return 'إعادة إرسال الرمز خلال $seconds ثانية';
+  }
+
+  @override
+  String get codeExpiresInfo => 'ينتهي صلاحية الرمز خلال 15 دقيقة';
+
+  @override
+  String get enterAllDigits => 'الرجاء إدخال جميع الأرقام الستة';
+
+  @override
+  String get emailVerifiedSuccess => '✅ تم التحقق من البريد الإلكتروني بنجاح!';
+
+  @override
+  String verificationFailed(String error) {
+    return 'فشل التحقق: $error';
+  }
+
+  @override
+  String get verificationSuccess => 'تم التحقق بنجاح!';
+
+  @override
+  String get verificationSuccessSubtitle =>
+      'تم التحقق من بريدك الإلكتروني بنجاح. يمكنك الآن الوصول إلى جميع الميزات.';
+
+  @override
+  String get okay => 'حسناً';
+
+  @override
+  String pleaseWaitSeconds(String seconds) {
+    return 'يرجى الانتظار $seconds ثانية قبل طلب رمز جديد';
+  }
+
+  @override
+  String get emailAlreadyVerified => 'البريد الإلكتروني مُفعّل بالفعل';
+
+  @override
+  String get userNotFound => 'المستخدم غير موجود';
+
+  @override
+  String get invalidVerificationCode => 'رمز التحقق غير صحيح';
+
+  @override
+  String get verificationCodeExpired =>
+      'انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.';
+
+  @override
+  String get noVerificationCode => 'لا يوجد رمز تحقق. يرجى طلب رمز جديد.';
+
+  @override
+  String get registrationSuccessful =>
+      'تم التسجيل بنجاح! يرجى تسجيل الدخول للتحقق من بريدك الإلكتروني.';
+
+  @override
+  String get resetPassword => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get newPassword => 'كلمة المرور الجديدة';
+
+  @override
+  String get enterNewPassword => 'أدخل كلمة المرور الجديدة';
+
+  @override
+  String get confirmPassword => 'تأكيد كلمة المرور';
+
+  @override
+  String get confirmYourPassword => 'أكد كلمة المرور';
+
+  @override
+  String get passwordsDoNotMatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get confirmPasswordRequired => 'يرجى تأكيد كلمة المرور';
+
+  @override
+  String get passwordResetSuccessfully =>
+      'تم إعادة تعيين كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.';
+
+  @override
+  String get checkYourMailbox => 'تفقد بريدك الإلكتروني';
+
+  @override
+  String weHaveSentResetCodeTo(String email) {
+    return 'لقد أرسلنا رمز إعادة التعيين المكون من 6 أرقام إلى $email';
+  }
+
+  @override
+  String get pleaseEnterEmail => 'يرجى إدخال عنوان بريدك الإلكتروني';
+
+  @override
+  String get invalidEmailFormat => 'يرجى إدخال عنوان بريد إلكتروني صحيح';
+
+  @override
+  String get pleaseEnterComplete6DigitCode =>
+      'يرجى إدخال الرمز المكون من 6 أرقام كاملاً';
+
+  @override
+  String get codeSentSuccessfully =>
+      'تم إرسال الرمز بنجاح! يرجى التحقق من بريدك الإلكتروني.';
+
+  @override
+  String get anErrorOccurred => 'حدث خطأ. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get didntReceiveCode => 'لم تتلق الرمز؟';
+
+  @override
+  String get passwordRequired => 'كلمة المرور مطلوبة';
+
+  @override
+  String get passwordMinLength =>
+      'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل';
+
+  @override
+  String get enterYourPassword => 'أدخل كلمة المرور';
 }

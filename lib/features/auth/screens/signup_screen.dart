@@ -1,10 +1,15 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/language_selector.dart';
+import '../../../core/services/api_exception.dart';
 import '../widgets/custom_text_field.dart';
+import '../models/auth_request_models.dart';
+import '../services/auth_api_service.dart';
 import 'signin_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -20,9 +25,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final _authApiService = AuthApiService();
 
   bool _obscurePassword = true;
   bool _showErrors = false;
+  bool _isLoading = false;
 
   bool _hasMinLength = false;
   bool _hasNumber = false;
@@ -33,6 +40,139 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void initState() {
     super.initState();
     _passwordController.addListener(_validatePassword);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _phoneController.dispose();
+    _authApiService.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleEmailSignUp() async {
+    setState(() {
+      _showErrors = true;
+    });
+
+    if (_firstNameController.text.isEmpty ||
+        _lastNameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _phoneController.text.length != 8 ||
+        !_isPasswordValid()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call backend API to register
+      final request = RegisterRequest(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        phone: '+216${_phoneController.text}',
+      );
+
+      final response = await _authApiService.register(request);
+
+      if (mounted) {
+        // Show success message from backend
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message),
+            backgroundColor: AppColors.secondary,
+          ),
+        );
+        
+        // Navigate to sign-in screen (NOT verification)
+        // User needs to login first, then they'll receive verification email
+        final isRTL = Directionality.of(context) == TextDirection.rtl;
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const SignInScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              final begin = Offset(isRTL ? 1.0 : -1.0, 0.0); // Slide from left (back direction)
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              final offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign up failed: ${e.toString()}'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'cha9cha9ni://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+      // After OAuth, user will be redirected back to app
+      // AppEntry in main.dart will handle the callback and verification
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign up failed: ${e.toString()}'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _validatePassword() {
@@ -68,17 +208,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return 0.33;
     }
     return 0.0;
-  }
-
-  @override
-  void dispose() {
-    _passwordController.removeListener(_validatePassword);
-    _emailController.dispose();
-    _passwordController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _phoneController.dispose();
-    super.dispose();
   }
 
   @override
@@ -356,32 +485,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ],
                       ),
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showErrors = true;
-                          });
-                          if (_firstNameController.text.isNotEmpty &&
-                              _lastNameController.text.isNotEmpty &&
-                              _emailController.text.isNotEmpty &&
-                              _phoneController.text.length == 8 &&
-                              _isPasswordValid()) {
-                            // Proceed with sign up
-                          }
-                        },
+                        onTap: _isLoading ? null : _handleEmailSignUp,
                         child: Container(
                           width: double.infinity,
                           height: 52,
                           decoration: ShapeDecoration(
-                            gradient: AppColors.primaryGradient,
+                            gradient: _isLoading ? null : AppColors.primaryGradient,
+                            color: _isLoading ? Colors.grey : null,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.signUp,
-                              style: AppTextStyles.bodyMedium,
-                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : Text(
+                                    AppLocalizations.of(context)!.signUp,
+                                    style: AppTextStyles.bodyMedium,
+                                  ),
                           ),
                         ),
                       ),
@@ -415,12 +536,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: _isLoading ? null : _handleGoogleSignUp,
                       child: Container(
                         width: double.infinity,
                         height: 52,
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: _isLoading ? Colors.grey.shade300 : Colors.white,
                           shape: RoundedRectangleBorder(
                             side: const BorderSide(
                               width: 1,

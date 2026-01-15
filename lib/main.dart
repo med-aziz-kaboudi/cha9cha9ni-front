@@ -2,9 +2,16 @@ import 'package:cha9cha9ni/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
+import 'features/home/home_screen.dart';
+import 'features/auth/screens/verify_email_screen.dart';
+import 'features/auth/services/auth_api_service.dart';
+import 'features/auth/models/auth_request_models.dart';
 import 'core/services/language_service.dart';
+import 'core/services/token_storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +19,12 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: 'https://wfqglbotmchhopdgfclx.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcWdsYm90bWNoaG9wZGdmY2x4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNzcxMTAsImV4cCI6MjA4MzY1MzExMH0.gVyQTGRQVT5S3xxgConvbakuv6AYDe_D0vTOy-4Oyc8',
+  );
   
   // Load saved language
   await LanguageService().loadLanguage();
@@ -32,6 +45,7 @@ class Cha9cha9niApp extends StatelessWidget {
         return MaterialApp(
           title: 'Cha9cha9ni',
           debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
           locale: locale,
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -64,6 +78,59 @@ class Cha9cha9niApp extends StatelessWidget {
   }
 }
 
+// Global navigator key for programmatic navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+/// Helper class for managing pending email verification state
+class PendingVerificationHelper {
+  static const String _pendingVerificationKey = 'pending_verification_email';
+  static const String _pendingVerificationTimestampKey = 'pending_verification_timestamp';
+  static const int _expiryMinutes = 5; // Verification session expires after 5 minutes
+
+  /// Save pending verification email to local storage with timestamp
+  static Future<void> save(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    await prefs.setString(_pendingVerificationKey, email);
+    await prefs.setInt(_pendingVerificationTimestampKey, timestamp);
+    debugPrint('📧 Saved pending verification for: $email (expires in $_expiryMinutes minutes)');
+  }
+
+  /// Clear pending verification from local storage
+  static Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingVerificationKey);
+    await prefs.remove(_pendingVerificationTimestampKey);
+    debugPrint('📧 Cleared pending verification');
+  }
+
+  /// Get pending verification email from local storage (returns null if expired)
+  static Future<String?> get() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_pendingVerificationKey);
+    final timestamp = prefs.getInt(_pendingVerificationTimestampKey);
+    
+    if (email == null || timestamp == null) {
+      return null;
+    }
+    
+    // Check if expired (5 minutes = 300000 milliseconds)
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final expiryTime = timestamp + (_expiryMinutes * 60 * 1000);
+    
+    if (now > expiryTime) {
+      // Expired - clear and return null
+      debugPrint('📧 Pending verification expired for: $email');
+      await clear();
+      return null;
+    }
+    
+    final remainingSeconds = ((expiryTime - now) / 1000).round();
+    debugPrint('📧 Pending verification still valid for $email (${remainingSeconds}s remaining)');
+    return email;
+  }
+}
+
 class AppEntry extends StatefulWidget {
   const AppEntry({super.key});
 
@@ -71,8 +138,197 @@ class AppEntry extends StatefulWidget {
   State<AppEntry> createState() => _AppEntryState();
 }
 
-class _AppEntryState extends State<AppEntry> {
+class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   bool _showSplash = true;
+  bool _isAuthenticated = false;
+  bool _needsVerification = false;
+  String? _verificationEmail;
+  final _authApiService = AuthApiService();
+  final _tokenStorage = TokenStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadPendingVerification();
+    _checkAuthState();
+  }
+
+  /// Load pending verification email from local storage
+  Future<void> _loadPendingVerification() async {
+    final email = await PendingVerificationHelper.get();
+    if (email != null && mounted) {
+      debugPrint('📧 Found pending verification for: $email');
+      setState(() {
+        _needsVerification = true;
+        _verificationEmail = email;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came back from background (e.g., after OAuth in browser)
+      debugPrint('📱 App resumed - checking session');
+      _checkInitialSession();
+    }
+  }
+
+  void _checkAuthState() {
+    // Listen to auth state changes
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final session = data.session;
+      final event = data.event;
+      
+      debugPrint('🔔 Auth event: $event, session: ${session != null}');
+      
+      if (session != null && 
+          (event == AuthChangeEvent.signedIn || 
+           event == AuthChangeEvent.tokenRefreshed ||
+           event == AuthChangeEvent.initialSession)) {
+        // User just signed in (could be OAuth callback)
+        await _handleNewSession(session);
+      } else if (session == null && event == AuthChangeEvent.signedOut) {
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = false;
+            _needsVerification = false;
+            _verificationEmail = null;
+          });
+        }
+      }
+    });
+
+    // Check initial session
+    _checkInitialSession();
+  }
+
+  bool _isHandlingSession = false;
+
+  Future<void> _checkInitialSession() async {
+    if (_isHandlingSession) return; // Prevent duplicate handling
+    
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null && !_isAuthenticated && !_needsVerification) {
+      await _handleNewSession(session);
+    }
+  }
+
+  Future<void> _handleNewSession(Session session) async {
+    if (_isHandlingSession) return;
+    _isHandlingSession = true;
+    
+    final user = session.user;
+    
+    try {
+      debugPrint('🔐 Handling new session for user: ${user.email}');
+      
+      // Check with backend if user needs verification
+      final response = await _authApiService.supabaseLogin(
+        SupabaseLoginRequest(
+          supabaseId: user.id,
+          email: user.email!,
+          fullName: user.userMetadata?['full_name'],
+          phone: user.phone,
+        ),
+      );
+      
+      debugPrint('✅ Backend response: requiresVerification=${response.requiresVerification}, isSuccess=${response.isSuccess}');
+      
+      if (response.requiresVerification) {
+        debugPrint('📱 Navigating to VerifyEmailScreen for ${response.email}');
+        
+        // Save pending verification to local storage for app restart (with 5 min expiry)
+        await PendingVerificationHelper.save(response.email!);
+        
+        // Update state
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = false;
+            _needsVerification = true;
+            _verificationEmail = response.email;
+          });
+        }
+        
+        // Only navigate programmatically if splash is already done
+        // Otherwise, the build method will show the correct screen after splash
+        if (!_showSplash) {
+          final navigator = navigatorKey.currentState;
+          debugPrint('📱 navigatorKey.currentState: $navigator');
+          if (navigator != null) {
+            navigator.pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => VerifyEmailScreen(email: response.email!),
+              ),
+              (route) => false,
+            );
+            debugPrint('📱 Navigation command executed');
+          } else {
+            debugPrint('❌ Navigator is null - cannot navigate');
+          }
+        } else {
+          debugPrint('📱 Splash still showing - will navigate after splash finishes');
+        }
+      } else if (response.isSuccess) {
+        // Clear any pending verification since user is now fully verified
+        await PendingVerificationHelper.clear();
+        
+        // Save backend tokens
+        await _tokenStorage.saveTokens(
+          accessToken: response.accessToken!,
+          sessionToken: response.sessionToken!,
+        );
+        
+        // Save user profile data for display name
+        // Backend returns firstName/lastName from database if they exist
+        // Otherwise it returns fullName from Google OAuth
+        await _tokenStorage.saveUserProfile(
+          firstName: response.user?.firstName,
+          lastName: response.user?.lastName,
+          fullName: response.user?.fullName,
+          email: response.user?.email ?? user.email,
+        );
+        
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = true;
+            _needsVerification = false;
+            _verificationEmail = null;
+          });
+        }
+        
+        // Only navigate programmatically if splash is already done
+        if (!_showSplash) {
+          final navigator = navigatorKey.currentState;
+          if (navigator != null) {
+            navigator.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              (route) => false,
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Backend call failed: $e');
+      // Don't sign out - just let user stay on current screen
+      // They can try again or use email/password login
+      if (mounted) {
+        setState(() {
+          _isAuthenticated = false;
+          _needsVerification = false;
+        });
+      }
+    } finally {
+      _isHandlingSession = false;
+    }
+  }
 
   void _onSplashFinished() {
     setState(() {
@@ -82,9 +338,24 @@ class _AppEntryState extends State<AppEntry> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('🏗️ Building AppEntry: splash=$_showSplash, needsVerification=$_needsVerification, email=$_verificationEmail, isAuth=$_isAuthenticated');
+    
     if (_showSplash) {
       return SplashScreen(onFinished: _onSplashFinished);
     }
+    
+    // If user needs verification, show verify screen
+    if (_needsVerification && _verificationEmail != null) {
+      debugPrint('🏗️ Showing VerifyEmailScreen for $_verificationEmail');
+      return VerifyEmailScreen(email: _verificationEmail!);
+    }
+    
+    // AuthGate: Check if user is authenticated
+    if (_isAuthenticated) {
+      return const HomeScreen();
+    }
+    
+    // Always show onboarding after splash
     return const OnboardingScreen();
   }
 }

@@ -35,7 +35,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _currentPage + 1,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOutCubic,
-      );    } else {
+      );
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignInScreen()),

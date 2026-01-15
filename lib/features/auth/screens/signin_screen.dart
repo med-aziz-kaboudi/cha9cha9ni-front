@@ -1,10 +1,20 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
+import 'package:cha9cha9ni/main.dart' show PendingVerificationHelper;
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/language_selector.dart';
+import '../../../core/services/api_exception.dart';
+import '../../../core/services/token_storage_service.dart';
+import '../../../features/home/home_screen.dart';
 import '../widgets/custom_text_field.dart';
+import '../models/auth_request_models.dart';
+import '../services/auth_api_service.dart';
 import 'signup_screen.dart';
+import 'verify_email_screen.dart';
+import 'forgot_password_verify_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -16,14 +26,277 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _authApiService = AuthApiService();
+  final _tokenStorage = TokenStorageService();
 
   bool _obscurePassword = true;
   bool _showErrors = false;
+  bool _isLoading = false;
+  bool _isSendingResetCode = false;
+
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+
+    // Validate email is entered
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.pleaseEnterEmail,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[700],
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Basic email validation
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.invalidEmailFormat,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[700],
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSendingResetCode = true;
+    });
+
+    try {
+      // Request password reset code
+      await _authApiService.requestPasswordReset(email);
+
+      if (mounted) {
+        // Navigate to verification screen
+        final isRTL = Directionality.of(context) == TextDirection.rtl;
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ForgotPasswordVerifyScreen(email: email),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final begin = Offset(isRTL ? -1.0 : 1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+              final tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              final offsetAnimation = animation.drive(tween);
+              return SlideTransition(position: offsetAnimation, child: child);
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        String errorMessage = AppLocalizations.of(context)!.anErrorOccurred;
+
+        if (e is ApiException) {
+          errorMessage = e.message;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[700],
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingResetCode = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleEmailSignIn() async {
+    setState(() {
+      _showErrors = true;
+    });
+
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call backend API to login
+      final request = LoginRequest(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      final response = await _authApiService.login(request);
+
+      if (mounted) {
+        if (response.requiresVerification) {
+          // Save pending verification to local storage for app restart
+          await PendingVerificationHelper.save(response.email!);
+          
+          // Navigate to verification screen with slide animation
+          final isRTL = Directionality.of(context) == TextDirection.rtl;
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => VerifyEmailScreen(
+                email: response.email!,
+              ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                final begin = Offset(isRTL ? -1.0 : 1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                final offsetAnimation = animation.drive(tween);
+                return SlideTransition(position: offsetAnimation, child: child);
+              },
+            ),
+          );
+        } else if (response.isSuccess) {
+          // Store tokens
+          await _tokenStorage.saveTokens(
+            accessToken: response.accessToken!,
+            sessionToken: response.sessionToken!,
+            expiresIn: response.expiresIn,
+            userId: response.user?.id,
+          );
+          
+          // Save user profile for display name
+          await _tokenStorage.saveUserProfile(
+            firstName: response.user?.firstName,
+            lastName: response.user?.lastName,
+            fullName: response.user?.fullName,
+            email: response.user?.email,
+          );
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sign in failed: ${e.toString()}'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'cha9cha9ni://login-callback',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+      // After OAuth, user will be redirected back to app
+      // AppEntry in main.dart will handle the callback and verification
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign in failed: ${e.toString()}'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _authApiService.dispose();
     super.dispose();
   }
 
@@ -154,44 +427,46 @@ class _SignInScreenState extends State<SignInScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: GestureDetector(
-                              onTap: () {
-                                // TODO: Navigate to forgot password
-                              },
-                              child: Text(
-                                AppLocalizations.of(context)!.forgotPassword,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.secondary,
-                                ),
-                              ),
+                              onTap: _isSendingResetCode ? null : _handleForgotPassword,
+                              child: _isSendingResetCode
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFF4CC3C7),
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      AppLocalizations.of(context)!.forgotPassword,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        color: AppColors.secondary,
+                                      ),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 24),
                         ],
                       ),
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showErrors = true;
-                          });
-                          if (_emailController.text.isNotEmpty &&
-                              _passwordController.text.isNotEmpty) {
-                            // TODO: Proceed with sign in
-                          }
-                        },
+                        onTap: _isLoading ? null : _handleEmailSignIn,
                         child: Container(
                           width: double.infinity,
                           height: 52,
                           decoration: ShapeDecoration(
-                            gradient: AppColors.primaryGradient,
+                            gradient: _isLoading ? null : AppColors.primaryGradient,
+                            color: _isLoading ? Colors.grey : null,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: Center(
-                            child: Text(
-                              AppLocalizations.of(context)!.signIn,
-                              style: AppTextStyles.bodyMedium,
-                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : Text(
+                                    AppLocalizations.of(context)!.signIn,
+                                    style: AppTextStyles.bodyMedium,
+                                  ),
                           ),
                         ),
                       ),
@@ -225,13 +500,11 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () {
-                        // TODO: Sign in with Google
-                      },
+                      onTap: _isLoading ? null : _handleGoogleSignIn,
                       child: Container(
                         height: 52,
                         decoration: ShapeDecoration(
-                          color: Colors.white,
+                          color: _isLoading ? Colors.grey.shade300 : Colors.white,
                           shape: RoundedRectangleBorder(
                             side: const BorderSide(
                               width: 1,
