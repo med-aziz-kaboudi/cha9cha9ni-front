@@ -127,7 +127,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get resendOTP => 'Renvoyer le code';
 
   @override
-  String get resendOtp => 'Resend OTP';
+  String get resendOtp => 'Renvoyer le code';
 
   @override
   String resendOTPIn(String seconds) {
@@ -185,64 +185,131 @@ class AppLocalizationsFr extends AppLocalizations {
       'Inscription réussie ! Veuillez vous connecter pour vérifier votre email.';
 
   @override
-  String get resetPassword => 'Reset Password';
+  String get resetPassword => 'Réinitialiser le Mot de Passe';
 
   @override
-  String get newPassword => 'New Password';
+  String get newPassword => 'Nouveau Mot de Passe';
 
   @override
-  String get enterNewPassword => 'Enter your new password';
+  String get enterNewPassword => 'Entrez votre nouveau mot de passe';
 
   @override
-  String get confirmPassword => 'Confirm Password';
+  String get confirmPassword => 'Confirmer le Mot de Passe';
 
   @override
-  String get confirmYourPassword => 'Confirm your password';
+  String get confirmYourPassword => 'Confirmez votre mot de passe';
 
   @override
-  String get passwordsDoNotMatch => 'Passwords do not match';
+  String get passwordsDoNotMatch => 'Les mots de passe ne correspondent pas';
 
   @override
-  String get confirmPasswordRequired => 'Please confirm your password';
+  String get confirmPasswordRequired => 'Veuillez confirmer votre mot de passe';
 
   @override
   String get passwordResetSuccessfully =>
-      'Password reset successfully! You can now sign in with your new password.';
+      'Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.';
 
   @override
-  String get checkYourMailbox => 'Check Your Mailbox';
+  String get checkYourMailbox => 'Vérifiez Votre Boîte Mail';
 
   @override
   String weHaveSentResetCodeTo(String email) {
-    return 'We have sent a 6-digit reset code to $email';
+    return 'Nous avons envoyé un code de réinitialisation à 6 chiffres à $email';
   }
 
   @override
-  String get pleaseEnterEmail => 'Please enter your email address';
+  String get pleaseEnterEmail => 'Veuillez entrer votre adresse email';
 
   @override
-  String get invalidEmailFormat => 'Please enter a valid email address';
+  String get invalidEmailFormat => 'Veuillez entrer une adresse email valide';
 
   @override
   String get pleaseEnterComplete6DigitCode =>
-      'Please enter the complete 6-digit code';
+      'Veuillez entrer le code complet à 6 chiffres';
 
   @override
   String get codeSentSuccessfully =>
-      'Code sent successfully! Please check your email.';
+      'Code envoyé avec succès ! Veuillez vérifier votre email.';
 
   @override
-  String get anErrorOccurred => 'An error occurred. Please try again.';
+  String get anErrorOccurred =>
+      'Une erreur s\'est produite. Veuillez réessayer.';
 
   @override
-  String get didntReceiveCode => 'Didn\'t receive code?';
+  String get didntReceiveCode => 'Vous n\'avez pas reçu le code ?';
 
   @override
-  String get passwordRequired => 'Password is required';
+  String get passwordRequired => 'Le mot de passe est requis';
 
   @override
-  String get passwordMinLength => 'Password must be at least 8 characters';
+  String get passwordMinLength =>
+      'Le mot de passe doit contenir au moins 8 caractères';
 
   @override
-  String get enterYourPassword => 'Enter your password';
+  String get enterYourPassword => 'Entrez votre mot de passe';
+
+  @override
+  String get joinOrCreateFamily => 'Rejoindre ou Créer une Famille';
+
+  @override
+  String get chooseHowToProceed =>
+      'Choisissez comment vous souhaitez continuer';
+
+  @override
+  String get createAFamily => 'Créer une Famille';
+
+  @override
+  String get joinAFamily => 'Rejoindre une Famille';
+
+  @override
+  String get enterInviteCode => 'XXXX-XXXX';
+
+  @override
+  String get pleaseEnterInviteCode => 'Veuillez entrer le code d\'invitation';
+
+  @override
+  String get failedToCreateFamily => 'Échec de la création de la famille';
+
+  @override
+  String get failedToJoinFamily => 'Échec de rejoindre la famille';
+
+  @override
+  String get joinNow => 'Rejoindre Maintenant';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get signOut => 'Se Déconnecter';
+
+  @override
+  String get familyInviteCode => 'Code d\'Invitation Familiale';
+
+  @override
+  String get shareThisCode =>
+      'Partagez ce code avec les membres de votre famille pour qu\'ils puissent rejoindre';
+
+  @override
+  String get copyCode => 'Copier le Code';
+
+  @override
+  String get codeCopied => 'Code d\'invitation copié!';
+
+  @override
+  String get gotIt => 'Compris!';
+
+  @override
+  String get welcomeFamilyOwner => 'Bienvenue, Propriétaire de la Famille!';
+
+  @override
+  String get welcomeFamilyMember => 'Bienvenue, Membre de la Famille!';
+
+  @override
+  String get yourFamily => 'Votre Famille';
+
+  @override
+  String get owner => 'Propriétaire';
+
+  @override
+  String get members => 'Membres';
 }

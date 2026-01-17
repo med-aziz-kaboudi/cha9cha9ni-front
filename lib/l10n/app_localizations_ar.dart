@@ -243,4 +243,68 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get enterYourPassword => 'أدخل كلمة المرور';
+
+  @override
+  String get joinOrCreateFamily => 'انضم أو أنشئ عائلة';
+
+  @override
+  String get chooseHowToProceed => 'اختر كيف تريد المتابعة';
+
+  @override
+  String get createAFamily => 'إنشاء عائلة';
+
+  @override
+  String get joinAFamily => 'الانضمام لعائلة';
+
+  @override
+  String get enterInviteCode => 'XXXX-XXXX';
+
+  @override
+  String get pleaseEnterInviteCode => 'الرجاء إدخال رمز الدعوة';
+
+  @override
+  String get failedToCreateFamily => 'فشل إنشاء العائلة';
+
+  @override
+  String get failedToJoinFamily => 'فشل الانضمام للعائلة';
+
+  @override
+  String get joinNow => 'انضم الآن';
+
+  @override
+  String get cancel => 'إلغاء';
+
+  @override
+  String get signOut => 'تسجيل الخروج';
+
+  @override
+  String get familyInviteCode => 'رمز دعوة العائلة';
+
+  @override
+  String get shareThisCode =>
+      'شارك هذا الرمز مع أفراد عائلتك حتى يتمكنوا من الانضمام';
+
+  @override
+  String get copyCode => 'نسخ الرمز';
+
+  @override
+  String get codeCopied => 'تم نسخ رمز الدعوة!';
+
+  @override
+  String get gotIt => 'فهمت!';
+
+  @override
+  String get welcomeFamilyOwner => 'مرحباً، مالك العائلة!';
+
+  @override
+  String get welcomeFamilyMember => 'مرحباً، عضو العائلة!';
+
+  @override
+  String get yourFamily => 'عائلتك';
+
+  @override
+  String get owner => 'المالك';
+
+  @override
+  String get members => 'الأعضاء';
 }

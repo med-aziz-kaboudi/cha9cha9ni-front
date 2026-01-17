@@ -1,6 +1,6 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import '../../../features/home/home_screen.dart';
+import '../../family/family_selection_screen.dart';
 
 class VerificationSuccessScreen extends StatelessWidget {
   const VerificationSuccessScreen({super.key});
@@ -81,7 +81,7 @@ class VerificationSuccessScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        MaterialPageRoute(builder: (context) => const FamilySelectionScreen()),
                         (route) => false,
                       );
                     },

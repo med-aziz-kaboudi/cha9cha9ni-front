@@ -6,12 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
-import 'features/home/home_screen.dart';
+import 'features/family/family_selection_screen.dart';
+import 'features/home/family_owner_home_screen.dart';
+import 'features/home/family_member_home_screen.dart';
 import 'features/auth/screens/verify_email_screen.dart';
 import 'features/auth/services/auth_api_service.dart';
 import 'features/auth/models/auth_request_models.dart';
 import 'core/services/language_service.dart';
 import 'core/services/token_storage_service.dart';
+import 'core/services/family_api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -143,15 +146,52 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   bool _isAuthenticated = false;
   bool _needsVerification = false;
   String? _verificationEmail;
+  Widget? _homeScreen; // Will be either FamilySelectionScreen, OwnerHome, or MemberHome
   final _authApiService = AuthApiService();
   final _tokenStorage = TokenStorageService();
+  final _familyApiService = FamilyApiService();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadPendingVerification();
+    _initializeApp();
+  }
+
+  /// Initialize app by checking saved state
+  Future<void> _initializeApp() async {
+    await _loadPendingVerification();
+    await _checkSavedTokens();
     _checkAuthState();
+  }
+
+  /// Check for saved JWT tokens on app startup
+  Future<void> _checkSavedTokens() async {
+    try {
+      final accessToken = await _tokenStorage.getAccessToken();
+      
+      if (accessToken != null) {
+        debugPrint('🔑 Found saved access token, restoring session');
+        
+        // Determine home screen based on family status
+        final homeScreen = await _determineHomeScreen();
+        
+        debugPrint('🏠 Determined home screen: ${homeScreen.runtimeType}');
+        
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = true;
+            _homeScreen = homeScreen;
+          });
+        }
+      } else {
+        debugPrint('🔑 No saved tokens found');
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking saved tokens: $e');
+      // Clear invalid tokens
+      await _tokenStorage.clearTokens();
+    }
   }
 
   /// Load pending verification email from local storage
@@ -296,11 +336,15 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           email: response.user?.email ?? user.email,
         );
         
+        // Check family status and determine which screen to show
+        final homeScreen = await _determineHomeScreen();
+        
         if (mounted) {
           setState(() {
             _isAuthenticated = true;
             _needsVerification = false;
             _verificationEmail = null;
+            _homeScreen = homeScreen;
           });
         }
         
@@ -309,7 +353,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           final navigator = navigatorKey.currentState;
           if (navigator != null) {
             navigator.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
+              MaterialPageRoute(builder: (context) => homeScreen),
               (route) => false,
             );
           }
@@ -328,6 +372,33 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     } finally {
       _isHandlingSession = false;
     }
+  }
+
+  Future<Widget> _determineHomeScreen() async {
+    try {
+      debugPrint('🔍 Checking family status...');
+      final family = await _familyApiService.getMyFamily();
+      
+      debugPrint('👨‍👩‍👧‍👦 Family data: ${family != null ? "Found (isOwner: ${family.isOwner})" : "None"}');
+      
+      if (family != null) {
+        // User has a family
+        if (family.isOwner == true) {
+          debugPrint('✅ Navigating to Owner home');
+          return const FamilyOwnerHomeScreen();
+        } else {
+          debugPrint('✅ Navigating to Member home');
+          return const FamilyMemberHomeScreen();
+        }
+      }
+      
+      debugPrint('ℹ️ No family found, showing selection screen');
+    } catch (e) {
+      debugPrint('❌ Failed to check family status: $e');
+    }
+    
+    // Default: show family selection if no family or error
+    return const FamilySelectionScreen();
   }
 
   void _onSplashFinished() {
@@ -352,7 +423,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     
     // AuthGate: Check if user is authenticated
     if (_isAuthenticated) {
-      return const HomeScreen();
+      return _homeScreen ?? const FamilySelectionScreen();
     }
     
     // Always show onboarding after splash

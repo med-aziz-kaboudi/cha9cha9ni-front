@@ -8,7 +8,10 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/language_selector.dart';
 import '../../../core/services/api_exception.dart';
 import '../../../core/services/token_storage_service.dart';
-import '../../../features/home/home_screen.dart';
+import '../../../core/services/family_api_service.dart';
+import '../../family/family_selection_screen.dart';
+import '../../home/family_owner_home_screen.dart';
+import '../../home/family_member_home_screen.dart';
 import '../widgets/custom_text_field.dart';
 import '../models/auth_request_models.dart';
 import '../services/auth_api_service.dart';
@@ -28,11 +31,47 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _authApiService = AuthApiService();
   final _tokenStorage = TokenStorageService();
+  final _familyApiService = FamilyApiService();
 
   bool _obscurePassword = true;
   bool _showErrors = false;
   bool _isLoading = false;
   bool _isSendingResetCode = false;
+
+  Future<void> _navigateBasedOnFamilyStatus() async {
+    try {
+      final family = await _familyApiService.getMyFamily();
+      
+      if (!mounted) return;
+      
+      if (family != null) {
+        // User has a family, navigate to appropriate home screen
+        if (family.isOwner == true) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const FamilyOwnerHomeScreen()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const FamilyMemberHomeScreen()),
+            (route) => false,
+          );
+        }
+      } else {
+        // User doesn't have a family, show family selection
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const FamilySelectionScreen()),
+        );
+      }
+    } catch (e) {
+      // If error checking family, default to family selection
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const FamilySelectionScreen()),
+        );
+      }
+    }
+  }
 
   Future<void> _handleForgotPassword() async {
     final email = _emailController.text.trim();
@@ -220,9 +259,8 @@ class _SignInScreenState extends State<SignInScreen> {
             email: response.user?.email,
           );
 
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
+          // Check if user has a family
+          await _navigateBasedOnFamilyStatus();
         }
       }
     } on ApiException catch (e) {

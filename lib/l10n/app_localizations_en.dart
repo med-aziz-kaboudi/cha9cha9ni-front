@@ -243,4 +243,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterYourPassword => 'Enter your password';
+
+  @override
+  String get joinOrCreateFamily => 'Join or Create a Family';
+
+  @override
+  String get chooseHowToProceed => 'Choose how you want to proceed';
+
+  @override
+  String get createAFamily => 'Create a Family';
+
+  @override
+  String get joinAFamily => 'Join a Family';
+
+  @override
+  String get enterInviteCode => 'XXXX-XXXX';
+
+  @override
+  String get pleaseEnterInviteCode => 'Please enter an invite code';
+
+  @override
+  String get failedToCreateFamily => 'Failed to create family';
+
+  @override
+  String get failedToJoinFamily => 'Failed to join family';
+
+  @override
+  String get joinNow => 'Join Now';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get familyInviteCode => 'Family Invite Code';
+
+  @override
+  String get shareThisCode =>
+      'Share this code with your family members so they can join your family.';
+
+  @override
+  String get copyCode => 'Copy Code';
+
+  @override
+  String get codeCopied => 'Invite code copied to clipboard!';
+
+  @override
+  String get gotIt => 'Got it!';
+
+  @override
+  String get welcomeFamilyOwner => 'Welcome, Family Owner!';
+
+  @override
+  String get welcomeFamilyMember => 'Welcome, Family Member!';
+
+  @override
+  String get yourFamily => 'Your Family';
+
+  @override
+  String get owner => 'Owner';
+
+  @override
+  String get members => 'Members';
 }

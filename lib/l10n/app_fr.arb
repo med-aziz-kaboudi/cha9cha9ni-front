@@ -37,6 +37,7 @@
   "verifyEmailDescription": "Pour vérifier votre compte, entrez le code OTP à 6 chiffres que nous avons envoyé à votre email.",
   "verify": "Vérifier",
   "resendOTP": "Renvoyer le code",
+  "resendOtp": "Renvoyer le code",
   "resendOTPIn": "Renvoyer le code dans {seconds}s",
   "@resendOTPIn": {
     "placeholders": {
@@ -72,5 +73,52 @@
   "invalidVerificationCode": "Code de vérification invalide",
   "verificationCodeExpired": "Code de vérification expiré. Veuillez en demander un nouveau.",
   "noVerificationCode": "Aucun code de vérification trouvé. Veuillez en demander un nouveau.",
-  "registrationSuccessful": "Inscription réussie ! Veuillez vous connecter pour vérifier votre email."
+  "registrationSuccessful": "Inscription réussie ! Veuillez vous connecter pour vérifier votre email.",
+  "resetPassword": "Réinitialiser le Mot de Passe",
+  "newPassword": "Nouveau Mot de Passe",
+  "enterNewPassword": "Entrez votre nouveau mot de passe",
+  "confirmPassword": "Confirmer le Mot de Passe",
+  "confirmYourPassword": "Confirmez votre mot de passe",
+  "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+  "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+  "passwordResetSuccessfully": "Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+  "checkYourMailbox": "Vérifiez Votre Boîte Mail",
+  "weHaveSentResetCodeTo": "Nous avons envoyé un code de réinitialisation à 6 chiffres à {email}",
+  "@weHaveSentResetCodeTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseEnterEmail": "Veuillez entrer votre adresse email",
+  "invalidEmailFormat": "Veuillez entrer une adresse email valide",
+  "pleaseEnterComplete6DigitCode": "Veuillez entrer le code complet à 6 chiffres",
+  "codeSentSuccessfully": "Code envoyé avec succès ! Veuillez vérifier votre email.",
+  "anErrorOccurred": "Une erreur s'est produite. Veuillez réessayer.",
+  "didntReceiveCode": "Vous n'avez pas reçu le code ?",
+  "passwordRequired": "Le mot de passe est requis",
+  "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+  "enterYourPassword": "Entrez votre mot de passe",
+  "joinOrCreateFamily": "Rejoindre ou Créer une Famille",
+  "chooseHowToProceed": "Choisissez comment vous souhaitez continuer",
+  "createAFamily": "Créer une Famille",
+  "joinAFamily": "Rejoindre une Famille",
+  "enterInviteCode": "XXXX-XXXX",
+  "pleaseEnterInviteCode": "Veuillez entrer le code d'invitation",
+  "failedToCreateFamily": "Échec de la création de la famille",
+  "failedToJoinFamily": "Échec de rejoindre la famille",
+  "joinNow": "Rejoindre Maintenant",
+  "cancel": "Annuler",
+  "signOut": "Se Déconnecter",
+  "familyInviteCode": "Code d'Invitation Familiale",
+  "shareThisCode": "Partagez ce code avec les membres de votre famille pour qu'ils puissent rejoindre",
+  "copyCode": "Copier le Code",
+  "codeCopied": "Code d'invitation copié!",
+  "gotIt": "Compris!",
+  "welcomeFamilyOwner": "Bienvenue, Propriétaire de la Famille!",
+  "welcomeFamilyMember": "Bienvenue, Membre de la Famille!",
+  "yourFamily": "Votre Famille",
+  "owner": "Propriétaire",
+  "members": "Membres"
 }

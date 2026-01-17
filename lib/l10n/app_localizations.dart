@@ -531,6 +531,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your password'**
   String get enterYourPassword;
+
+  /// No description provided for @joinOrCreateFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Join or Create a Family'**
+  String get joinOrCreateFamily;
+
+  /// No description provided for @chooseHowToProceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how you want to proceed'**
+  String get chooseHowToProceed;
+
+  /// No description provided for @createAFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Family'**
+  String get createAFamily;
+
+  /// No description provided for @joinAFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Join a Family'**
+  String get joinAFamily;
+
+  /// No description provided for @enterInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'XXXX-XXXX'**
+  String get enterInviteCode;
+
+  /// No description provided for @pleaseEnterInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an invite code'**
+  String get pleaseEnterInviteCode;
+
+  /// No description provided for @failedToCreateFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create family'**
+  String get failedToCreateFamily;
+
+  /// No description provided for @failedToJoinFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join family'**
+  String get failedToJoinFamily;
+
+  /// No description provided for @joinNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Now'**
+  String get joinNow;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @familyInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Invite Code'**
+  String get familyInviteCode;
+
+  /// No description provided for @shareThisCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with your family members so they can join your family.'**
+  String get shareThisCode;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get copyCode;
+
+  /// No description provided for @codeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied to clipboard!'**
+  String get codeCopied;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get gotIt;
+
+  /// No description provided for @welcomeFamilyOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, Family Owner!'**
+  String get welcomeFamilyOwner;
+
+  /// No description provided for @welcomeFamilyMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, Family Member!'**
+  String get welcomeFamilyMember;
+
+  /// No description provided for @yourFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Family'**
+  String get yourFamily;
+
+  /// No description provided for @owner.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get owner;
+
+  /// No description provided for @members.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get members;
 }
 
 class _AppLocalizationsDelegate
