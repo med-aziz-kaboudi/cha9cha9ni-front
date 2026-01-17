@@ -307,4 +307,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get members => 'الأعضاء';
+
+  @override
+  String get noCodeAvailable => 'لا يوجد رمز متاح';
+
+  @override
+  String get inviteCodeCopiedToClipboard => 'تم نسخ رمز الدعوة!';
+
+  @override
+  String get shareCodeWithFamilyMembers =>
+      'شارك هذا الرمز مع أفراد العائلة.\nسيتغير بعد كل استخدام.';
+
+  @override
+  String get scanButtonTapped => 'تم النقر على زر المسح';
+
+  @override
+  String get rewardScreenComingSoon => 'شاشة المكافآت قريباً';
+
+  @override
+  String get home => 'الرئيسية';
+
+  @override
+  String get reward => 'المكافآت';
+
+  @override
+  String get myFamily => 'عائلتي';
 }

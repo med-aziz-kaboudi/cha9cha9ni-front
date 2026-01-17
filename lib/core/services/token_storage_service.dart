@@ -11,6 +11,13 @@ class TokenStorageService {
   static const String _lastNameKey = 'user_last_name';
   static const String _fullNameKey = 'user_full_name';
   static const String _userEmailKey = 'user_email';
+  
+  // Family info cache keys
+  static const String _familyNameKey = 'family_name';
+  static const String _familyOwnerNameKey = 'family_owner_name';
+  static const String _familyMemberCountKey = 'family_member_count';
+  static const String _familyIsOwnerKey = 'family_is_owner';
+  static const String _familyInviteCodeKey = 'family_invite_code';
 
   /// Save authentication tokens
   Future<void> saveTokens({
@@ -108,11 +115,84 @@ class TokenStorageService {
     return prefs.getString(_userIdKey);
   }
 
+  /// Get user's last name
+  Future<String?> getUserLastName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_lastNameKey);
+  }
+
+  /// Get user's first name
+  Future<String?> getUserFirstName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_firstNameKey);
+  }
+
   /// Check if user is authenticated (has valid tokens)
   Future<bool> isAuthenticated() async {
     final accessToken = await getAccessToken();
     final sessionToken = await getSessionToken();
     return accessToken != null && sessionToken != null;
+  }
+
+  /// Save family info for caching
+  Future<void> saveFamilyInfo({
+    String? familyName,
+    String? ownerName,
+    int? memberCount,
+    bool? isOwner,
+    String? inviteCode,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    if (familyName != null) {
+      await prefs.setString(_familyNameKey, familyName);
+    }
+    if (ownerName != null) {
+      await prefs.setString(_familyOwnerNameKey, ownerName);
+    }
+    if (memberCount != null) {
+      await prefs.setInt(_familyMemberCountKey, memberCount);
+    }
+    if (isOwner != null) {
+      await prefs.setBool(_familyIsOwnerKey, isOwner);
+    }
+    if (inviteCode != null) {
+      await prefs.setString(_familyInviteCodeKey, inviteCode);
+    }
+  }
+
+  /// Get cached family info
+  Future<Map<String, dynamic>?> getCachedFamilyInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    final familyName = prefs.getString(_familyNameKey);
+    final ownerName = prefs.getString(_familyOwnerNameKey);
+    final memberCount = prefs.getInt(_familyMemberCountKey);
+    final isOwner = prefs.getBool(_familyIsOwnerKey);
+    final inviteCode = prefs.getString(_familyInviteCodeKey);
+    
+    // Return null if no cached data
+    if (familyName == null && ownerName == null) {
+      return null;
+    }
+    
+    return {
+      'familyName': familyName,
+      'ownerName': ownerName,
+      'memberCount': memberCount,
+      'isOwner': isOwner,
+      'inviteCode': inviteCode,
+    };
+  }
+
+  /// Clear family info cache
+  Future<void> clearFamilyInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_familyNameKey);
+    await prefs.remove(_familyOwnerNameKey);
+    await prefs.remove(_familyMemberCountKey);
+    await prefs.remove(_familyIsOwnerKey);
+    await prefs.remove(_familyInviteCodeKey);
   }
 
   /// Clear all tokens (logout)
@@ -126,6 +206,8 @@ class TokenStorageService {
     await prefs.remove(_lastNameKey);
     await prefs.remove(_fullNameKey);
     await prefs.remove(_userEmailKey);
+    // Also clear family info on logout
+    await clearFamilyInfo();
   }
 
   /// Clear all stored data

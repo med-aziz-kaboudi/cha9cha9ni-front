@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -12,94 +14,133 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Row(
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.bottomCenter,
+      children: [
+        CustomPaint(
+          size: Size(MediaQuery.of(context).size.width, 70),
+          painter: _NavBarPainter(),
+        ),
+        SizedBox(
+          height: 70,
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Home tab
               Expanded(
                 child: _NavBarItem(
-                  icon: Icons.home_outlined,
-                  label: 'Home',
-                  isSelected: currentIndex == 0,
-                  onTap: () => onTap(0),
-                ),
-              ),
-              
-              // Spacer for center button
-              const SizedBox(width: 80),
-              
-              // Reward tab
-              Expanded(
-                child: _NavBarItem(
+                  context: context,
                   icon: Icons.card_giftcard_outlined,
-                  label: 'Reward',
+                  label: AppLocalizations.of(context)!.reward,
                   isSelected: currentIndex == 2,
                   onTap: () => onTap(2),
                 ),
               ),
+              const SizedBox(width: 100),
+              Expanded(
+                child: _NavBarItem(
+                  context: context,
+                  icon: Icons.home_outlined,
+                  label: AppLocalizations.of(context)!.home,
+                  isSelected: currentIndex == 0,
+                  onTap: () => onTap(0),
+                ),
+              ),
             ],
           ),
-          
-          // Center floating action button
-          Positioned(
-            left: MediaQuery.of(context).size.width / 2 - 48,
-            top: -27,
-            child: GestureDetector(
-              onTap: () => onTap(1),
-              child: Container(
-                width: 56,
-                height: 56,
-                padding: const EdgeInsets.all(16),
-                decoration: ShapeDecoration(
-                  color: const Color(0xFF4CC3C7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
+        ),
+        Positioned(
+          bottom: 45,
+          child: GestureDetector(
+            onTap: () => onTap(1),
+            child: Container(
+              width: 65,
+              height: 65,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary.withOpacity(0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 5),
                   ),
-                  shadows: const [
-                    BoxShadow(
-                      color: Color(0x4D4CC3C7),
-                      blurRadius: 15,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.qr_code_scanner,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                ],
+              ),
+              child: const Icon(
+                Icons.qr_code_scanner,
+                color: Colors.white,
+                size: 32,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
+class _NavBarPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.primary
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    
+    // Start from bottom left
+    path.moveTo(0, size.height);
+    
+    // Left section - curve up to the center notch
+    path.lineTo(0, 20);
+    path.quadraticBezierTo(0, 0, 20, 0);
+    path.lineTo(size.width * 0.35, 0);
+    
+    // Create the center circular notch
+    path.quadraticBezierTo(
+      size.width * 0.40, 0,
+      size.width * 0.42, 10,
+    );
+    path.arcToPoint(
+      Offset(size.width * 0.58, 10),
+      radius: const Radius.circular(40),
+      clockwise: false,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.60, 0,
+      size.width * 0.65, 0,
+    );
+    
+    // Right section - from notch to corner
+    path.lineTo(size.width - 20, 0);
+    path.quadraticBezierTo(size.width, 0, size.width, 20);
+    path.lineTo(size.width, size.height);
+    
+    path.close();
+    
+    canvas.drawPath(path, paint);
+    
+    // Add subtle shadow/depth
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.1)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawPath(path, shadowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class _NavBarItem extends StatelessWidget {
+  final BuildContext context;
   final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _NavBarItem({
+    required this.context,
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -107,32 +148,34 @@ class _NavBarItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext ctx) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 24,
-            color: isSelected ? const Color(0xFF4CC3C7) : Colors.white,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? const Color(0xFF4CC3C7) : Colors.white,
-              fontSize: 10,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w400,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 28,
+              color: Colors.white,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

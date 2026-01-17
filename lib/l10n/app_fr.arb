@@ -120,5 +120,13 @@
   "welcomeFamilyMember": "Bienvenue, Membre de la Famille!",
   "yourFamily": "Votre Famille",
   "owner": "Propriétaire",
-  "members": "Membres"
+  "members": "Membres",
+  "noCodeAvailable": "Aucun code disponible",
+  "inviteCodeCopiedToClipboard": "Code d'invitation copié!",
+  "shareCodeWithFamilyMembers": "Partagez ce code avec les membres de votre famille.\nIl changera après chaque utilisation.",
+  "scanButtonTapped": "Bouton de scan appuyé",
+  "rewardScreenComingSoon": "Écran de récompenses bientôt disponible",
+  "home": "Accueil",
+  "reward": "Récompenses",
+  "myFamily": "Ma Famille"
 }

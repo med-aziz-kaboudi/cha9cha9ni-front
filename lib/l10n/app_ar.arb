@@ -120,5 +120,13 @@
   "welcomeFamilyMember": "مرحباً، عضو العائلة!",
   "yourFamily": "عائلتك",
   "owner": "المالك",
-  "members": "الأعضاء"
+  "members": "الأعضاء",
+  "noCodeAvailable": "لا يوجد رمز متاح",
+  "inviteCodeCopiedToClipboard": "تم نسخ رمز الدعوة!",
+  "shareCodeWithFamilyMembers": "شارك هذا الرمز مع أفراد العائلة.\nسيتغير بعد كل استخدام.",
+  "scanButtonTapped": "تم النقر على زر المسح",
+  "rewardScreenComingSoon": "شاشة المكافآت قريباً",
+  "home": "الرئيسية",
+  "reward": "المكافآت",
+  "myFamily": "عائلتي"
 }

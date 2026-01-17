@@ -29,29 +29,58 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadCachedDataFirst();
   }
 
-  Future<void> _loadData() async {
-    await _loadDisplayName();
-    await _loadFamilyInfo();
-  }
-
-  Future<void> _loadDisplayName() async {
+  Future<void> _loadCachedDataFirst() async {
+    // Load display name
     final name = await _tokenStorage.getUserDisplayName();
+    
+    // Load cached family info first for instant display
+    final cachedFamily = await _tokenStorage.getCachedFamilyInfo();
+    
     if (mounted) {
       setState(() {
         _displayName = name;
+        if (cachedFamily != null) {
+          _familyName = cachedFamily['familyName'];
+          _familyOwnerName = cachedFamily['ownerName'];
+          _memberCount = cachedFamily['memberCount'];
+          _isLoadingFamily = false;
+        }
       });
     }
+    
+    // Then refresh from API in background
+    _refreshFamilyInfo();
   }
 
-  Future<void> _loadFamilyInfo() async {
+  Future<void> _refreshFamilyInfo() async {
     try {
       final family = await _familyApiService.getMyFamily();
       if (mounted && family != null) {
+        // Extract owner's last name for family display name
+        String? ownerLastName;
+        if (family.ownerName != null && family.ownerName!.isNotEmpty) {
+          final nameParts = family.ownerName!.trim().split(' ');
+          ownerLastName = nameParts.length > 1 ? nameParts.last : nameParts.first;
+          // Capitalize first letter
+          ownerLastName = ownerLastName[0].toUpperCase() + ownerLastName.substring(1);
+        }
+        
+        final familyDisplayName = ownerLastName ?? family.name;
+        
+        // Save to cache for next time
+        await _tokenStorage.saveFamilyInfo(
+          familyName: familyDisplayName,
+          ownerName: family.ownerName,
+          memberCount: family.memberCount,
+          isOwner: family.isOwner,
+          inviteCode: family.inviteCode,
+        );
+        
         setState(() {
-          _familyName = family.name;
+          _familyName = familyDisplayName;
           _familyOwnerName = family.ownerName;
           _memberCount = family.memberCount;
           _isLoadingFamily = false;
@@ -109,12 +138,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
         break;
       case 1:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Scan button tapped')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.scanButtonTapped)),
         );
         break;
       case 2:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reward screen coming soon')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.rewardScreenComingSoon)),
         );
         break;
     }
@@ -189,27 +218,30 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       
-                      Text(
-                        AppLocalizations.of(context)!.yourFamily,
-                        style: AppTextStyles.bodyBold.copyWith(
-                          fontSize: 16,
-                          color: AppColors.dark,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
                       if (_isLoadingFamily)
                         const CircularProgressIndicator()
                       else ...[
+                        // "Your Family" label - bigger
+                        Text(
+                          AppLocalizations.of(context)!.yourFamily,
+                          style: AppTextStyles.heading1.copyWith(
+                            fontSize: 24,
+                            color: AppColors.dark,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        // Family name (owner's last name) - secondary color
                         if (_familyName != null && _familyName!.isNotEmpty) ...[
                           Text(
                             _familyName!,
                             style: AppTextStyles.heading1.copyWith(
-                              fontSize: 22,
+                              fontSize: 28,
                               color: AppColors.secondary,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                         ],
                         if (_familyOwnerName != null) ...[
                           Text(

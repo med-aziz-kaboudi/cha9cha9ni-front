@@ -28,27 +28,43 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadCachedDataFirst();
   }
 
-  Future<void> _loadData() async {
-    await _loadDisplayName();
-    await _loadInviteCode();
-  }
-
-  Future<void> _loadDisplayName() async {
+  Future<void> _loadCachedDataFirst() async {
+    // Load display name
     final name = await _tokenStorage.getUserDisplayName();
+    
+    // Load cached family info first for instant display
+    final cachedFamily = await _tokenStorage.getCachedFamilyInfo();
+    
     if (mounted) {
       setState(() {
         _displayName = name;
+        if (cachedFamily != null && cachedFamily['inviteCode'] != null) {
+          _inviteCode = cachedFamily['inviteCode'];
+          _isLoadingCode = false;
+        }
       });
     }
+    
+    // Then refresh from API in background
+    _refreshInviteCode();
   }
 
-  Future<void> _loadInviteCode() async {
+  Future<void> _refreshInviteCode() async {
     try {
       final family = await _familyApiService.getMyFamily();
       if (mounted && family != null) {
+        // Save to cache for next time
+        await _tokenStorage.saveFamilyInfo(
+          familyName: family.name,
+          ownerName: family.ownerName,
+          memberCount: family.memberCount,
+          isOwner: family.isOwner,
+          inviteCode: family.inviteCode,
+        );
+        
         setState(() {
           _inviteCode = family.inviteCode;
           _isLoadingCode = false;
@@ -101,12 +117,12 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
         break;
       case 1:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Scan button tapped')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.scanButtonTapped)),
         );
         break;
       case 2:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reward screen coming soon')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.rewardScreenComingSoon)),
         );
         break;
     }
@@ -116,8 +132,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
     if (_inviteCode != null) {
       Clipboard.setData(ClipboardData(text: _inviteCode!));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invite code copied to clipboard!'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.inviteCodeCopiedToClipboard),
           backgroundColor: Colors.green,
         ),
       );
@@ -235,11 +251,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
                           ),
                         )
                       else
-                        const Text('No code available'),
+                        Text(AppLocalizations.of(context)!.noCodeAvailable),
                       
                       const SizedBox(height: 12),
                       Text(
-                        'Share this code with family members.\nIt will change after each use.',
+                        AppLocalizations.of(context)!.shareCodeWithFamilyMembers,
                         style: AppTextStyles.body.copyWith(
                           color: Colors.grey,
                           fontSize: 12,

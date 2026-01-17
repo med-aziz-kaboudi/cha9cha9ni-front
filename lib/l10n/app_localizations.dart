@@ -657,6 +657,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Members'**
   String get members;
+
+  /// No description provided for @noCodeAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No code available'**
+  String get noCodeAvailable;
+
+  /// No description provided for @inviteCodeCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied to clipboard!'**
+  String get inviteCodeCopiedToClipboard;
+
+  /// No description provided for @shareCodeWithFamilyMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with family members.\nIt will change after each use.'**
+  String get shareCodeWithFamilyMembers;
+
+  /// No description provided for @scanButtonTapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan button tapped'**
+  String get scanButtonTapped;
+
+  /// No description provided for @rewardScreenComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward screen coming soon'**
+  String get rewardScreenComingSoon;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @reward.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward'**
+  String get reward;
+
+  /// No description provided for @myFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'My Family'**
+  String get myFamily;
 }
 
 class _AppLocalizationsDelegate

@@ -307,4 +307,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get members => 'Members';
+
+  @override
+  String get noCodeAvailable => 'No code available';
+
+  @override
+  String get inviteCodeCopiedToClipboard => 'Invite code copied to clipboard!';
+
+  @override
+  String get shareCodeWithFamilyMembers =>
+      'Share this code with family members.\nIt will change after each use.';
+
+  @override
+  String get scanButtonTapped => 'Scan button tapped';
+
+  @override
+  String get rewardScreenComingSoon => 'Reward screen coming soon';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get reward => 'Reward';
+
+  @override
+  String get myFamily => 'My Family';
 }

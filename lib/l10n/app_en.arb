@@ -127,5 +127,13 @@
   "welcomeFamilyMember": "Welcome, Family Member!",
   "yourFamily": "Your Family",
   "owner": "Owner",
-  "members": "Members"
+  "members": "Members",
+  "noCodeAvailable": "No code available",
+  "inviteCodeCopiedToClipboard": "Invite code copied to clipboard!",
+  "shareCodeWithFamilyMembers": "Share this code with family members.\nIt will change after each use.",
+  "scanButtonTapped": "Scan button tapped",
+  "rewardScreenComingSoon": "Reward screen coming soon",
+  "home": "Home",
+  "reward": "Reward",
+  "myFamily": "My Family"
 }

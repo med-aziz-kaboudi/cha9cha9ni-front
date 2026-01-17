@@ -97,8 +97,12 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
     try {
       debugPrint('🏠 Creating family...');
       
+      // Get user's last name for family name
+      final lastName = await _tokenStorage.getUserLastName();
+      final familyName = lastName ?? AppLocalizations.of(context)!.myFamily;
+      
       final family = await _familyApiService.createFamily(
-        CreateFamilyRequest(name: 'My Family'),
+        CreateFamilyRequest(name: familyName),
       );
 
       debugPrint('✅ Family created: ${family.id}, Invite: ${family.inviteCode}');
@@ -142,8 +146,8 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
     
     if (code.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter an invite code'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.pleaseEnterInviteCode),
           backgroundColor: Colors.orange,
         ),
       );

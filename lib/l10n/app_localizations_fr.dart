@@ -312,4 +312,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get members => 'Membres';
+
+  @override
+  String get noCodeAvailable => 'Aucun code disponible';
+
+  @override
+  String get inviteCodeCopiedToClipboard => 'Code d\'invitation copié!';
+
+  @override
+  String get shareCodeWithFamilyMembers =>
+      'Partagez ce code avec les membres de votre famille.\nIl changera après chaque utilisation.';
+
+  @override
+  String get scanButtonTapped => 'Bouton de scan appuyé';
+
+  @override
+  String get rewardScreenComingSoon =>
+      'Écran de récompenses bientôt disponible';
+
+  @override
+  String get home => 'Accueil';
+
+  @override
+  String get reward => 'Récompenses';
+
+  @override
+  String get myFamily => 'Ma Famille';
 }
