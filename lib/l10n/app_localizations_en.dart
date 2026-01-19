@@ -332,4 +332,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myFamily => 'My Family';
+
+  @override
+  String get personalInformation => 'Personal information';
+
+  @override
+  String get yourCurrentPack => 'Your current pack';
+
+  @override
+  String get loginAndSecurity => 'Log in & security';
+
+  @override
+  String get languages => 'Languages';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get legalAgreements => 'Legal Agreements';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get topUp => 'Top up';
+
+  @override
+  String get withdraw => 'withdraw';
+
+  @override
+  String get statement => 'Statement';
+
+  @override
+  String get nextWithdrawal => 'Next Withdrawal';
+
+  @override
+  String availableInDays(int days) {
+    return 'Available in $days days';
+  }
+
+  @override
+  String get familyMembers => 'Family Members';
+
+  @override
+  String get manage => 'Manage >';
+
+  @override
+  String get recentActivities => 'Recent activities :';
+
+  @override
+  String get viewAll => 'View all  >';
 }

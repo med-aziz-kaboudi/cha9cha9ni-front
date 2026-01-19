@@ -17,6 +17,48 @@ class FamilyApiService {
     };
   }
 
+  /// Refresh access token using session token
+  Future<bool> _refreshToken() async {
+    try {
+      final sessionToken = await _tokenStorage.getSessionToken();
+      if (sessionToken == null) {
+        debugPrint('❌ No session token available for refresh');
+        return false;
+      }
+
+      debugPrint('🔄 Refreshing token...');
+      final response = await http.post(
+        Uri.parse('$_baseUrl${ApiConfig.refreshPath}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'sessionToken': sessionToken}),
+      );
+
+      debugPrint('🔄 Refresh response: ${response.statusCode}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        final newAccessToken = data['accessToken'];
+        final newSessionToken = data['sessionToken'];
+        
+        if (newAccessToken != null) {
+          await _tokenStorage.saveTokens(
+            accessToken: newAccessToken,
+            sessionToken: newSessionToken ?? sessionToken,
+            expiresIn: data['expiresIn']?.toString(),
+          );
+          debugPrint('✅ Token refreshed successfully');
+          return true;
+        }
+      }
+      
+      debugPrint('❌ Token refresh failed: ${response.body}');
+      return false;
+    } catch (e) {
+      debugPrint('❌ Token refresh error: $e');
+      return false;
+    }
+  }
+
   /// Create a new family
   Future<FamilyModel> createFamily(CreateFamilyRequest request) async {
     final headers = await _getHeaders();
@@ -57,17 +99,36 @@ class FamilyApiService {
 
   /// Get current user's family details
   Future<FamilyModel?> getMyFamily() async {
-    final headers = await _getHeaders();
+    var headers = await _getHeaders();
     
     debugPrint('🔍 Calling GET /family/me');
     
-    final response = await http.get(
+    var response = await http.get(
       Uri.parse('$_baseUrl/family/me'),
       headers: headers,
     );
 
     debugPrint('📡 Response status: ${response.statusCode}');
     debugPrint('📦 Response body: ${response.body}');
+
+    // Handle 401 - try to refresh token
+    if (response.statusCode == 401) {
+      debugPrint('🔒 401: Unauthorized - attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        debugPrint('✅ Token refreshed, retrying request');
+        // Retry with new token
+        headers = await _getHeaders();
+        response = await http.get(
+          Uri.parse('$_baseUrl/family/me'),
+          headers: headers,
+        );
+        debugPrint('📡 Retry response status: ${response.statusCode}');
+      } else {
+        debugPrint('❌ Token refresh failed');
+        throw Exception('Session expired. Please sign in again.');
+      }
+    }
 
     if (response.statusCode == 200) {
       // Check if response body is empty

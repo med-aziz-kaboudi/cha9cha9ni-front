@@ -5,6 +5,7 @@ import '../../core/services/family_api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../core/widgets/custom_drawer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
@@ -25,6 +26,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
   int _currentNavIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -152,6 +154,34 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: CustomDrawer(
+        onLogout: () {
+          Navigator.pop(context);
+          _handleSignOut(context);
+        },
+        onPersonalInfo: () {
+          Navigator.pop(context);
+        },
+        onCurrentPack: () {
+          Navigator.pop(context);
+        },
+        onLoginSecurity: () {
+          Navigator.pop(context);
+        },
+        onLanguages: () {
+          Navigator.pop(context);
+        },
+        onNotifications: () {
+          Navigator.pop(context);
+        },
+        onHelp: () {
+          Navigator.pop(context);
+        },
+        onLegalAgreements: () {
+          Navigator.pop(context);
+        },
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -163,130 +193,159 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/icons/horisental.png',
-                  width: MediaQuery.of(context).size.width * 0.60,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 40),
-                
-                Text(
-                  AppLocalizations.of(context)!.welcomeFamilyMember,
-                  style: AppTextStyles.heading1.copyWith(fontSize: 28),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                
-                Text(
-                  _displayName,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    fontSize: 18,
-                    color: AppColors.secondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 40),
-                
-                // Family Info Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+          child: Stack(
+            children: [
+              // Quarter circle drawer handle at left edge
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 5,
+                left: Directionality.of(context) == TextDirection.rtl ? null : 0,
+                right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
+                child: GestureDetector(
+                  onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  child: Container(
+                    width: 28,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.only(
+                        topRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(28),
+                        bottomRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(28),
+                        topLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(28) : Radius.zero,
+                        bottomLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(28) : Radius.zero,
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.secondary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: Directionality.of(context) == TextDirection.rtl ? const Offset(-2, 0) : const Offset(2, 0),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.family_restroom,
-                        size: 48,
+                ),
+              ),
+              // Main content
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/icons/horisental.png',
+                      width: MediaQuery.of(context).size.width * 0.60,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 40),
+                    Text(
+                      AppLocalizations.of(context)!.welcomeFamilyMember,
+                      style: AppTextStyles.heading1.copyWith(fontSize: 28),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _displayName,
+                      style: AppTextStyles.bodyBold.copyWith(
+                        fontSize: 18,
                         color: AppColors.secondary,
                       ),
-                      const SizedBox(height: 16),
-                      
-                      if (_isLoadingFamily)
-                        const CircularProgressIndicator()
-                      else ...[
-                        // "Your Family" label - bigger
-                        Text(
-                          AppLocalizations.of(context)!.yourFamily,
-                          style: AppTextStyles.heading1.copyWith(
-                            fontSize: 24,
-                            color: AppColors.dark,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 40),
+                    // Family Info Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        
-                        // Family name (owner's last name) - secondary color
-                        if (_familyName != null && _familyName!.isNotEmpty) ...[
-                          Text(
-                            _familyName!,
-                            style: AppTextStyles.heading1.copyWith(
-                              fontSize: 28,
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.family_restroom,
+                            size: 48,
+                            color: AppColors.secondary,
                           ),
                           const SizedBox(height: 16),
-                        ],
-                        if (_familyOwnerName != null) ...[
-                          Text(
-                            '${AppLocalizations.of(context)!.owner}: $_familyOwnerName',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.grey[700],
+                          if (_isLoadingFamily)
+                            const CircularProgressIndicator()
+                          else ...[
+                            Text(
+                              AppLocalizations.of(context)!.yourFamily,
+                              style: AppTextStyles.heading1.copyWith(
+                                fontSize: 24,
+                                color: AppColors.dark,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
+                            const SizedBox(height: 8),
+                            if (_familyName != null && _familyName!.isNotEmpty) ...[
+                              Text(
+                                _familyName!,
+                                style: AppTextStyles.heading1.copyWith(
+                                  fontSize: 28,
+                                  color: AppColors.secondary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            if (_familyOwnerName != null) ...[
+                              Text(
+                                '${AppLocalizations.of(context)!.owner}: $_familyOwnerName',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            if (_memberCount != null)
+                              Text(
+                                '${AppLocalizations.of(context)!.members}: $_memberCount',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                          ],
                         ],
-                        if (_memberCount != null)
-                          Text(
-                            '${AppLocalizations.of(context)!.members}: $_memberCount',
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                      ],
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 40),
-                
-                GestureDetector(
-                  onTap: () => _handleSignOut(context),
-                  child: Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: ShapeDecoration(
-                      gradient: AppColors.primaryGradient,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.signOut,
-                        style: AppTextStyles.bodyMedium,
+                    const SizedBox(height: 40),
+                    GestureDetector(
+                      onTap: () => _handleSignOut(context),
+                      child: Container(
+                        width: double.infinity,
+                        height: 52,
+                        decoration: ShapeDecoration(
+                          gradient: AppColors.primaryGradient,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            AppLocalizations.of(context)!.signOut,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -135,5 +135,30 @@
   "rewardScreenComingSoon": "Reward screen coming soon",
   "home": "Home",
   "reward": "Reward",
-  "myFamily": "My Family"
+  "myFamily": "My Family",
+  "personalInformation": "Personal information",
+  "yourCurrentPack": "Your current pack",
+  "loginAndSecurity": "Log in & security",
+  "languages": "Languages",
+  "notifications": "Notifications",
+  "help": "Help",
+  "legalAgreements": "Legal Agreements",
+  "logout": "Logout",
+  "balance": "Balance",
+  "topUp": "Top up",
+  "withdraw": "withdraw",
+  "statement": "Statement",
+  "nextWithdrawal": "Next Withdrawal",
+  "availableInDays": "Available in {days} days",
+  "@availableInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "familyMembers": "Family Members",
+  "manage": "Manage >",
+  "recentActivities": "Recent activities :",
+  "viewAll": "View all  >"
 }

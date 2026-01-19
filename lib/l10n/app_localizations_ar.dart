@@ -332,4 +332,60 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get myFamily => 'عائلتي';
+
+  @override
+  String get personalInformation => 'المعلومات الشخصية';
+
+  @override
+  String get yourCurrentPack => 'باقتك الحالية';
+
+  @override
+  String get loginAndSecurity => 'تسجيل الدخول والأمان';
+
+  @override
+  String get languages => 'اللغات';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get help => 'المساعدة';
+
+  @override
+  String get legalAgreements => 'الاتفاقيات القانونية';
+
+  @override
+  String get logout => 'تسجيل الخروج';
+
+  @override
+  String get balance => 'الرصيد';
+
+  @override
+  String get topUp => 'شحن';
+
+  @override
+  String get withdraw => 'سحب';
+
+  @override
+  String get statement => 'كشف الحساب';
+
+  @override
+  String get nextWithdrawal => 'السحب القادم';
+
+  @override
+  String availableInDays(int days) {
+    return 'متاح خلال $days يوم';
+  }
+
+  @override
+  String get familyMembers => 'أفراد العائلة';
+
+  @override
+  String get manage => 'إدارة >';
+
+  @override
+  String get recentActivities => 'الأنشطة الأخيرة :';
+
+  @override
+  String get viewAll => 'عرض الكل  >';
 }

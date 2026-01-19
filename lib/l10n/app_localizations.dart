@@ -705,6 +705,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My Family'**
   String get myFamily;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal information'**
+  String get personalInformation;
+
+  /// No description provided for @yourCurrentPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current pack'**
+  String get yourCurrentPack;
+
+  /// No description provided for @loginAndSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in & security'**
+  String get loginAndSecurity;
+
+  /// No description provided for @languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get languages;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// No description provided for @legalAgreements.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Agreements'**
+  String get legalAgreements;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @topUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Top up'**
+  String get topUp;
+
+  /// No description provided for @withdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'withdraw'**
+  String get withdraw;
+
+  /// No description provided for @statement.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement'**
+  String get statement;
+
+  /// No description provided for @nextWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Withdrawal'**
+  String get nextWithdrawal;
+
+  /// No description provided for @availableInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Available in {days} days'**
+  String availableInDays(int days);
+
+  /// No description provided for @familyMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Family Members'**
+  String get familyMembers;
+
+  /// No description provided for @manage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage >'**
+  String get manage;
+
+  /// No description provided for @recentActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent activities :'**
+  String get recentActivities;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View all  >'**
+  String get viewAll;
 }
 
 class _AppLocalizationsDelegate

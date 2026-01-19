@@ -19,38 +19,42 @@ class CustomBottomNavBar extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       children: [
         CustomPaint(
-          size: Size(MediaQuery.of(context).size.width, 70),
+          size: Size(MediaQuery.of(context).size.width, 80),
           painter: _NavBarPainter(),
         ),
-        SizedBox(
-          height: 70,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Expanded(
-                child: _NavBarItem(
-                  context: context,
-                  icon: Icons.card_giftcard_outlined,
-                  label: AppLocalizations.of(context)!.reward,
-                  isSelected: currentIndex == 2,
-                  onTap: () => onTap(2),
+        // Force LTR to keep Home on left and Reward on right regardless of language
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: SizedBox(
+            height: 80,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: _NavBarItem(
+                    context: context,
+                    icon: Icons.home_outlined,
+                    label: AppLocalizations.of(context)!.home,
+                    isSelected: currentIndex == 0,
+                    onTap: () => onTap(0),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 100),
-              Expanded(
-                child: _NavBarItem(
-                  context: context,
-                  icon: Icons.home_outlined,
-                  label: AppLocalizations.of(context)!.home,
-                  isSelected: currentIndex == 0,
-                  onTap: () => onTap(0),
+                const SizedBox(width: 100),
+                Expanded(
+                  child: _NavBarItem(
+                    context: context,
+                    icon: Icons.emoji_events_outlined,
+                    label: AppLocalizations.of(context)!.reward,
+                    isSelected: currentIndex == 2,
+                    onTap: () => onTap(2),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Positioned(
-          bottom: 45,
+          bottom: 60,
           child: GestureDetector(
             onTap: () => onTap(1),
             child: Container(

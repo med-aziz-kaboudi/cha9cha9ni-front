@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../core/widgets/custom_drawer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
+import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
   const FamilyOwnerHomeScreen({super.key});
@@ -18,12 +18,16 @@ class FamilyOwnerHomeScreen extends StatefulWidget {
 }
 
 class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
+  // ignore: unused_field
   String _displayName = 'Loading...';
+  // ignore: unused_field
   String? _inviteCode;
+  // ignore: unused_field
   bool _isLoadingCode = true;
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
   int _currentNavIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -128,9 +132,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
     }
   }
 
+  // ignore: unused_element
   void _copyInviteCode() {
     if (_inviteCode != null) {
-      Clipboard.setData(ClipboardData(text: _inviteCode!));
+      // Clipboard.setData(ClipboardData(text: _inviteCode!));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.inviteCodeCopiedToClipboard),
@@ -142,159 +147,502 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          color: AppColors.gray,
-          image: DecorationImage(
-            image: AssetImage('assets/images/Element.png'),
-            fit: BoxFit.cover,
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFFAFAFA),
+      drawer: CustomDrawer(
+        onLogout: () {
+          Navigator.pop(context);
+          _handleSignOut(context);
+        },
+        onPersonalInfo: () {
+          Navigator.pop(context);
+        },
+        onCurrentPack: () {
+          Navigator.pop(context);
+        },
+        onLoginSecurity: () {
+          Navigator.pop(context);
+        },
+        onLanguages: () {
+          Navigator.pop(context);
+        },
+        onNotifications: () {
+          Navigator.pop(context);
+        },
+        onHelp: () {
+          Navigator.pop(context);
+        },
+        onLegalAgreements: () {
+          Navigator.pop(context);
+        },
+      ),
+      body: Stack(
+        children: [
+          // Scrollable content - behind everything
+          Positioned.fill(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Space for the fixed header
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.32),
+                  
+                  // Next Withdrawal Card
+                  _buildNextWithdrawalCard(context),
+                
+                  const SizedBox(height: 24),
+                  
+                  // Family Members Section
+                  _buildFamilyMembersSection(context),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Recent Activities Section
+                  _buildRecentActivitiesSection(context),
+                  
+                  // Bottom padding for nav bar
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
           ),
+          
+          // Fixed Header on top - doesn't move
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: HomeHeaderWidget(
+              onTopUp: () {},
+              onWithdraw: () {},
+              onStatement: () {},
+            ),
+          ),
+          
+          // Drawer handle - positioned at top (RTL aware)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            left: Directionality.of(context) == TextDirection.rtl ? null : 0,
+            right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
+            child: GestureDetector(
+              onTap: () => _scaffoldKey.currentState?.openDrawer(),
+              child: Container(
+                width: 24,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.only(
+                    topRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(24),
+                    bottomRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(24),
+                    topLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(24) : Radius.zero,
+                    bottomLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(24) : Radius.zero,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Directionality.of(context) == TextDirection.rtl ? const Offset(-2, 0) : const Offset(2, 0),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: _currentNavIndex,
+        onTap: _onNavBarTap,
+      ),
+    );
+  }
+
+  Widget _buildNextWithdrawalCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEE3764).withOpacity(0.05),
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/icons/horisental.png',
-                  width: MediaQuery.of(context).size.width * 0.60,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 40),
-                
-                Text(
-                  AppLocalizations.of(context)!.welcomeFamilyOwner,
-                  style: AppTextStyles.heading1.copyWith(fontSize: 28),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                
-                Text(
-                  _displayName,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    fontSize: 18,
-                    color: AppColors.secondary,
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEE3764).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Center(
+                child: Text('🎊', style: TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.nextWithdrawal,
+                    style: const TextStyle(
+                      color: Color(0xFF13123A),
+                      fontSize: 12,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 40),
-                
-                // Invite Code Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                  const Text(
+                    '🎊 Aid Kbir - 1000 DT',
+                    style: TextStyle(
+                      color: Color(0xFF13123A),
+                      fontSize: 12,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)!.familyInviteCode,
-                        style: AppTextStyles.bodyBold.copyWith(
-                          fontSize: 16,
-                          color: AppColors.dark,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      if (_isLoadingCode)
-                        const CircularProgressIndicator()
-                      else if (_inviteCode != null)
-                        GestureDetector(
-                          onTap: _copyInviteCode,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AppColors.secondary,
-                                width: 2,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _inviteCode!,
-                                style: AppTextStyles.heading1.copyWith(
-                                  fontSize: 24,
-                                    color: AppColors.secondary,
-                                    letterSpacing: 3,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                const Icon(
-                                  Icons.copy,
-                                  color: AppColors.secondary,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        Text(AppLocalizations.of(context)!.noCodeAvailable),
-                      
-                      const SizedBox(height: 12),
-                      Text(
-                        AppLocalizations.of(context)!.shareCodeWithFamilyMembers,
-                        style: AppTextStyles.body.copyWith(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 40),
-                
-                GestureDetector(
-                  onTap: () => _handleSignOut(context),
-                  child: Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: ShapeDecoration(
-                      gradient: AppColors.primaryGradient,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                  Opacity(
+                    opacity: 0.6,
+                    child: Text(
+                      AppLocalizations.of(context)!.availableInDays(23),
+                      style: const TextStyle(
+                        color: Color(0xFF13123A),
+                        fontSize: 11,
+                        fontFamily: 'Nunito Sans',
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: Center(
-                      child: Text(
-                        AppLocalizations.of(context)!.signOut,
-                        style: AppTextStyles.bodyMedium,
-                      ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+              color: const Color(0xFF13123A),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFamilyMembersSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.familyMembers,
+                style: const TextStyle(
+                  color: Color(0xFF23233F),
+                  fontSize: 18,
+                  fontFamily: 'DM Sans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Text(
+                  AppLocalizations.of(context)!.manage,
+                  style: const TextStyle(
+                    color: Color(0xFFEE3764),
+                    fontSize: 14,
+                    fontFamily: 'Nunito Sans',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFamilyMemberAvatar('John'),
+                const SizedBox(width: 20),
+                _buildFamilyMemberAvatar('Loui William'),
+                const SizedBox(width: 20),
+                _buildFamilyMemberAvatar('Hannahsx'),
+                const SizedBox(width: 20),
+                _buildFamilyMemberAvatar('Leahaed'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFamilyMemberAvatar(String name) {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF4CC3C7),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDDDDDD),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+              ),
+            ),
+            // Yellow badge
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEBC11),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.remove,
+                    color: Colors.white,
+                    size: 10,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          name,
+          style: const TextStyle(
+            color: Color(0xFF23233F),
+            fontSize: 14,
+            fontFamily: 'DM Sans',
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentActivitiesSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.recentActivities,
+                style: const TextStyle(
+                  color: Color(0xFF13123A),
+                  fontSize: 16,
+                  fontFamily: 'Nunito Sans',
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Text(
+                  AppLocalizations.of(context)!.viewAll,
+                  style: const TextStyle(
+                    color: Color(0xFFEE3764),
+                    fontSize: 14,
+                    fontFamily: 'Nunito Sans',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildActivityItem(
+            emoji: '💸',
+            title: 'Aid Kbir Withdrawal',
+            date: 'Jun 9, 2025',
+            amount: '- 1000 DT',
+            amountColor: const Color(0xFFEE3764),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '💰',
+            title: 'Deposit from john',
+            date: 'Jun 5, 2025',
+            amount: '+ 500 DT',
+            amountColor: const Color(0xFF4CC3C7),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '🎁',
+            title: 'Ads earning (aziz)',
+            date: 'Jun 5, 2025',
+            amount: '+ 10 Points',
+            amountColor: const Color(0xFFD8B217),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '💳',
+            title: 'Monthly subscription',
+            date: 'Jun 1, 2025',
+            amount: '- 50 DT',
+            amountColor: const Color(0xFFEE3764),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '💰',
+            title: 'Deposit from Sarah',
+            date: 'May 28, 2025',
+            amount: '+ 750 DT',
+            amountColor: const Color(0xFF4CC3C7),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '🛒',
+            title: 'Shopping expense',
+            date: 'May 25, 2025',
+            amount: '- 200 DT',
+            amountColor: const Color(0xFFEE3764),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '🎁',
+            title: 'Referral bonus',
+            date: 'May 20, 2025',
+            amount: '+ 25 Points',
+            amountColor: const Color(0xFFD8B217),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '💰',
+            title: 'Deposit from Mike',
+            date: 'May 15, 2025',
+            amount: '+ 300 DT',
+            amountColor: const Color(0xFF4CC3C7),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '🏠',
+            title: 'Rent payment',
+            date: 'May 10, 2025',
+            amount: '- 800 DT',
+            amountColor: const Color(0xFFEE3764),
+          ),
+          const SizedBox(height: 12),
+          _buildActivityItem(
+            emoji: '🎁',
+            title: 'Daily login reward',
+            date: 'May 5, 2025',
+            amount: '+ 5 Points',
+            amountColor: const Color(0xFFD8B217),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityItem({
+    required String emoji,
+    required String title,
+    required String date,
+    required String amount,
+    required Color amountColor,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4CC3C7).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(emoji, style: const TextStyle(fontSize: 22)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF13123A),
+                    fontSize: 14,
+                    fontFamily: 'Nunito Sans',
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Opacity(
+                  opacity: 0.6,
+                  child: Text(
+                    date,
+                    style: const TextStyle(
+                      color: Color(0xFF13123A),
+                      fontSize: 12,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: _currentNavIndex,
-        onTap: _onNavBarTap,
+          Text(
+            amount,
+            style: TextStyle(
+              color: amountColor,
+              fontSize: 12,
+              fontFamily: 'Nunito Sans',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
