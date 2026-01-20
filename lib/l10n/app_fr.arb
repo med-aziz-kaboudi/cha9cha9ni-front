@@ -202,5 +202,69 @@
   "confirmChange": "Confirmer le Changement",
   "emailUpdatedSuccessfully": "Email mis à jour avec succès!",
   "phoneNumberMustBe8Digits": "Le numéro de téléphone doit comporter exactement 8 chiffres",
-  "phoneNumberAlreadyInUse": "Ce numéro de téléphone est déjà utilisé"
+  "phoneNumberAlreadyInUse": "Ce numéro de téléphone est déjà utilisé",
+  "addMember": "Ajouter un Membre",
+  "shareInviteCodeDesc": "Partagez ce code avec votre membre de famille pour l'ajouter",
+  "copy": "Copier",
+  "noMembersYet": "Pas encore de membres",
+  "tapAddMemberToInvite": "Appuyez sur \"Ajouter un Membre\" pour inviter votre famille",
+  "removeMember": "Supprimer le Membre",
+  "removeMemberConfirm": "Êtes-vous sûr de vouloir supprimer {name} de la famille ?",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "Supprimer",
+  "confirmRemoval": "Confirmer la Suppression",
+  "enterCodeSentToEmail": "Entrez le code de vérification envoyé à votre email",
+  "enterValidCode": "Entrez un code à 6 chiffres valide",
+  "removalInitiated": "Demande de suppression envoyée à {name}",
+  "@removalInitiated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptRemoval": "Accepter la Suppression",
+  "acceptRemovalConfirm": "{name} souhaite vous retirer de la famille. Acceptez-vous ?",
+  "@acceptRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "decline": "Refuser",
+  "accept": "Accepter",
+  "confirmLeave": "Confirmer le Départ",
+  "removedFromFamily": "Retiré de la Famille",
+  "removedFromFamilyDesc": "Vous avez été retiré de la famille avec succès. Vous pouvez maintenant rejoindre ou créer une nouvelle famille.",
+  "removalRequestTitle": "Demande de Suppression",
+  "removalRequestDesc": "{name} souhaite vous retirer de la famille.",
+  "@removalRequestDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewRequest": "Voir la Demande",
+  "verificationCodeWillBeSent": "Un code de vérification sera envoyé à votre email",
+  "pendingRemovalRequests": "Demandes de Suppression en Attente",
+  "cancelRemovalRequest": "Annuler la Demande",
+  "cancelRemovalConfirm": "Êtes-vous sûr de vouloir annuler la demande de suppression pour {name} ?",
+  "@cancelRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removalCancelled": "Demande de suppression annulée",
+  "waitingForMemberConfirmation": "En attente de la confirmation du membre",
+  "pendingRemoval": "En attente"
 }

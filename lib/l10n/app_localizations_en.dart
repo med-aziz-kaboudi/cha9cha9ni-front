@@ -549,4 +549,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get phoneNumberAlreadyInUse => 'This phone number is already in use';
+
+  @override
+  String get addMember => 'Add Member';
+
+  @override
+  String get shareInviteCodeDesc =>
+      'Share this code with your family member to add them';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get noMembersYet => 'No members yet';
+
+  @override
+  String get tapAddMemberToInvite => 'Tap \"Add Member\" to invite your family';
+
+  @override
+  String get removeMember => 'Remove Member';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'Are you sure you want to remove $name from the family?';
+  }
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get confirmRemoval => 'Confirm Removal';
+
+  @override
+  String get enterCodeSentToEmail =>
+      'Enter the verification code sent to your email';
+
+  @override
+  String get enterValidCode => 'Enter a valid 6-digit code';
+
+  @override
+  String removalInitiated(String name) {
+    return 'Removal request sent to $name';
+  }
+
+  @override
+  String get acceptRemoval => 'Accept Removal';
+
+  @override
+  String acceptRemovalConfirm(String name) {
+    return '$name wants to remove you from the family. Do you accept?';
+  }
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get confirmLeave => 'Confirm Leave';
+
+  @override
+  String get removedFromFamily => 'Removed from Family';
+
+  @override
+  String get removedFromFamilyDesc =>
+      'You have been successfully removed from the family. You can now join or create a new family.';
+
+  @override
+  String get removalRequestTitle => 'Removal Request';
+
+  @override
+  String removalRequestDesc(String name) {
+    return '$name wants to remove you from the family.';
+  }
+
+  @override
+  String get viewRequest => 'View Request';
+
+  @override
+  String get verificationCodeWillBeSent =>
+      'A verification code will be sent to your email';
+
+  @override
+  String get pendingRemovalRequests => 'Pending Removal Requests';
+
+  @override
+  String get cancelRemovalRequest => 'Cancel Request';
+
+  @override
+  String cancelRemovalConfirm(String name) {
+    return 'Are you sure you want to cancel the removal request for $name?';
+  }
+
+  @override
+  String get removalCancelled => 'Removal request cancelled';
+
+  @override
+  String get waitingForMemberConfirmation => 'Waiting for member confirmation';
+
+  @override
+  String get pendingRemoval => 'Pending';
 }

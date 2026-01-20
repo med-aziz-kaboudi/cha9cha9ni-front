@@ -15,6 +15,7 @@ import 'features/auth/models/auth_request_models.dart';
 import 'core/services/language_service.dart';
 import 'core/services/token_storage_service.dart';
 import 'core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
+import 'core/services/session_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -285,6 +286,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         // We already have backend tokens - just restore session without calling backend
         debugPrint('🔑 Already have backend tokens, skipping backend call');
         
+        // Initialize WebSocket for real-time session monitoring
+        SessionManager().initializeSocket(accessToken);
+        
         // Determine home screen based on family status
         final homeScreen = await _determineHomeScreen();
         
@@ -379,6 +383,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           accessToken: response.accessToken!,
           sessionToken: response.sessionToken!,
         );
+        
+        // Initialize WebSocket for real-time session monitoring
+        SessionManager().initializeSocket(response.accessToken!);
         
         // Save user profile data for display name
         // Backend returns firstName/lastName from database if they exist
@@ -477,6 +484,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   /// Handle authentication failure - clear tokens and reset state
   Future<void> _handleAuthFailure() async {
     debugPrint('🔒 Handling auth failure - clearing tokens');
+    
+    // Disconnect WebSocket
+    SessionManager().disconnectSocket();
+    
     await _tokenStorage.clearAll();
     await Supabase.instance.client.auth.signOut();
     if (mounted) {

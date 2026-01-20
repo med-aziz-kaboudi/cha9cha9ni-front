@@ -549,4 +549,105 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get phoneNumberAlreadyInUse => 'رقم الهاتف هذا مستخدم بالفعل';
+
+  @override
+  String get addMember => 'إضافة عضو';
+
+  @override
+  String get shareInviteCodeDesc =>
+      'شارك هذا الرمز مع أحد أفراد عائلتك لإضافته';
+
+  @override
+  String get copy => 'نسخ';
+
+  @override
+  String get noMembersYet => 'لا يوجد أعضاء بعد';
+
+  @override
+  String get tapAddMemberToInvite => 'اضغط على \"إضافة عضو\" لدعوة عائلتك';
+
+  @override
+  String get removeMember => 'إزالة العضو';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'هل أنت متأكد أنك تريد إزالة $name من العائلة؟';
+  }
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String get confirmRemoval => 'تأكيد الإزالة';
+
+  @override
+  String get enterCodeSentToEmail =>
+      'أدخل رمز التحقق المرسل إلى بريدك الإلكتروني';
+
+  @override
+  String get enterValidCode => 'أدخل رمزًا صالحًا مكونًا من 6 أرقام';
+
+  @override
+  String removalInitiated(String name) {
+    return 'تم إرسال طلب الإزالة إلى $name';
+  }
+
+  @override
+  String get acceptRemoval => 'قبول الإزالة';
+
+  @override
+  String acceptRemovalConfirm(String name) {
+    return '$name يريد إزالتك من العائلة. هل توافق؟';
+  }
+
+  @override
+  String get decline => 'رفض';
+
+  @override
+  String get accept => 'قبول';
+
+  @override
+  String get confirmLeave => 'تأكيد المغادرة';
+
+  @override
+  String get removedFromFamily => 'تمت الإزالة من العائلة';
+
+  @override
+  String get removedFromFamilyDesc =>
+      'تمت إزالتك من العائلة بنجاح. يمكنك الآن الانضمام أو إنشاء عائلة جديدة.';
+
+  @override
+  String get removalRequestTitle => 'طلب إزالة';
+
+  @override
+  String removalRequestDesc(String name) {
+    return '$name يريد إزالتك من العائلة.';
+  }
+
+  @override
+  String get viewRequest => 'عرض الطلب';
+
+  @override
+  String get verificationCodeWillBeSent =>
+      'سيتم إرسال رمز التحقق إلى بريدك الإلكتروني';
+
+  @override
+  String get pendingRemovalRequests => 'طلبات الإزالة المعلقة';
+
+  @override
+  String get cancelRemovalRequest => 'إلغاء الطلب';
+
+  @override
+  String cancelRemovalConfirm(String name) {
+    return 'هل أنت متأكد أنك تريد إلغاء طلب الإزالة لـ $name؟';
+  }
+
+  @override
+  String get removalCancelled => 'تم إلغاء طلب الإزالة';
+
+  @override
+  String get waitingForMemberConfirmation => 'في انتظار تأكيد العضو';
+
+  @override
+  String get pendingRemoval => 'معلق';
 }

@@ -1107,6 +1107,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This phone number is already in use'**
   String get phoneNumberAlreadyInUse;
+
+  /// No description provided for @addMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Member'**
+  String get addMember;
+
+  /// No description provided for @shareInviteCodeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with your family member to add them'**
+  String get shareInviteCodeDesc;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @noMembersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No members yet'**
+  String get noMembersYet;
+
+  /// No description provided for @tapAddMemberToInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Add Member\" to invite your family'**
+  String get tapAddMemberToInvite;
+
+  /// No description provided for @removeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Member'**
+  String get removeMember;
+
+  /// No description provided for @removeMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {name} from the family?'**
+  String removeMemberConfirm(String name);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @confirmRemoval.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Removal'**
+  String get confirmRemoval;
+
+  /// No description provided for @enterCodeSentToEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the verification code sent to your email'**
+  String get enterCodeSentToEmail;
+
+  /// No description provided for @enterValidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid 6-digit code'**
+  String get enterValidCode;
+
+  /// No description provided for @removalInitiated.
+  ///
+  /// In en, this message translates to:
+  /// **'Removal request sent to {name}'**
+  String removalInitiated(String name);
+
+  /// No description provided for @acceptRemoval.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Removal'**
+  String get acceptRemoval;
+
+  /// No description provided for @acceptRemovalConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to remove you from the family. Do you accept?'**
+  String acceptRemovalConfirm(String name);
+
+  /// No description provided for @decline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get decline;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @confirmLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Leave'**
+  String get confirmLeave;
+
+  /// No description provided for @removedFromFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from Family'**
+  String get removedFromFamily;
+
+  /// No description provided for @removedFromFamilyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have been successfully removed from the family. You can now join or create a new family.'**
+  String get removedFromFamilyDesc;
+
+  /// No description provided for @removalRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Removal Request'**
+  String get removalRequestTitle;
+
+  /// No description provided for @removalRequestDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to remove you from the family.'**
+  String removalRequestDesc(String name);
+
+  /// No description provided for @viewRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'View Request'**
+  String get viewRequest;
+
+  /// No description provided for @verificationCodeWillBeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code will be sent to your email'**
+  String get verificationCodeWillBeSent;
+
+  /// No description provided for @pendingRemovalRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Removal Requests'**
+  String get pendingRemovalRequests;
+
+  /// No description provided for @cancelRemovalRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Request'**
+  String get cancelRemovalRequest;
+
+  /// No description provided for @cancelRemovalConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel the removal request for {name}?'**
+  String cancelRemovalConfirm(String name);
+
+  /// No description provided for @removalCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Removal request cancelled'**
+  String get removalCancelled;
+
+  /// No description provided for @waitingForMemberConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for member confirmation'**
+  String get waitingForMemberConfirmation;
+
+  /// No description provided for @pendingRemoval.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pendingRemoval;
 }
 
 class _AppLocalizationsDelegate

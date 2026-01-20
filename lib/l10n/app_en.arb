@@ -216,5 +216,69 @@
   "confirmChange": "Confirm Change",
   "emailUpdatedSuccessfully": "Email updated successfully!",
   "phoneNumberMustBe8Digits": "Phone number must be exactly 8 digits",
-  "phoneNumberAlreadyInUse": "This phone number is already in use"
+  "phoneNumberAlreadyInUse": "This phone number is already in use",
+  "addMember": "Add Member",
+  "shareInviteCodeDesc": "Share this code with your family member to add them",
+  "copy": "Copy",
+  "noMembersYet": "No members yet",
+  "tapAddMemberToInvite": "Tap \"Add Member\" to invite your family",
+  "removeMember": "Remove Member",
+  "removeMemberConfirm": "Are you sure you want to remove {name} from the family?",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "Remove",
+  "confirmRemoval": "Confirm Removal",
+  "enterCodeSentToEmail": "Enter the verification code sent to your email",
+  "enterValidCode": "Enter a valid 6-digit code",
+  "removalInitiated": "Removal request sent to {name}",
+  "@removalInitiated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptRemoval": "Accept Removal",
+  "acceptRemovalConfirm": "{name} wants to remove you from the family. Do you accept?",
+  "@acceptRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "decline": "Decline",
+  "accept": "Accept",
+  "confirmLeave": "Confirm Leave",
+  "removedFromFamily": "Removed from Family",
+  "removedFromFamilyDesc": "You have been successfully removed from the family. You can now join or create a new family.",
+  "removalRequestTitle": "Removal Request",
+  "removalRequestDesc": "{name} wants to remove you from the family.",
+  "@removalRequestDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewRequest": "View Request",
+  "verificationCodeWillBeSent": "A verification code will be sent to your email",
+  "pendingRemovalRequests": "Pending Removal Requests",
+  "cancelRemovalRequest": "Cancel Request",
+  "cancelRemovalConfirm": "Are you sure you want to cancel the removal request for {name}?",
+  "@cancelRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removalCancelled": "Removal request cancelled",
+  "waitingForMemberConfirmation": "Waiting for member confirmation",
+  "pendingRemoval": "Pending"
 }

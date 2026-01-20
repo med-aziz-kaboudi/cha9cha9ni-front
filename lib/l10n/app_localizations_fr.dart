@@ -556,4 +556,107 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get phoneNumberAlreadyInUse =>
       'Ce numéro de téléphone est déjà utilisé';
+
+  @override
+  String get addMember => 'Ajouter un Membre';
+
+  @override
+  String get shareInviteCodeDesc =>
+      'Partagez ce code avec votre membre de famille pour l\'ajouter';
+
+  @override
+  String get copy => 'Copier';
+
+  @override
+  String get noMembersYet => 'Pas encore de membres';
+
+  @override
+  String get tapAddMemberToInvite =>
+      'Appuyez sur \"Ajouter un Membre\" pour inviter votre famille';
+
+  @override
+  String get removeMember => 'Supprimer le Membre';
+
+  @override
+  String removeMemberConfirm(String name) {
+    return 'Êtes-vous sûr de vouloir supprimer $name de la famille ?';
+  }
+
+  @override
+  String get remove => 'Supprimer';
+
+  @override
+  String get confirmRemoval => 'Confirmer la Suppression';
+
+  @override
+  String get enterCodeSentToEmail =>
+      'Entrez le code de vérification envoyé à votre email';
+
+  @override
+  String get enterValidCode => 'Entrez un code à 6 chiffres valide';
+
+  @override
+  String removalInitiated(String name) {
+    return 'Demande de suppression envoyée à $name';
+  }
+
+  @override
+  String get acceptRemoval => 'Accepter la Suppression';
+
+  @override
+  String acceptRemovalConfirm(String name) {
+    return '$name souhaite vous retirer de la famille. Acceptez-vous ?';
+  }
+
+  @override
+  String get decline => 'Refuser';
+
+  @override
+  String get accept => 'Accepter';
+
+  @override
+  String get confirmLeave => 'Confirmer le Départ';
+
+  @override
+  String get removedFromFamily => 'Retiré de la Famille';
+
+  @override
+  String get removedFromFamilyDesc =>
+      'Vous avez été retiré de la famille avec succès. Vous pouvez maintenant rejoindre ou créer une nouvelle famille.';
+
+  @override
+  String get removalRequestTitle => 'Demande de Suppression';
+
+  @override
+  String removalRequestDesc(String name) {
+    return '$name souhaite vous retirer de la famille.';
+  }
+
+  @override
+  String get viewRequest => 'Voir la Demande';
+
+  @override
+  String get verificationCodeWillBeSent =>
+      'Un code de vérification sera envoyé à votre email';
+
+  @override
+  String get pendingRemovalRequests => 'Demandes de Suppression en Attente';
+
+  @override
+  String get cancelRemovalRequest => 'Annuler la Demande';
+
+  @override
+  String cancelRemovalConfirm(String name) {
+    return 'Êtes-vous sûr de vouloir annuler la demande de suppression pour $name ?';
+  }
+
+  @override
+  String get removalCancelled => 'Demande de suppression annulée';
+
+  @override
+  String get waitingForMemberConfirmation =>
+      'En attente de la confirmation du membre';
+
+  @override
+  String get pendingRemoval => 'En attente';
 }

@@ -202,5 +202,69 @@
   "confirmChange": "تأكيد التغيير",
   "emailUpdatedSuccessfully": "تم تحديث البريد الإلكتروني بنجاح!",
   "phoneNumberMustBe8Digits": "يجب أن يتكون رقم الهاتف من 8 أرقام بالضبط",
-  "phoneNumberAlreadyInUse": "رقم الهاتف هذا مستخدم بالفعل"
+  "phoneNumberAlreadyInUse": "رقم الهاتف هذا مستخدم بالفعل",
+  "addMember": "إضافة عضو",
+  "shareInviteCodeDesc": "شارك هذا الرمز مع أحد أفراد عائلتك لإضافته",
+  "copy": "نسخ",
+  "noMembersYet": "لا يوجد أعضاء بعد",
+  "tapAddMemberToInvite": "اضغط على \"إضافة عضو\" لدعوة عائلتك",
+  "removeMember": "إزالة العضو",
+  "removeMemberConfirm": "هل أنت متأكد أنك تريد إزالة {name} من العائلة؟",
+  "@removeMemberConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "إزالة",
+  "confirmRemoval": "تأكيد الإزالة",
+  "enterCodeSentToEmail": "أدخل رمز التحقق المرسل إلى بريدك الإلكتروني",
+  "enterValidCode": "أدخل رمزًا صالحًا مكونًا من 6 أرقام",
+  "removalInitiated": "تم إرسال طلب الإزالة إلى {name}",
+  "@removalInitiated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptRemoval": "قبول الإزالة",
+  "acceptRemovalConfirm": "{name} يريد إزالتك من العائلة. هل توافق؟",
+  "@acceptRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "decline": "رفض",
+  "accept": "قبول",
+  "confirmLeave": "تأكيد المغادرة",
+  "removedFromFamily": "تمت الإزالة من العائلة",
+  "removedFromFamilyDesc": "تمت إزالتك من العائلة بنجاح. يمكنك الآن الانضمام أو إنشاء عائلة جديدة.",
+  "removalRequestTitle": "طلب إزالة",
+  "removalRequestDesc": "{name} يريد إزالتك من العائلة.",
+  "@removalRequestDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewRequest": "عرض الطلب",
+  "verificationCodeWillBeSent": "سيتم إرسال رمز التحقق إلى بريدك الإلكتروني",
+  "pendingRemovalRequests": "طلبات الإزالة المعلقة",
+  "cancelRemovalRequest": "إلغاء الطلب",
+  "cancelRemovalConfirm": "هل أنت متأكد أنك تريد إلغاء طلب الإزالة لـ {name}؟",
+  "@cancelRemovalConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removalCancelled": "تم إلغاء طلب الإزالة",
+  "waitingForMemberConfirmation": "في انتظار تأكيد العضو",
+  "pendingRemoval": "معلق"
 }

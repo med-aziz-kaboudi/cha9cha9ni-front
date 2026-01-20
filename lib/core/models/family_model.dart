@@ -1,3 +1,47 @@
+class FamilyMember {
+  final String id;
+  final String name;
+  final String email;
+  final bool isOwner;
+  final bool hasPendingRemoval;
+  final String? pendingRemovalRequestId;
+  final String? pendingRemovalStatus;
+
+  FamilyMember({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.isOwner,
+    this.hasPendingRemoval = false,
+    this.pendingRemovalRequestId,
+    this.pendingRemovalStatus,
+  });
+
+  factory FamilyMember.fromJson(Map<String, dynamic> json) {
+    return FamilyMember(
+      id: json['id'] as String,
+      name: json['name'] as String? ?? json['email'] as String,
+      email: json['email'] as String,
+      isOwner: json['isOwner'] as bool? ?? false,
+      hasPendingRemoval: json['hasPendingRemoval'] as bool? ?? false,
+      pendingRemovalRequestId: json['pendingRemovalRequestId'] as String?,
+      pendingRemovalStatus: json['pendingRemovalStatus'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'isOwner': isOwner,
+      'hasPendingRemoval': hasPendingRemoval,
+      'pendingRemovalRequestId': pendingRemovalRequestId,
+      'pendingRemovalStatus': pendingRemovalStatus,
+    };
+  }
+}
+
 class FamilyModel {
   final String id;
   final String? name;
@@ -7,6 +51,7 @@ class FamilyModel {
   final DateTime? joinedAt;
   final String? ownerName;
   final int? memberCount;
+  final List<FamilyMember>? members;
 
   FamilyModel({
     required this.id,
@@ -17,6 +62,7 @@ class FamilyModel {
     this.joinedAt,
     this.ownerName,
     this.memberCount,
+    this.members,
   });
 
   factory FamilyModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +72,14 @@ class FamilyModel {
       ownerName = json['owner']['name'] as String?;
     } else if (json['ownerName'] != null) {
       ownerName = json['ownerName'] as String?;
+    }
+
+    // Parse members list
+    List<FamilyMember>? members;
+    if (json['members'] != null && json['members'] is List) {
+      members = (json['members'] as List)
+          .map((m) => FamilyMember.fromJson(m as Map<String, dynamic>))
+          .toList();
     }
     
     return FamilyModel(
@@ -41,6 +95,7 @@ class FamilyModel {
           : null,
       ownerName: ownerName,
       memberCount: json['memberCount'] as int?,
+      members: members,
     );
   }
 
@@ -54,7 +109,34 @@ class FamilyModel {
       'joinedAt': joinedAt?.toIso8601String(),
       'ownerName': ownerName,
       'memberCount': memberCount,
+      'members': members?.map((m) => m.toJson()).toList(),
     };
+  }
+}
+
+class RemovalRequest {
+  final String id;
+  final String familyId;
+  final String? familyName;
+  final String ownerName;
+  final DateTime createdAt;
+
+  RemovalRequest({
+    required this.id,
+    required this.familyId,
+    this.familyName,
+    required this.ownerName,
+    required this.createdAt,
+  });
+
+  factory RemovalRequest.fromJson(Map<String, dynamic> json) {
+    return RemovalRequest(
+      id: json['id'] as String,
+      familyId: json['familyId'] as String,
+      familyName: json['familyName'] as String?,
+      ownerName: json['ownerName'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
   }
 }
 

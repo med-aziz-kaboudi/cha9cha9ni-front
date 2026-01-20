@@ -204,6 +204,129 @@ class FamilyApiService {
     }
   }
 
+  // ==================== Member Removal Methods ====================
+
+  /// Owner initiates member removal - sends confirmation email to owner
+  Future<Map<String, dynamic>> initiateRemoval(String memberId) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/removal/initiate'),
+      headers: headers,
+      body: json.encode({'memberId': memberId}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to initiate removal');
+    }
+  }
+
+  /// Owner confirms removal with verification code
+  Future<Map<String, dynamic>> confirmOwnerRemoval(String requestId, String code) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/removal/confirm-owner'),
+      headers: headers,
+      body: json.encode({'requestId': requestId, 'code': code}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to confirm removal');
+    }
+  }
+
+  /// Get pending removal requests initiated by owner
+  Future<List<Map<String, dynamic>>> getOwnerRemovalRequests() async {
+    final headers = await _getHeaders();
+    
+    final response = await http.get(
+      Uri.parse('$_baseUrl/family/removal/owner-requests'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    } else {
+      return [];
+    }
+  }
+
+  /// Cancel a pending removal request (by owner)
+  Future<void> cancelRemoval(String requestId) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/family/removal/$requestId'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to cancel removal');
+    }
+  }
+
+  /// Get removal requests for a member
+  Future<List<RemovalRequest>> getMemberRemovalRequests() async {
+    final headers = await _getHeaders();
+    
+    final response = await http.get(
+      Uri.parse('$_baseUrl/family/removal/member-requests'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body) as List;
+      return data.map((r) => RemovalRequest.fromJson(r)).toList();
+    } else {
+      return [];
+    }
+  }
+
+  /// Member accepts removal - triggers verification code
+  Future<Map<String, dynamic>> acceptRemoval(String requestId) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/removal/accept'),
+      headers: headers,
+      body: json.encode({'requestId': requestId}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to accept removal');
+    }
+  }
+
+  /// Member confirms removal with verification code - removes from family
+  Future<Map<String, dynamic>> confirmMemberRemoval(String requestId, String code) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/removal/confirm-member'),
+      headers: headers,
+      body: json.encode({'requestId': requestId, 'code': code}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to confirm removal');
+    }
+  }
+
   /// Validate current session - lightweight API call to check if session is still valid
   /// Throws AuthenticationException if session is invalid
   Future<void> validateSession() async {

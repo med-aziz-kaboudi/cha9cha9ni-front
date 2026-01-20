@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/token_storage_service.dart';
-import '../../core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
+import '../../core/services/family_api_service.dart'
+    show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _loadDisplayName();
     _listenToSessionExpired();
+    // WebSocket handles real-time session invalidation via SessionManager
   }
 
   @override
@@ -53,7 +55,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   /// Listen to session expired events from any API call
   void _listenToSessionExpired() {
-    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((reason) {
+    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((
+      reason,
+    ) {
       if (mounted) {
         _showSessionExpiredDialog();
       }
@@ -76,24 +80,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Show dialog informing user another device logged in, then logout
   Future<void> _showSessionExpiredDialog() async {
     if (!mounted) return;
-    
+
     // Check if already handling to prevent duplicate dialogs
     if (_sessionManager.isHandlingExpiration) {
       // Already showing dialog from another source, skip
       debugPrint('⚠️ Session expired dialog already showing, skipping');
       return;
     }
-    
+
     // Mark as handling
     _sessionManager.markHandling();
-    
+
     // Store parent context for navigation after dialog closes
     final parentContext = context;
     bool hasLoggedOut = false;
-    
+
     // Auto logout timer - will logout after 3 seconds even if user doesn't click OK
     Timer? autoLogoutTimer;
-    
+
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -107,9 +111,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             _performSignOut(parentContext);
           }
         });
-        
+
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           elevation: 16,
           child: Container(
             padding: const EdgeInsets.all(24),
@@ -126,7 +132,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   height: 72,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.secondary.withOpacity(0.1),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -141,7 +150,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 const SizedBox(height: 20),
                 // Title
                 Text(
-                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ?? 'Session Expired',
+                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ??
+                      'Session Expired',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -152,8 +162,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 const SizedBox(height: 12),
                 // Message
                 Text(
-                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ?? 
-                    'Another device has logged into your account. You will be signed out for security.',
+                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ??
+                      'Another device has logged into your account. You will be signed out for security.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -198,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         );
       },
     );
-    
+
     // Clean up timer if dialog was dismissed another way
     autoLogoutTimer?.cancel();
   }
@@ -207,23 +217,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _performSignOut(BuildContext parentContext) async {
     debugPrint('🚪 Starting sign out process...');
     try {
+      // Disconnect WebSocket first
+      _sessionManager.disconnectSocket();
+      
       await _tokenStorage.clearTokens();
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
-      
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
         debugPrint('✅ Supabase signed out');
       }
-      
+
       // Reset session manager flag for next login
       _sessionManager.resetHandlingFlag();
-      
+
       debugPrint('🔄 Attempting navigation to SignInScreen...');
       debugPrint('   parentContext.mounted = ${parentContext.mounted}');
-      
+
       if (parentContext.mounted) {
         Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -272,16 +285,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       // Clear backend tokens and user profile
       await _tokenStorage.clearTokens();
-      
+
       // Clear any pending verification
       await PendingVerificationHelper.clear();
-      
+
       // Sign out from Supabase (if there's a session)
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
       }
-      
+
       // Navigate to sign in screen and clear all routes
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
@@ -300,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {
       _currentNavIndex = index;
     });
-    
+
     // Handle navigation based on index
     switch (index) {
       case 0:
@@ -308,11 +321,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         break;
       case 1:
         // Center button - Add your scan/action logic here
-        AppToast.comingSoon(context, AppLocalizations.of(context)!.scanButtonTapped);
+        AppToast.comingSoon(
+          context,
+          AppLocalizations.of(context)!.scanButtonTapped,
+        );
         break;
       case 2:
         // Reward - Navigate to rewards screen
-        AppToast.comingSoon(context, AppLocalizations.of(context)!.rewardScreenComingSoon);
+        AppToast.comingSoon(
+          context,
+          AppLocalizations.of(context)!.rewardScreenComingSoon,
+        );
         break;
     }
   }
@@ -344,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 60),
-                
+
                 // Welcome text
                 Text(
                   'Welcome!',
@@ -352,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // User name
                 Text(
                   _displayName,
@@ -363,7 +382,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 60),
-                
+
                 // Sign out button
                 GestureDetector(
                   onTap: () => _handleSignOut(context),
@@ -377,10 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ),
                     child: Center(
-                      child: Text(
-                        'Sign Out',
-                        style: AppTextStyles.bodyMedium,
-                      ),
+                      child: Text('Sign Out', style: AppTextStyles.bodyMedium),
                     ),
                   ),
                 ),

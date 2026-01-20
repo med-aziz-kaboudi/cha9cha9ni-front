@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/models/family_model.dart';
 import '../../core/services/token_storage_service.dart';
-import '../../core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
+import '../../core/services/family_api_service.dart'
+    show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
@@ -22,7 +25,8 @@ class FamilyOwnerHomeScreen extends StatefulWidget {
   State<FamilyOwnerHomeScreen> createState() => _FamilyOwnerHomeScreenState();
 }
 
-class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with WidgetsBindingObserver {
+class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
+    with WidgetsBindingObserver {
   // ignore: unused_field
   String _displayName = 'Loading...';
   // ignore: unused_field
@@ -35,7 +39,15 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   int _currentNavIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   StreamSubscription<String>? _sessionExpiredSubscription;
-  
+
+  // Family members state
+  List<FamilyMember> _familyMembers = [];
+  bool _isLoadingMembers = true;
+
+  // Removal state
+  String? _pendingRemovalRequestId;
+  bool _isRemovingMember = false;
+
   // Tutorial keys
   bool _showTutorial = false;
   final GlobalKey _sidebarKey = GlobalKey();
@@ -53,6 +65,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
     _listenToSessionExpired();
+    // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
   }
 
@@ -87,7 +100,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
 
   /// Listen to session expired events from any API call
   void _listenToSessionExpired() {
-    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((reason) {
+    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((
+      reason,
+    ) {
       if (mounted) {
         _showSessionExpiredDialog();
       }
@@ -110,24 +125,24 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   /// Show dialog informing user another device logged in, then logout
   Future<void> _showSessionExpiredDialog() async {
     if (!mounted) return;
-    
+
     // Check if already handling to prevent duplicate dialogs
     if (_sessionManager.isHandlingExpiration) {
       // Already showing dialog from another source, skip
       debugPrint('⚠️ Session expired dialog already showing, skipping');
       return;
     }
-    
+
     // Mark as handling
     _sessionManager.markHandling();
-    
+
     // Store parent context for navigation after dialog closes
     final parentContext = context;
     bool hasLoggedOut = false;
-    
+
     // Auto logout timer - will logout after 3 seconds even if user doesn't click OK
     Timer? autoLogoutTimer;
-    
+
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -141,9 +156,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
             _performSignOut(parentContext);
           }
         });
-        
+
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           elevation: 16,
           child: Container(
             padding: const EdgeInsets.all(24),
@@ -160,7 +177,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
                   height: 72,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      colors: [
+                        AppColors.primary.withOpacity(0.1),
+                        AppColors.secondary.withOpacity(0.1),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -175,7 +195,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
                 const SizedBox(height: 20),
                 // Title
                 Text(
-                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ?? 'Session Expired',
+                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ??
+                      'Session Expired',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -186,8 +207,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
                 const SizedBox(height: 12),
                 // Message
                 Text(
-                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ?? 
-                    'Another device has logged into your account. You will be signed out for security.',
+                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ??
+                      'Another device has logged into your account. You will be signed out for security.',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -232,7 +253,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
         );
       },
     );
-    
+
     // Clean up timer if dialog was dismissed another way
     autoLogoutTimer?.cancel();
   }
@@ -241,23 +262,26 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   Future<void> _performSignOut(BuildContext parentContext) async {
     debugPrint('🚪 Starting sign out process...');
     try {
+      // Disconnect WebSocket first
+      _sessionManager.disconnectSocket();
+      
       await _tokenStorage.clearTokens();
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
-      
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
         debugPrint('✅ Supabase signed out');
       }
-      
+
       // Reset session manager flag for next login
       _sessionManager.resetHandlingFlag();
-      
+
       debugPrint('🔄 Attempting navigation to SignInScreen...');
       debugPrint('   parentContext.mounted = ${parentContext.mounted}');
-      
+
       if (parentContext.mounted) {
         Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -296,10 +320,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   Future<void> _loadCachedDataFirst() async {
     // Load display name
     final name = await _tokenStorage.getUserDisplayName();
-    
+
     // Load cached family info first for instant display
     final cachedFamily = await _tokenStorage.getCachedFamilyInfo();
-    
+    final cachedMembers = await _tokenStorage.getCachedFamilyMembers();
+
     if (mounted) {
       setState(() {
         _displayName = name;
@@ -307,14 +332,22 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
           _inviteCode = cachedFamily['inviteCode'];
           _isLoadingCode = false;
         }
+        // Load cached members for instant display
+        if (cachedMembers.isNotEmpty) {
+          _familyMembers = cachedMembers
+              .map((m) => FamilyMember.fromJson(m))
+              .toList();
+          _isLoadingMembers = false;
+        }
       });
     }
-    
-    // Then refresh from API in background
-    _refreshInviteCode();
+
+    // Then refresh from API in background (silently)
+    _refreshFamilyDataSilently();
   }
 
-  Future<void> _refreshInviteCode() async {
+  /// Refresh family data silently without showing loading states
+  Future<void> _refreshFamilyDataSilently() async {
     try {
       final family = await _familyApiService.getMyFamily();
       if (mounted && family != null) {
@@ -326,10 +359,70 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
           isOwner: family.isOwner,
           inviteCode: family.inviteCode,
         );
-        
+
+        // Cache members as JSON
+        if (family.members != null) {
+          await _tokenStorage.saveFamilyMembers(
+            family.members!.map((m) => m.toJson()).toList(),
+          );
+        }
+
         setState(() {
           _inviteCode = family.inviteCode;
           _isLoadingCode = false;
+          _familyMembers = family.members ?? [];
+          _isLoadingMembers = false;
+        });
+      }
+    } on AuthenticationException catch (e) {
+      // Authentication failed - user needs to re-login
+      debugPrint('🚫 Authentication failed in owner home: $e');
+      if (mounted) {
+        await _handleSignOut(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        // Only update loading state if we don't have cached data
+        if (_familyMembers.isEmpty) {
+          setState(() {
+            _isLoadingCode = false;
+            _isLoadingMembers = false;
+          });
+        }
+        // Check if it's an auth error
+        if (e.toString().contains('Session expired') ||
+            e.toString().contains('Session invalidated')) {
+          await _handleSignOut(context);
+        }
+      }
+    }
+  }
+
+  Future<void> _refreshFamilyData() async {
+    try {
+      final family = await _familyApiService.getMyFamily();
+      if (mounted && family != null) {
+        // Save to cache for next time
+        await _tokenStorage.saveFamilyInfo(
+          familyName: family.name,
+          ownerName: family.ownerName,
+          memberCount: family.memberCount,
+          isOwner: family.isOwner,
+          inviteCode: family.inviteCode,
+        );
+
+        // Cache members as JSON
+        if (family.members != null) {
+          await _tokenStorage.saveFamilyMembers(
+            family.members!.map((m) => m.toJson()).toList(),
+          );
+        }
+
+        setState(() {
+          _inviteCode = family.inviteCode;
+          _isLoadingCode = false;
+          _familyMembers = family.members ?? [];
+          _isLoadingMembers = false;
         });
       }
     } on AuthenticationException catch (e) {
@@ -342,9 +435,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
       if (mounted) {
         setState(() {
           _isLoadingCode = false;
+          _isLoadingMembers = false;
         });
         // Check if it's an auth error
-        if (e.toString().contains('Session expired') || 
+        if (e.toString().contains('Session expired') ||
             e.toString().contains('Session invalidated')) {
           await _handleSignOut(context);
         }
@@ -356,12 +450,12 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
     try {
       await _tokenStorage.clearTokens();
       await PendingVerificationHelper.clear();
-      
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
       }
-      
+
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -379,15 +473,21 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
     setState(() {
       _currentNavIndex = index;
     });
-    
+
     switch (index) {
       case 0:
         break;
       case 1:
-        AppToast.comingSoon(context, AppLocalizations.of(context)!.scanButtonTapped);
+        AppToast.comingSoon(
+          context,
+          AppLocalizations.of(context)!.scanButtonTapped,
+        );
         break;
       case 2:
-        AppToast.comingSoon(context, AppLocalizations.of(context)!.rewardScreenComingSoon);
+        AppToast.comingSoon(
+          context,
+          AppLocalizations.of(context)!.rewardScreenComingSoon,
+        );
         break;
     }
   }
@@ -401,13 +501,690 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   void _copyInviteCode() {
     if (_inviteCode != null) {
       // Clipboard.setData(ClipboardData(text: _inviteCode!));
-      AppToast.success(context, AppLocalizations.of(context)!.inviteCodeCopiedToClipboard);
+      AppToast.success(
+        context,
+        AppLocalizations.of(context)!.inviteCodeCopiedToClipboard,
+      );
     }
+  }
+
+  /// Show dialog with invite code for adding new members
+  void _showAddMemberDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.group_add_rounded,
+                  color: AppColors.secondary,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Title
+              Text(
+                AppLocalizations.of(dialogContext)?.addMember ?? 'Add Member',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Description
+              Text(
+                AppLocalizations.of(dialogContext)?.shareInviteCodeDesc ??
+                    'Share this code with your family member to add them',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              // Invite code container
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 20,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: _isLoadingCode
+                    ? const Center(child: CircularProgressIndicator())
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _inviteCode ?? '------',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              letterSpacing: 4,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          IconButton(
+                            onPressed: () {
+                              if (_inviteCode != null) {
+                                Clipboard.setData(
+                                  ClipboardData(text: _inviteCode!),
+                                );
+                                AppToast.success(
+                                  dialogContext,
+                                  AppLocalizations.of(
+                                        dialogContext,
+                                      )?.inviteCodeCopiedToClipboard ??
+                                      'Invite code copied!',
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.copy_rounded,
+                              color: AppColors.primary,
+                            ),
+                            tooltip:
+                                AppLocalizations.of(dialogContext)?.copy ??
+                                'Copy',
+                          ),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 24),
+              // Close button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey[300]!),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(dialogContext)?.close ?? 'Close',
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Initiate member removal process
+  Future<void> _initiateRemoval(FamilyMember member) async {
+    // Show professional confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 16,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Warning Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFFFEBC11).withOpacity(0.2),
+                      const Color(0xFFFF9500).withOpacity(0.2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_remove_rounded,
+                  color: Color(0xFFFF9500),
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Title
+              Text(
+                AppLocalizations.of(dialogContext)?.removeMember ??
+                    'Remove Member',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF23233F),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Member Avatar & Name
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.secondary.withOpacity(0.2),
+                            AppColors.primary.withOpacity(0.2),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          member.name.isNotEmpty
+                              ? member.name[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            color: AppColors.secondary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          member.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF23233F),
+                          ),
+                        ),
+                        Text(
+                          member.email,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Description
+              Text(
+                AppLocalizations.of(
+                      dialogContext,
+                    )?.removeMemberConfirm(member.name) ??
+                    'Are you sure you want to remove ${member.name} from the family?',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+
+              // Info note
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[700], size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        AppLocalizations.of(
+                              dialogContext,
+                            )?.verificationCodeWillBeSent ??
+                            'A verification code will be sent to your email',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey[700],
+                          side: BorderSide(color: Colors.grey[300]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(dialogContext)?.cancel ??
+                              'Cancel',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF9500),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          AppLocalizations.of(dialogContext)?.remove ??
+                              'Remove',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isRemovingMember = true);
+
+    try {
+      final result = await _familyApiService.initiateRemoval(member.id);
+      _pendingRemovalRequestId = result['requestId'];
+
+      if (mounted) {
+        setState(() => _isRemovingMember = false);
+        _showOwnerVerificationDialog(member);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isRemovingMember = false);
+        final errorMsg = e.toString().replaceAll('Exception: ', '');
+
+        // Check if there's already a pending request - show cancel dialog instead
+        if (errorMsg.toLowerCase().contains('already pending') ||
+            errorMsg.toLowerCase().contains('pending request')) {
+          // Fetch the pending request ID and show cancel dialog
+          await _fetchAndShowCancelDialog(member);
+        } else {
+          AppToast.error(context, errorMsg);
+        }
+      }
+    }
+  }
+
+  /// Fetch pending removal request and show cancel dialog
+  Future<void> _fetchAndShowCancelDialog(FamilyMember member) async {
+    try {
+      // Get pending removal requests to find this member's request
+      final requests = await _familyApiService.getOwnerRemovalRequests();
+      final memberRequest = requests.firstWhere(
+        (r) => r['memberId'] == member.id,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (memberRequest.isNotEmpty && memberRequest['id'] != null) {
+        // Create a new FamilyMember with pending removal info
+        final memberWithPending = FamilyMember(
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          isOwner: member.isOwner,
+          hasPendingRemoval: true,
+          pendingRemovalRequestId: memberRequest['id'],
+          pendingRemovalStatus: memberRequest['status'],
+        );
+        _showCancelRemovalDialog(memberWithPending);
+      } else {
+        // Refresh to get updated state
+        _refreshFamilyData();
+      }
+    } catch (e) {
+      // Just refresh the family data
+      _refreshFamilyData();
+    }
+  }
+
+  /// Show dialog for owner to enter verification code
+  void _showOwnerVerificationDialog(FamilyMember member) {
+    final memberName = member.name;
+    final codeController = TextEditingController();
+    bool isVerifying = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          elevation: 16,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Email Icon with animation feel
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.15),
+                        AppColors.secondary.withOpacity(0.15),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.mark_email_unread_rounded,
+                    color: AppColors.primary,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  AppLocalizations.of(dialogContext)?.confirmRemoval ??
+                      'Confirm Removal',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF23233F),
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Subtitle
+                Text(
+                  AppLocalizations.of(dialogContext)?.enterCodeSentToEmail ??
+                      'Enter the verification code sent to your email',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // Code Input Field
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: TextField(
+                    controller: codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 12,
+                      color: Color(0xFF23233F),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '••••••',
+                      hintStyle: TextStyle(
+                        fontSize: 28,
+                        letterSpacing: 12,
+                        color: Colors.grey[300],
+                      ),
+                      counterText: '',
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            if (_pendingRemovalRequestId != null) {
+                              _familyApiService.cancelRemoval(
+                                _pendingRemovalRequestId!,
+                              );
+                            }
+                            Navigator.pop(dialogContext);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey[700],
+                            side: BorderSide(color: Colors.grey[300]!),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            AppLocalizations.of(dialogContext)?.cancel ??
+                                'Cancel',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: isVerifying
+                              ? null
+                              : () async {
+                                  if (codeController.text.length != 6) {
+                                    AppToast.error(
+                                      dialogContext,
+                                      AppLocalizations.of(
+                                            dialogContext,
+                                          )?.enterValidCode ??
+                                          'Enter a valid 6-digit code',
+                                    );
+                                    return;
+                                  }
+
+                                  setDialogState(() => isVerifying = true);
+
+                                  try {
+                                    await _familyApiService.confirmOwnerRemoval(
+                                      _pendingRemovalRequestId!,
+                                      codeController.text,
+                                    );
+
+                                    if (mounted) {
+                                      Navigator.pop(dialogContext);
+
+                                      // OPTIMISTIC UPDATE: Update member status immediately
+                                      setState(() {
+                                        _familyMembers = _familyMembers.map((
+                                          m,
+                                        ) {
+                                          if (m.id == member.id) {
+                                            return FamilyMember(
+                                              id: m.id,
+                                              name: m.name,
+                                              email: m.email,
+                                              isOwner: m.isOwner,
+                                              hasPendingRemoval: true,
+                                              pendingRemovalRequestId:
+                                                  _pendingRemovalRequestId,
+                                              pendingRemovalStatus:
+                                                  'owner_confirmed',
+                                            );
+                                          }
+                                          return m;
+                                        }).toList();
+                                      });
+
+                                      // Update cache
+                                      _tokenStorage.updateMemberPendingStatus(
+                                        memberId: member.id,
+                                        hasPendingRemoval: true,
+                                        pendingRemovalRequestId:
+                                            _pendingRemovalRequestId,
+                                        pendingRemovalStatus: 'owner_confirmed',
+                                      );
+
+                                      AppToast.success(
+                                        context,
+                                        AppLocalizations.of(
+                                              context,
+                                            )?.removalInitiated(memberName) ??
+                                            'Removal request sent to $memberName',
+                                      );
+
+                                      // Silently sync with server
+                                      _refreshFamilyDataSilently();
+                                    }
+                                  } catch (e) {
+                                    setDialogState(() => isVerifying = false);
+                                    if (mounted) {
+                                      AppToast.error(
+                                        dialogContext,
+                                        e.toString().replaceAll(
+                                          'Exception: ',
+                                          '',
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: isVerifying
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  AppLocalizations.of(dialogContext)?.verify ??
+                                      'Verify',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    
     return Stack(
       children: [
         Scaffold(
@@ -422,7 +1199,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
               );
             },
             onCurrentPack: () {
@@ -453,109 +1232,132 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  // Space for the fixed header
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.32),
-                  
-                  // Next Withdrawal Card
-                  _buildNextWithdrawalCard(context),
-                
-                  const SizedBox(height: 24),
-                  
-                  // Family Members Section
-                  _buildFamilyMembersSection(context),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Recent Activities Section
-                  _buildRecentActivitiesSection(context),
-                  
-                  // Bottom padding for nav bar
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
-          ),
-          
-          // Fixed Header on top - doesn't move
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: HomeHeaderWidget(
-              onTopUp: () {},
-              onWithdraw: () {},
-              onStatement: () {},
-              onNotification: () => _handleNotificationTap(context),
-              notificationCount: 3, // TODO: Replace with actual notification count
-              topUpKey: _topUpKey,
-              withdrawKey: _withdrawKey,
-              statementKey: _statementKey,
-              pointsKey: _pointsKey,
-              notificationKey: _notificationKey,
-            ),
-          ),
-          
-          // Drawer handle - positioned at top (RTL aware)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 60,
-            left: Directionality.of(context) == TextDirection.rtl ? null : 0,
-            right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
-            child: GestureDetector(
-              key: _sidebarKey,
-              onTap: () => _scaffoldKey.currentState?.openDrawer(),
-              child: Container(
-                width: 24,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.only(
-                    topRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(24),
-                    bottomRight: Directionality.of(context) == TextDirection.rtl ? Radius.zero : const Radius.circular(24),
-                    topLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(24) : Radius.zero,
-                    bottomLeft: Directionality.of(context) == TextDirection.rtl ? const Radius.circular(24) : Radius.zero,
+                      // Space for the fixed header
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.32,
+                      ),
+
+                      // Next Withdrawal Card
+                      _buildNextWithdrawalCard(context),
+
+                      const SizedBox(height: 24),
+
+                      // Family Members Section
+                      _buildFamilyMembersSection(context),
+
+                      const SizedBox(height: 24),
+
+                      // Recent Activities Section
+                      _buildRecentActivitiesSection(context),
+
+                      // Bottom padding for nav bar
+                      const SizedBox(height: 100),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.secondary.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: Directionality.of(context) == TextDirection.rtl ? const Offset(-2, 0) : const Offset(2, 0),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
-                  color: Colors.white,
-                  size: 18,
                 ),
               ),
-            ),
+
+              // Fixed Header on top - doesn't move
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: HomeHeaderWidget(
+                  onTopUp: () {},
+                  onWithdraw: () {},
+                  onStatement: () {},
+                  onNotification: () => _handleNotificationTap(context),
+                  notificationCount:
+                      3, // TODO: Replace with actual notification count
+                  topUpKey: _topUpKey,
+                  withdrawKey: _withdrawKey,
+                  statementKey: _statementKey,
+                  pointsKey: _pointsKey,
+                  notificationKey: _notificationKey,
+                ),
+              ),
+
+              // Drawer handle - positioned at top (RTL aware)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 60,
+                left: Directionality.of(context) == TextDirection.rtl
+                    ? null
+                    : 0,
+                right: Directionality.of(context) == TextDirection.rtl
+                    ? 0
+                    : null,
+                child: GestureDetector(
+                  key: _sidebarKey,
+                  onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  child: Container(
+                    width: 24,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.only(
+                        topRight:
+                            Directionality.of(context) == TextDirection.rtl
+                            ? Radius.zero
+                            : const Radius.circular(24),
+                        bottomRight:
+                            Directionality.of(context) == TextDirection.rtl
+                            ? Radius.zero
+                            : const Radius.circular(24),
+                        topLeft: Directionality.of(context) == TextDirection.rtl
+                            ? const Radius.circular(24)
+                            : Radius.zero,
+                        bottomLeft:
+                            Directionality.of(context) == TextDirection.rtl
+                            ? const Radius.circular(24)
+                            : Radius.zero,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.secondary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset:
+                              Directionality.of(context) == TextDirection.rtl
+                              ? const Offset(-2, 0)
+                              : const Offset(2, 0),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_left
+                          : Icons.chevron_right,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: _currentNavIndex,
-        onTap: _onNavBarTap,
-        qrCodeKey: _qrCodeKey,
-        rewardKey: _rewardKey,
-      ),
-    ),
-    // Tutorial overlay
-    if (_showTutorial)
-      TutorialOverlay(
-        steps: _buildTutorialSteps(),
-        onComplete: () {
-          setState(() {
-            _showTutorial = false;
-          });
-        },
-        onSkip: () {
-          setState(() {
-            _showTutorial = false;
-          });
-        },
-      ),
-    ],
-  );
+          bottomNavigationBar: CustomBottomNavBar(
+            currentIndex: _currentNavIndex,
+            onTap: _onNavBarTap,
+            qrCodeKey: _qrCodeKey,
+            rewardKey: _rewardKey,
+          ),
+        ),
+        // Tutorial overlay
+        if (_showTutorial)
+          TutorialOverlay(
+            steps: _buildTutorialSteps(),
+            onComplete: () {
+              setState(() {
+                _showTutorial = false;
+              });
+            },
+            onSkip: () {
+              setState(() {
+                _showTutorial = false;
+              });
+            },
+          ),
+      ],
+    );
   }
 
   List<TutorialStep> _buildTutorialSteps() {
@@ -674,7 +1476,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
               ),
             ),
             Icon(
-              Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+              Directionality.of(context) == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
               color: const Color(0xFF13123A),
             ),
           ],
@@ -701,104 +1505,517 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
                 ),
               ),
               GestureDetector(
-                onTap: () {},
-                child: Text(
-                  AppLocalizations.of(context)!.manage,
-                  style: const TextStyle(
-                    color: Color(0xFFEE3764),
-                    fontSize: 14,
-                    fontFamily: 'Nunito Sans',
-                    fontWeight: FontWeight.w400,
+                onTap: _showAddMemberDialog,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.person_add_rounded,
+                        color: AppColors.secondary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        AppLocalizations.of(context)?.addMember ?? 'Add Member',
+                        style: const TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 14,
+                          fontFamily: 'Nunito Sans',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFamilyMemberAvatar('John'),
-                const SizedBox(width: 20),
-                _buildFamilyMemberAvatar('Loui William'),
-                const SizedBox(width: 20),
-                _buildFamilyMemberAvatar('Hannahsx'),
-                const SizedBox(width: 20),
-                _buildFamilyMemberAvatar('Leahaed'),
-              ],
+          if (_isLoadingMembers)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_familyMembers.where((m) => !m.isOwner).isEmpty)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.group_outlined, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context)?.noMembersYet ??
+                        'No members yet',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppLocalizations.of(context)?.tapAddMemberToInvite ??
+                        'Tap "Add Member" to invite your family',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  ..._familyMembers
+                      .where((m) => !m.isOwner)
+                      .take(4)
+                      .map(
+                        (member) => Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: _buildFamilyMemberAvatar(member),
+                        ),
+                      ),
+                ],
+              ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFamilyMemberAvatar(FamilyMember member) {
+    final hasPendingRemoval = member.hasPendingRemoval;
+
+    return GestureDetector(
+      onTap: _isRemovingMember ? null : () => _handleMemberTap(member),
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              // Main avatar container - highlighted if pending removal
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: hasPendingRemoval
+                        ? [
+                            AppColors.primary.withOpacity(0.2),
+                            AppColors.primary.withOpacity(0.3),
+                          ]
+                        : [
+                            AppColors.secondary.withOpacity(0.1),
+                            AppColors.primary.withOpacity(0.1),
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: hasPendingRemoval
+                        ? AppColors.primary
+                        : AppColors.secondary.withOpacity(0.3),
+                    width: hasPendingRemoval ? 3 : 2,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      color: hasPendingRemoval
+                          ? AppColors.primary
+                          : AppColors.secondary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              // Badge - X for remove, check for cancel
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _isRemovingMember
+                        ? Colors.grey
+                        : hasPendingRemoval
+                        ? Colors.green
+                        : const Color(0xFFFEBC11),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      hasPendingRemoval
+                          ? Icons.undo_rounded
+                          : Icons.close_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Name with pending indicator
+          Column(
+            children: [
+              SizedBox(
+                width: 65,
+                child: Text(
+                  member.name.split(' ').first,
+                  style: TextStyle(
+                    color: hasPendingRemoval
+                        ? AppColors.primary
+                        : const Color(0xFF23233F),
+                    fontSize: 13,
+                    fontFamily: 'DM Sans',
+                    fontWeight: hasPendingRemoval
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (hasPendingRemoval)
+                Text(
+                  AppLocalizations.of(context)?.pendingRemoval ?? 'Pending',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFamilyMemberAvatar(String name) {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF4CC3C7),
-                  width: 1,
-                ),
-              ),
-              child: Center(
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFDDDDDD),
-                    shape: BoxShape.circle,
+  /// Handle tap on member avatar - show remove or cancel dialog
+  Future<void> _handleMemberTap(FamilyMember member) async {
+    // First check if member already has pending removal in local state
+    if (member.hasPendingRemoval && member.pendingRemovalRequestId != null) {
+      _showCancelRemovalDialog(member);
+      return;
+    }
+
+    // Also check with backend for pending requests (in case local state is stale)
+    try {
+      final requests = await _familyApiService.getOwnerRemovalRequests();
+      final memberRequest = requests.firstWhere(
+        (r) => r['memberId'] == member.id,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (memberRequest.isNotEmpty && memberRequest['id'] != null) {
+        // There's a pending request - show cancel dialog
+        final memberWithPending = FamilyMember(
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          isOwner: member.isOwner,
+          hasPendingRemoval: true,
+          pendingRemovalRequestId: memberRequest['id'],
+          pendingRemovalStatus: memberRequest['status'],
+        );
+        _showCancelRemovalDialog(memberWithPending);
+        return;
+      }
+    } catch (e) {
+      // If check fails, proceed with normal flow
+      debugPrint('Error checking pending requests: $e');
+    }
+
+    // No pending request - show remove dialog
+    _initiateRemoval(member);
+  }
+
+  /// Show cancel removal confirmation dialog
+  Future<void> _showCancelRemovalDialog(FamilyMember member) async {
+    final l10n = AppLocalizations.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 16,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green.withOpacity(0.15),
+                      Colors.teal.withOpacity(0.15),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ),
-            ),
-            // Yellow badge
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFEBC11),
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.remove,
-                    color: Colors.white,
-                    size: 10,
-                  ),
+                child: const Icon(
+                  Icons.undo_rounded,
+                  color: Colors.green,
+                  size: 40,
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          name,
-          style: const TextStyle(
-            color: Color(0xFF23233F),
-            fontSize: 14,
-            fontFamily: 'DM Sans',
-            fontWeight: FontWeight.w400,
+              const SizedBox(height: 20),
+
+              // Title
+              Text(
+                l10n?.cancelRemovalRequest ?? 'Cancel Request',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF23233F),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Member info
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0.2),
+                            AppColors.secondary.withOpacity(0.2),
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          member.name.isNotEmpty
+                              ? member.name[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          member.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF23233F),
+                          ),
+                        ),
+                        Text(
+                          member.email,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Description
+              Text(
+                l10n?.cancelRemovalConfirm(member.name) ??
+                    'Are you sure you want to cancel the removal request for ${member.name}?',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey[700],
+                          side: BorderSide(color: Colors.grey[300]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          l10n?.cancel ?? 'No',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          l10n?.ok ?? 'Yes, Cancel',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
+
+    if (confirmed != true || !mounted) return;
+
+    // OPTIMISTIC UPDATE: Update UI immediately before API call
+    final memberId = member.id;
+    final originalMembers = List<FamilyMember>.from(_familyMembers);
+
+    setState(() {
+      _familyMembers = _familyMembers.map((m) {
+        if (m.id == memberId) {
+          return FamilyMember(
+            id: m.id,
+            name: m.name,
+            email: m.email,
+            isOwner: m.isOwner,
+            hasPendingRemoval: false, // Clear pending status immediately
+            pendingRemovalRequestId: null,
+            pendingRemovalStatus: null,
+          );
+        }
+        return m;
+      }).toList();
+    });
+
+    // Update cache optimistically
+    await _tokenStorage.updateMemberPendingStatus(
+      memberId: memberId,
+      hasPendingRemoval: false,
+      pendingRemovalRequestId: null,
+      pendingRemovalStatus: null,
+    );
+
+    try {
+      await _familyApiService.cancelRemoval(member.pendingRemovalRequestId!);
+
+      if (mounted) {
+        AppToast.success(
+          context,
+          l10n?.removalCancelled ?? 'Removal request cancelled',
+        );
+        // Silently refresh to sync with server
+        _refreshFamilyDataSilently();
+      }
+    } catch (e) {
+      // ROLLBACK: Restore original state on error
+      if (mounted) {
+        setState(() {
+          _familyMembers = originalMembers;
+        });
+        // Rollback cache
+        await _tokenStorage.updateMemberPendingStatus(
+          memberId: memberId,
+          hasPendingRemoval: true,
+          pendingRemovalRequestId: member.pendingRemovalRequestId,
+          pendingRemovalStatus: member.pendingRemovalStatus,
+        );
+        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+      }
+    }
   }
 
   Widget _buildRecentActivitiesSection(BuildContext context) {

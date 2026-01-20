@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for managing authentication tokens securely
@@ -18,6 +19,8 @@ class TokenStorageService {
   static const String _familyMemberCountKey = 'family_member_count';
   static const String _familyIsOwnerKey = 'family_is_owner';
   static const String _familyInviteCodeKey = 'family_invite_code';
+  static const String _familyMembersKey = 'family_members_json';
+  static const String _pendingRemovalsKey = 'pending_removals_json';
 
   /// Save authentication tokens
   Future<void> saveTokens({
@@ -185,6 +188,68 @@ class TokenStorageService {
     };
   }
 
+  /// Save family members to cache
+  Future<void> saveFamilyMembers(List<Map<String, dynamic>> members) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_familyMembersKey, jsonEncode(members));
+  }
+
+  /// Get cached family members
+  Future<List<Map<String, dynamic>>> getCachedFamilyMembers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final membersJson = prefs.getString(_familyMembersKey);
+    if (membersJson == null) return [];
+    
+    try {
+      final List<dynamic> decoded = jsonDecode(membersJson);
+      return decoded.cast<Map<String, dynamic>>();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Save pending removal requests to cache
+  Future<void> savePendingRemovals(List<Map<String, dynamic>> removals) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingRemovalsKey, jsonEncode(removals));
+  }
+
+  /// Get cached pending removal requests
+  Future<List<Map<String, dynamic>>> getCachedPendingRemovals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final removalsJson = prefs.getString(_pendingRemovalsKey);
+    if (removalsJson == null) return [];
+    
+    try {
+      final List<dynamic> decoded = jsonDecode(removalsJson);
+      return decoded.cast<Map<String, dynamic>>();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Update a single member's pending removal status in cache
+  Future<void> updateMemberPendingStatus({
+    required String memberId,
+    required bool hasPendingRemoval,
+    String? pendingRemovalRequestId,
+    String? pendingRemovalStatus,
+  }) async {
+    final members = await getCachedFamilyMembers();
+    final updatedMembers = members.map((m) {
+      if (m['id'] == memberId) {
+        return {
+          ...m,
+          'hasPendingRemoval': hasPendingRemoval,
+          'pendingRemovalRequestId': pendingRemovalRequestId,
+          'pendingRemovalStatus': pendingRemovalStatus,
+        };
+      }
+      return m;
+    }).toList();
+    await saveFamilyMembers(updatedMembers);
+  }
+
   /// Clear family info cache
   Future<void> clearFamilyInfo() async {
     final prefs = await SharedPreferences.getInstance();
@@ -193,6 +258,8 @@ class TokenStorageService {
     await prefs.remove(_familyMemberCountKey);
     await prefs.remove(_familyIsOwnerKey);
     await prefs.remove(_familyInviteCodeKey);
+    await prefs.remove(_familyMembersKey);
+    await prefs.remove(_pendingRemovalsKey);
   }
 
   /// Clear all tokens (logout)
