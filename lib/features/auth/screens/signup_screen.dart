@@ -19,7 +19,7 @@ class SignUpScreen extends StatefulWidget {
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
@@ -30,6 +30,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _showErrors = false;
   bool _isLoading = false;
+  bool _isAwaitingOAuth = false; // Track if we're waiting for OAuth callback
 
   bool _hasMinLength = false;
   bool _hasNumber = false;
@@ -39,11 +40,76 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _passwordController.addListener(_validatePassword);
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isAwaitingOAuth) {
+      // App resumed after OAuth - check if user cancelled
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (_isAwaitingOAuth && mounted) {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session == null) {
+            // No session = user cancelled
+            setState(() {
+              _isAwaitingOAuth = false;
+              _isLoading = false;
+            });
+            _showCancelledDialog();
+          }
+        }
+      });
+    }
+  }
+
+  void _showCancelledDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.cancel_outlined, color: AppColors.primary, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.googleSignInCancelled,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          l10n.googleSignInCancelledMessage,
+          style: TextStyle(color: Colors.grey[700], fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.close, style: TextStyle(color: Colors.grey[600])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _handleGoogleSignUp();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(l10n.tryAgain, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _emailController.dispose();
     _passwordController.dispose();
     _firstNameController.dispose();
@@ -138,6 +204,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleGoogleSignUp() async {
     setState(() {
       _isLoading = true;
+      _isAwaitingOAuth = true;
     });
 
     try {
@@ -149,6 +216,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // After OAuth, user will be redirected back to app
       // AppEntry in main.dart will handle the callback and verification
     } on AuthException catch (e) {
+      setState(() {
+        _isAwaitingOAuth = false;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -158,6 +228,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     } catch (e) {
+      setState(() {
+        _isAwaitingOAuth = false;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -167,7 +240,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
       }
     } finally {
-      if (mounted) {
+      if (mounted && !_isAwaitingOAuth) {
         setState(() {
           _isLoading = false;
         });

@@ -1,9 +1,9 @@
 /// API Configuration
 class ApiConfig {
-  // Base URL - Update this to your backend URL
+  // Base URL - Production API
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000', // Change for production
+    defaultValue: 'https://api.cha9cha9ni.tn', // Production URL
   );
 
   // API Endpoints

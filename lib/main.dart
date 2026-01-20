@@ -145,6 +145,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   bool _showSplash = true;
   bool _isAuthenticated = false;
   bool _needsVerification = false;
+  bool _isProcessingOAuth = false; // Loading state during OAuth callback
   String? _verificationEmail;
   Widget? _homeScreen; // Will be either FamilySelectionScreen, OwnerHome, or MemberHome
   final _authApiService = AuthApiService();
@@ -229,12 +230,13 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       
       debugPrint('🔔 Auth event: $event, session: ${session != null}');
       
-      if (session != null && 
-          (event == AuthChangeEvent.signedIn || 
-           event == AuthChangeEvent.tokenRefreshed ||
-           event == AuthChangeEvent.initialSession)) {
-        // User just signed in (could be OAuth callback)
-        await _handleNewSession(session);
+      if (session != null && event == AuthChangeEvent.signedIn) {
+        // Only call backend on actual NEW sign-in (OAuth callback)
+        // Skip for tokenRefreshed and initialSession - these don't need backend call
+        await _handleNewSession(session, isNewSignIn: true);
+      } else if (session != null && event == AuthChangeEvent.initialSession) {
+        // App restart with existing session - check if we have backend tokens
+        await _handleInitialSession(session);
       } else if (session == null && event == AuthChangeEvent.signedOut) {
         if (mounted) {
           setState(() {
@@ -244,6 +246,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           });
         }
       }
+      // Ignore tokenRefreshed - Supabase handles this automatically
     });
 
     // Check initial session
@@ -257,13 +260,57 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     
     final session = Supabase.instance.client.auth.currentSession;
     if (session != null && !_isAuthenticated && !_needsVerification) {
-      await _handleNewSession(session);
+      await _handleInitialSession(session);
     }
   }
 
-  Future<void> _handleNewSession(Session session) async {
+  /// Handle app restart with existing Supabase session
+  /// Only calls backend if we don't have valid backend tokens
+  Future<void> _handleInitialSession(Session session) async {
     if (_isHandlingSession) return;
     _isHandlingSession = true;
+    
+    try {
+      // Check if we already have valid backend tokens
+      final accessToken = await _tokenStorage.getAccessToken();
+      
+      if (accessToken != null) {
+        // We already have backend tokens - just restore session without calling backend
+        debugPrint('🔑 Already have backend tokens, skipping backend call');
+        
+        // Determine home screen based on family status
+        final homeScreen = await _determineHomeScreen();
+        
+        if (mounted) {
+          setState(() {
+            _isAuthenticated = true;
+            _needsVerification = false;
+            _homeScreen = homeScreen;
+          });
+        }
+      } else {
+        // No backend tokens - need to call backend (first time linking Supabase session)
+        debugPrint('🔑 No backend tokens, calling backend');
+        await _handleNewSession(session, isNewSignIn: true);
+      }
+    } catch (e) {
+      debugPrint('❌ Error in _handleInitialSession: $e');
+    } finally {
+      _isHandlingSession = false;
+    }
+  }
+
+  /// Handle actual new sign-in (OAuth callback)
+  Future<void> _handleNewSession(Session session, {required bool isNewSignIn}) async {
+    if (_isHandlingSession && !isNewSignIn) return;
+    if (!isNewSignIn) _isHandlingSession = true;
+    
+    // Show loading while processing OAuth
+    if (mounted) {
+      setState(() {
+        _isProcessingOAuth = true;
+      });
+    }
     
     final user = session.user;
     
@@ -367,10 +414,16 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         setState(() {
           _isAuthenticated = false;
           _needsVerification = false;
+          _isProcessingOAuth = false;
         });
       }
     } finally {
       _isHandlingSession = false;
+      if (mounted) {
+        setState(() {
+          _isProcessingOAuth = false;
+        });
+      }
     }
   }
 
@@ -409,10 +462,15 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🏗️ Building AppEntry: splash=$_showSplash, needsVerification=$_needsVerification, email=$_verificationEmail, isAuth=$_isAuthenticated');
+    debugPrint('🏗️ Building AppEntry: splash=$_showSplash, needsVerification=$_needsVerification, email=$_verificationEmail, isAuth=$_isAuthenticated, processing=$_isProcessingOAuth');
     
     if (_showSplash) {
       return SplashScreen(onFinished: _onSplashFinished);
+    }
+    
+    // Show loading screen while processing OAuth callback
+    if (_isProcessingOAuth) {
+      return const _OAuthLoadingScreen();
     }
     
     // If user needs verification, show verify screen
@@ -428,5 +486,40 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     
     // Always show onboarding after splash
     return const OnboardingScreen();
+  }
+}
+
+/// Loading screen shown during OAuth callback processing
+class _OAuthLoadingScreen extends StatelessWidget {
+  const _OAuthLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/icons/horisental.png',
+              width: 200,
+            ),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(
+              color: Color(0xFFE5383B),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Signing you in...',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

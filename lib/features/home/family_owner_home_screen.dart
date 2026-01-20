@@ -132,6 +132,16 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
     }
   }
 
+  void _handleNotificationTap(BuildContext context) {
+    // TODO: Navigate to notifications screen when implemented
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Notifications coming soon!'),
+        backgroundColor: AppColors.secondary,
+      ),
+    );
+  }
+
   // ignore: unused_element
   void _copyInviteCode() {
     if (_inviteCode != null) {
@@ -219,6 +229,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> {
               onTopUp: () {},
               onWithdraw: () {},
               onStatement: () {},
+              onNotification: () => _handleNotificationTap(context),
+              notificationCount: 3, // TODO: Replace with actual notification count
             ),
           ),
           

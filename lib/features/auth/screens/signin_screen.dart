@@ -26,7 +26,7 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _authApiService = AuthApiService();
@@ -37,6 +37,76 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _showErrors = false;
   bool _isLoading = false;
   bool _isSendingResetCode = false;
+  bool _isAwaitingOAuth = false; // Track if we're waiting for OAuth callback
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _isAwaitingOAuth) {
+      // App resumed after OAuth - check if user cancelled
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (_isAwaitingOAuth && mounted) {
+          final session = Supabase.instance.client.auth.currentSession;
+          if (session == null) {
+            // No session = user cancelled
+            setState(() {
+              _isAwaitingOAuth = false;
+              _isLoading = false;
+            });
+            _showCancelledDialog();
+          }
+        }
+      });
+    }
+  }
+
+  void _showCancelledDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.cancel_outlined, color: AppColors.primary, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.googleSignInCancelled,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          l10n.googleSignInCancelledMessage,
+          style: TextStyle(color: Colors.grey[700], fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.close, style: TextStyle(color: Colors.grey[600])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _handleGoogleSignIn();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(l10n.tryAgain, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _navigateBasedOnFamilyStatus() async {
     try {
@@ -293,6 +363,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isLoading = true;
+      _isAwaitingOAuth = true;
     });
 
     try {
@@ -304,6 +375,9 @@ class _SignInScreenState extends State<SignInScreen> {
       // After OAuth, user will be redirected back to app
       // AppEntry in main.dart will handle the callback and verification
     } on AuthException catch (e) {
+      setState(() {
+        _isAwaitingOAuth = false;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -313,6 +387,9 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       }
     } catch (e) {
+      setState(() {
+        _isAwaitingOAuth = false;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -322,7 +399,7 @@ class _SignInScreenState extends State<SignInScreen> {
         );
       }
     } finally {
-      if (mounted) {
+      if (mounted && !_isAwaitingOAuth) {
         setState(() {
           _isLoading = false;
         });
@@ -332,6 +409,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _emailController.dispose();
     _passwordController.dispose();
     _authApiService.dispose();

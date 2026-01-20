@@ -813,6 +813,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View all  >'**
   String get viewAll;
+
+  /// No description provided for @googleSignInCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In Cancelled'**
+  String get googleSignInCancelled;
+
+  /// No description provided for @googleSignInCancelledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You cancelled the Google sign in. Please try again to continue.'**
+  String get googleSignInCancelledMessage;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get tryAgain;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @pts.
+  ///
+  /// In en, this message translates to:
+  /// **'pts'**
+  String get pts;
 }
 
 class _AppLocalizationsDelegate

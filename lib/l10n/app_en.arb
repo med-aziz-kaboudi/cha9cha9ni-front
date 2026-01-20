@@ -160,5 +160,10 @@
   "familyMembers": "Family Members",
   "manage": "Manage >",
   "recentActivities": "Recent activities :",
-  "viewAll": "View all  >"
+  "viewAll": "View all  >",
+  "googleSignInCancelled": "Sign In Cancelled",
+  "googleSignInCancelledMessage": "You cancelled the Google sign in. Please try again to continue.",
+  "tryAgain": "Try Again",
+  "close": "Close",
+  "pts": "pts"
 }

@@ -388,4 +388,20 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewAll => 'عرض الكل  >';
+
+  @override
+  String get googleSignInCancelled => 'تم إلغاء تسجيل الدخول';
+
+  @override
+  String get googleSignInCancelledMessage =>
+      'لقد ألغيت تسجيل الدخول باستخدام Google. يرجى المحاولة مرة أخرى للمتابعة.';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get close => 'إغلاق';
+
+  @override
+  String get pts => 'نقطة';
 }

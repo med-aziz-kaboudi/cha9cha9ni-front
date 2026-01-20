@@ -146,5 +146,10 @@
   "familyMembers": "أفراد العائلة",
   "manage": "إدارة >",
   "recentActivities": "الأنشطة الأخيرة :",
-  "viewAll": "عرض الكل  >"
+  "viewAll": "عرض الكل  >",
+  "googleSignInCancelled": "تم إلغاء تسجيل الدخول",
+  "googleSignInCancelledMessage": "لقد ألغيت تسجيل الدخول باستخدام Google. يرجى المحاولة مرة أخرى للمتابعة.",
+  "tryAgain": "حاول مرة أخرى",
+  "close": "إغلاق",
+  "pts": "نقطة"
 }

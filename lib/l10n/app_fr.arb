@@ -146,5 +146,10 @@
   "familyMembers": "Membres de la famille",
   "manage": "Gérer >",
   "recentActivities": "Activités récentes :",
-  "viewAll": "Voir tout  >"
+  "viewAll": "Voir tout  >",
+  "googleSignInCancelled": "Connexion Annulée",
+  "googleSignInCancelledMessage": "Vous avez annulé la connexion Google. Veuillez réessayer pour continuer.",
+  "tryAgain": "Réessayer",
+  "close": "Fermer",
+  "pts": "pts"
 }

@@ -394,4 +394,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get viewAll => 'Voir tout  >';
+
+  @override
+  String get googleSignInCancelled => 'Connexion Annulée';
+
+  @override
+  String get googleSignInCancelledMessage =>
+      'Vous avez annulé la connexion Google. Veuillez réessayer pour continuer.';
+
+  @override
+  String get tryAgain => 'Réessayer';
+
+  @override
+  String get close => 'Fermer';
+
+  @override
+  String get pts => 'pts';
 }
