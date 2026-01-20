@@ -843,6 +843,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'pts'**
   String get pts;
+
+  /// No description provided for @sessionExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Expired'**
+  String get sessionExpiredTitle;
+
+  /// No description provided for @sessionExpiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Another device has logged into your account. You will be signed out for security.'**
+  String get sessionExpiredMessage;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
 }
 
 class _AppLocalizationsDelegate

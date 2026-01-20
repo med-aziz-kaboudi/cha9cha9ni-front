@@ -5,6 +5,15 @@ import '../config/api_config.dart';
 import '../models/family_model.dart';
 import '../services/token_storage_service.dart';
 
+/// Exception thrown when authentication fails and user should be logged out
+class AuthenticationException implements Exception {
+  final String message;
+  AuthenticationException([this.message = 'Session expired. Please sign in again.']);
+  
+  @override
+  String toString() => message;
+}
+
 class FamilyApiService {
   final _baseUrl = ApiConfig.baseUrl;
   final _tokenStorage = TokenStorageService();
@@ -124,9 +133,15 @@ class FamilyApiService {
           headers: headers,
         );
         debugPrint('📡 Retry response status: ${response.statusCode}');
+        
+        // If still 401 after refresh, user needs to re-login
+        if (response.statusCode == 401) {
+          debugPrint('❌ Still 401 after token refresh - user needs to re-login');
+          throw AuthenticationException('Session invalidated. Another device may have logged in.');
+        }
       } else {
-        debugPrint('❌ Token refresh failed');
-        throw Exception('Session expired. Please sign in again.');
+        debugPrint('❌ Token refresh failed - user needs to re-login');
+        throw AuthenticationException('Session expired. Please sign in again.');
       }
     }
 
@@ -183,5 +198,44 @@ class FamilyApiService {
       final error = json.decode(response.body);
       throw Exception(error['message'] ?? 'Failed to leave family');
     }
+  }
+
+  /// Validate current session - lightweight API call to check if session is still valid
+  /// Throws AuthenticationException if session is invalid
+  Future<void> validateSession() async {
+    var headers = await _getHeaders();
+    
+    debugPrint('🔐 Validating session...');
+    
+    // Use GET /family/me as a lightweight session check
+    var response = await http.get(
+      Uri.parse('$_baseUrl/family/me'),
+      headers: headers,
+    );
+
+    // Handle 401 - try to refresh token
+    if (response.statusCode == 401) {
+      debugPrint('🔒 401: Session may be invalidated - attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        // Retry with new token
+        headers = await _getHeaders();
+        response = await http.get(
+          Uri.parse('$_baseUrl/family/me'),
+          headers: headers,
+        );
+        
+        // If still 401 after refresh, session is definitely invalid
+        if (response.statusCode == 401) {
+          debugPrint('❌ Session invalidated - another device logged in');
+          throw AuthenticationException('Session invalidated. Another device may have logged in.');
+        }
+      } else {
+        debugPrint('❌ Token refresh failed - session expired');
+        throw AuthenticationException('Session expired. Please sign in again.');
+      }
+    }
+    
+    debugPrint('✅ Session is valid');
   }
 }

@@ -404,4 +404,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pts => 'نقطة';
+
+  @override
+  String get sessionExpiredTitle => 'انتهت الجلسة';
+
+  @override
+  String get sessionExpiredMessage =>
+      'تم تسجيل الدخول من جهاز آخر إلى حسابك. سيتم تسجيل خروجك لأسباب أمنية.';
+
+  @override
+  String get ok => 'حسناً';
 }

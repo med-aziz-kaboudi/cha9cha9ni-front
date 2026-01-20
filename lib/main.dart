@@ -14,7 +14,7 @@ import 'features/auth/services/auth_api_service.dart';
 import 'features/auth/models/auth_request_models.dart';
 import 'core/services/language_service.dart';
 import 'core/services/token_storage_service.dart';
-import 'core/services/family_api_service.dart';
+import 'core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +22,13 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  
+  // Make Android system navigation bar transparent so our nav bar shows through
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+  ));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
   // Initialize Supabase
   await Supabase.initialize(
@@ -446,12 +453,39 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       }
       
       debugPrint('ℹ️ No family found, showing selection screen');
+    } on AuthenticationException catch (e) {
+      // Authentication failed - user needs to re-login
+      debugPrint('🚫 Authentication failed: $e - logging out user');
+      await _handleAuthFailure();
+      return const OnboardingScreen(); // Will show login screen
     } catch (e) {
       debugPrint('❌ Failed to check family status: $e');
+      // Check if error message indicates auth failure
+      if (e.toString().contains('Session expired') || 
+          e.toString().contains('Session invalidated') ||
+          e.toString().contains('sign in again')) {
+        debugPrint('🚫 Session error detected - logging out user');
+        await _handleAuthFailure();
+        return const OnboardingScreen();
+      }
     }
     
     // Default: show family selection if no family or error
     return const FamilySelectionScreen();
+  }
+
+  /// Handle authentication failure - clear tokens and reset state
+  Future<void> _handleAuthFailure() async {
+    debugPrint('🔒 Handling auth failure - clearing tokens');
+    await _tokenStorage.clearAll();
+    await Supabase.instance.client.auth.signOut();
+    if (mounted) {
+      setState(() {
+        _isAuthenticated = false;
+        _needsVerification = false;
+        _isProcessingOAuth = false;
+      });
+    }
   }
 
   void _onSplashFinished() {

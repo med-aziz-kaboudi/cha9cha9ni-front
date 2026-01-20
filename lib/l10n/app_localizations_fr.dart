@@ -96,7 +96,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding1Title =>
-      'L\'épargne Fonctionne Mieux\\nQuand Nous le Faisons\\nEnsemble';
+      'L\'épargne Fonctionne Mieux\nQuand Nous le Faisons\nEnsemble';
 
   @override
   String get onboarding1Description =>
@@ -104,7 +104,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding2Title =>
-      'Économisez\\nPour les Moments\\nQui Vous Tiennent à Cœur';
+      'Économisez\nPour les Moments\nQui Vous Tiennent à Cœur';
 
   @override
   String get onboarding2Description =>
@@ -410,4 +410,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pts => 'pts';
+
+  @override
+  String get sessionExpiredTitle => 'Session Expirée';
+
+  @override
+  String get sessionExpiredMessage =>
+      'Un autre appareil s\'est connecté à votre compte. Vous serez déconnecté pour des raisons de sécurité.';
+
+  @override
+  String get ok => 'OK';
 }

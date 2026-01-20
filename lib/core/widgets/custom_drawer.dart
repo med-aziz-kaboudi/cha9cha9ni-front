@@ -292,33 +292,36 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
             height: 1.5,
             color: const Color(0x334CC3C7),
           ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: EdgeInsetsDirectional.only(start: menuItemPaddingH, top: 0, bottom: 0),
-              child: GestureDetector(
-                onTap: widget.onLogout,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.power_settings_new_rounded,
+          // Add padding for system navigation bar
+          Padding(
+            padding: EdgeInsets.only(
+              left: menuItemPaddingH,
+              right: menuItemPaddingH,
+              top: menuItemPaddingV,
+              bottom: MediaQuery.of(context).viewPadding.bottom + menuItemPaddingV * 0.5,
+            ),
+            child: GestureDetector(
+              onTap: widget.onLogout,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.power_settings_new_rounded,
+                    color: const Color(0xFF4CC3C7),
+                    size: logoutIconSize,
+                  ),
+                  SizedBox(width: screenWidth * 0.02),
+                  Text(
+                    l10n.logout,
+                    style: TextStyle(
                       color: const Color(0xFF4CC3C7),
-                      size: logoutIconSize,
+                      fontSize: logoutFontSize,
+                      fontFamily: 'Nunito Sans',
+                      fontWeight: FontWeight.w800,
+                      height: 1.33,
                     ),
-                    SizedBox(width: screenWidth * 0.02),
-                    Text(
-                      l10n.logout,
-                      style: TextStyle(
-                        color: const Color(0xFF4CC3C7),
-                        fontSize: logoutFontSize,
-                        fontFamily: 'Nunito Sans',
-                        fontWeight: FontWeight.w800,
-                        height: 1.33,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

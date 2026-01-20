@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/token_storage_service.dart';
+import '../../core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
@@ -15,15 +17,155 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String _displayName = 'Loading...';
   final _tokenStorage = TokenStorageService();
+  final _familyApiService = FamilyApiService();
   int _currentNavIndex = 0;
+  Timer? _sessionCheckTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadDisplayName();
+    _startSessionValidation();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _sessionCheckTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came back from background - check if session is still valid
+      debugPrint('📱 App resumed - validating session');
+      _validateSession();
+    }
+  }
+
+  /// Start periodic session validation (every 5 seconds)
+  void _startSessionValidation() {
+    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        _validateSession();
+      }
+    });
+  }
+
+  /// Validate session and logout if invalid
+  Future<void> _validateSession() async {
+    try {
+      await _familyApiService.validateSession();
+    } on AuthenticationException catch (e) {
+      debugPrint('🚫 Session validation failed: $e');
+      if (mounted) {
+        _sessionCheckTimer?.cancel(); // Stop checking
+        await _showSessionExpiredDialog();
+      }
+    } catch (e) {
+      // Network errors or other issues - don't logout, just log
+      debugPrint('⚠️ Session validation error (non-auth): $e');
+    }
+  }
+
+  /// Show dialog informing user another device logged in, then logout
+  Future<void> _showSessionExpiredDialog() async {
+    if (!mounted) return;
+    
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 16,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon with gradient background
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.phonelink_erase_rounded,
+                  size: 36,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Title
+              Text(
+                AppLocalizations.of(context)?.sessionExpiredTitle ?? 'Session Expired',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              // Message
+              Text(
+                AppLocalizations.of(context)?.sessionExpiredMessage ?? 
+                  'Another device has logged into your account. You will be signed out for security.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              // Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _handleSignOut(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)?.ok ?? 'OK',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _loadDisplayName() async {

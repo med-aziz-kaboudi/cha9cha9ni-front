@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 import '../theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -14,72 +15,81 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      alignment: Alignment.bottomCenter,
-      children: [
-        CustomPaint(
-          size: Size(MediaQuery.of(context).size.width, 80),
-          painter: _NavBarPainter(),
-        ),
-        // Force LTR to keep Home on left and Reward on right regardless of language
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: SizedBox(
-            height: 80,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: _NavBarItem(
-                    context: context,
-                    icon: Icons.home_outlined,
-                    label: AppLocalizations.of(context)!.home,
-                    isSelected: currentIndex == 0,
-                    onTap: () => onTap(0),
-                  ),
-                ),
-                const SizedBox(width: 100),
-                Expanded(
-                  child: _NavBarItem(
-                    context: context,
-                    icon: Icons.emoji_events_outlined,
-                    label: AppLocalizations.of(context)!.reward,
-                    isSelected: currentIndex == 2,
-                    onTap: () => onTap(2),
-                  ),
-                ),
-              ],
-            ),
+    // On Android, add bottom padding to push nav bar above system navigation
+    // On iOS, no extra padding needed as bottomNavigationBar handles it
+    final bottomPadding = Platform.isAndroid 
+        ? MediaQuery.of(context).viewPadding.bottom 
+        : 0.0;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
+        children: [
+          CustomPaint(
+            size: Size(MediaQuery.of(context).size.width, 80),
+            painter: _NavBarPainter(),
           ),
-        ),
-        Positioned(
-          bottom: 60,
-          child: GestureDetector(
-            onTap: () => onTap(1),
-            child: Container(
-              width: 65,
-              height: 65,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.secondary.withOpacity(0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 5),
+          // Force LTR to keep Home on left and Reward on right regardless of language
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: SizedBox(
+              height: 80,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Expanded(
+                    child: _NavBarItem(
+                      context: context,
+                      icon: Icons.home_outlined,
+                      label: AppLocalizations.of(context)!.home,
+                      isSelected: currentIndex == 0,
+                      onTap: () => onTap(0),
+                    ),
+                  ),
+                  const SizedBox(width: 100),
+                  Expanded(
+                    child: _NavBarItem(
+                      context: context,
+                      icon: Icons.emoji_events_outlined,
+                      label: AppLocalizations.of(context)!.reward,
+                      isSelected: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.qr_code_scanner,
-                color: Colors.white,
-                size: 32,
+            ),
+          ),
+          Positioned(
+            bottom: 60,
+            child: GestureDetector(
+              onTap: () => onTap(1),
+              child: Container(
+                width: 65,
+                height: 65,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.qr_code_scanner,
+                  color: Colors.white,
+                  size: 32,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

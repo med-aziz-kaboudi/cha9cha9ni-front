@@ -28,9 +28,9 @@
   "back": "Retour",
   "next": "Suivant",
   "getStarted": "Commencer",
-  "onboarding1Title": "L'épargne Fonctionne Mieux\\nQuand Nous le Faisons\\nEnsemble",
+  "onboarding1Title": "L'épargne Fonctionne Mieux\nQuand Nous le Faisons\nEnsemble",
   "onboarding1Description": "Réunissez votre famille dans un espace partagé et développez votre épargne étape par étape.",
-  "onboarding2Title": "Économisez\\nPour les Moments\\nQui Vous Tiennent à Cœur",
+  "onboarding2Title": "Économisez\nPour les Moments\nQui Vous Tiennent à Cœur",
   "onboarding2Description": "Une planification réfléchie pour des moments significatifs, apportant paix et joie à votre famille.",
   "otpVerification": "Vérification OTP",
   "verifyEmailSubtitle": "Nous devons vérifier votre email",
@@ -151,5 +151,8 @@
   "googleSignInCancelledMessage": "Vous avez annulé la connexion Google. Veuillez réessayer pour continuer.",
   "tryAgain": "Réessayer",
   "close": "Fermer",
-  "pts": "pts"
+  "pts": "pts",
+  "sessionExpiredTitle": "Session Expirée",
+  "sessionExpiredMessage": "Un autre appareil s'est connecté à votre compte. Vous serez déconnecté pour des raisons de sécurité.",
+  "ok": "OK"
 }

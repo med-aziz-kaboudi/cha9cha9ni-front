@@ -165,5 +165,8 @@
   "googleSignInCancelledMessage": "You cancelled the Google sign in. Please try again to continue.",
   "tryAgain": "Try Again",
   "close": "Close",
-  "pts": "pts"
+  "pts": "pts",
+  "sessionExpiredTitle": "Session Expired",
+  "sessionExpiredMessage": "Another device has logged into your account. You will be signed out for security.",
+  "ok": "OK"
 }

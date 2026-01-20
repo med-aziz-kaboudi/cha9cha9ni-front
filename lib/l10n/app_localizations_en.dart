@@ -404,4 +404,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pts => 'pts';
+
+  @override
+  String get sessionExpiredTitle => 'Session Expired';
+
+  @override
+  String get sessionExpiredMessage =>
+      'Another device has logged into your account. You will be signed out for security.';
+
+  @override
+  String get ok => 'OK';
 }
