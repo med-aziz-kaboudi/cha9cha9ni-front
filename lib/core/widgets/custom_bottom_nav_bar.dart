@@ -6,11 +6,15 @@ import '../../l10n/app_localizations.dart';
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final GlobalKey? qrCodeKey;
+  final GlobalKey? rewardKey;
 
   const CustomBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    this.qrCodeKey,
+    this.rewardKey,
   });
 
   @override
@@ -51,6 +55,7 @@ class CustomBottomNavBar extends StatelessWidget {
                   const SizedBox(width: 100),
                   Expanded(
                     child: _NavBarItem(
+                      itemKey: rewardKey,
                       context: context,
                       icon: Icons.emoji_events_outlined,
                       label: AppLocalizations.of(context)!.reward,
@@ -65,6 +70,7 @@ class CustomBottomNavBar extends StatelessWidget {
           Positioned(
             bottom: 60,
             child: GestureDetector(
+              key: qrCodeKey,
               onTap: () => onTap(1),
               child: Container(
                 width: 65,
@@ -152,6 +158,7 @@ class _NavBarItem extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final GlobalKey? itemKey;
 
   const _NavBarItem({
     required this.context,
@@ -159,11 +166,13 @@ class _NavBarItem extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    this.itemKey,
   });
 
   @override
   Widget build(BuildContext ctx) {
     return GestureDetector(
+      key: itemKey,
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(

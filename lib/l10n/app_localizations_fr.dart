@@ -420,4 +420,140 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String get skipTutorial => 'Passer le guide';
+
+  @override
+  String get nextTutorial => 'Suivant';
+
+  @override
+  String get doneTutorial => 'Compris!';
+
+  @override
+  String get tutorialSidebarTitle => 'Menu';
+
+  @override
+  String get tutorialSidebarDesc =>
+      'Appuyez ici pour ouvrir le menu latéral. Accédez à votre profil, paramètres et plus.';
+
+  @override
+  String get tutorialTopUpTitle => 'Recharger';
+
+  @override
+  String get tutorialTopUpDesc =>
+      'Ajoutez de l\'argent à votre compte familial. Partagez des fonds facilement.';
+
+  @override
+  String get tutorialWithdrawTitle => 'Retirer';
+
+  @override
+  String get tutorialWithdrawDesc =>
+      'Demandez à retirer de l\'argent de vos économies familiales.';
+
+  @override
+  String get tutorialStatementTitle => 'Relevé';
+
+  @override
+  String get tutorialStatementDesc =>
+      'Consultez l\'historique de toutes vos transactions. Suivez les dépenses et économies.';
+
+  @override
+  String get tutorialPointsTitle => 'Points de Récompense';
+
+  @override
+  String get tutorialPointsDesc =>
+      'Gagnez des points pour chaque activité! Échangez-les contre des récompenses.';
+
+  @override
+  String get tutorialNotificationTitle => 'Notifications';
+
+  @override
+  String get tutorialNotificationDesc =>
+      'Restez informé des activités familiales, transactions et alertes importantes.';
+
+  @override
+  String get tutorialQrCodeTitle => 'Scanner QR';
+
+  @override
+  String get tutorialQrCodeDesc =>
+      'Scannez des codes QR pour des paiements rapides ou ajouter des membres.';
+
+  @override
+  String get tutorialRewardTitle => 'Récompenses';
+
+  @override
+  String get tutorialRewardDesc =>
+      'Explorez et échangez vos points gagnés contre des récompenses et réductions.';
+
+  @override
+  String get editProfile => 'Modifier le Profil';
+
+  @override
+  String get saveChanges => 'Enregistrer';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get firstNameLabel => 'Prénom';
+
+  @override
+  String get lastNameLabel => 'Nom de famille';
+
+  @override
+  String get phoneNumberLabel => 'Numéro de téléphone';
+
+  @override
+  String get firstNameRequired => 'Le prénom est requis';
+
+  @override
+  String get lastNameRequired => 'Le nom de famille est requis';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profil mis à jour avec succès!';
+
+  @override
+  String get fullName => 'Nom complet';
+
+  @override
+  String get edit => 'Modifier';
+
+  @override
+  String get changeEmail => 'Changer l\'Email';
+
+  @override
+  String get verifyCurrentEmailDesc =>
+      'Pour changer votre email, nous devons d\'abord vérifier votre adresse email actuelle.';
+
+  @override
+  String get sendVerificationCode => 'Envoyer le Code';
+
+  @override
+  String enterCodeSentTo(String email) {
+    return 'Entrez le code à 6 chiffres envoyé à $email';
+  }
+
+  @override
+  String get currentEmailVerified => 'Email actuel vérifié';
+
+  @override
+  String get enterNewEmail => 'Entrez votre nouvelle adresse email';
+
+  @override
+  String get newEmailPlaceholder => 'newemail@example.com';
+
+  @override
+  String get confirmChange => 'Confirmer le Changement';
+
+  @override
+  String get emailUpdatedSuccessfully => 'Email mis à jour avec succès!';
+
+  @override
+  String get phoneNumberMustBe8Digits =>
+      'Le numéro de téléphone doit comporter exactement 8 chiffres';
+
+  @override
+  String get phoneNumberAlreadyInUse =>
+      'Ce numéro de téléphone est déjà utilisé';
 }

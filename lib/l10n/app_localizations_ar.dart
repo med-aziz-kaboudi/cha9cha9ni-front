@@ -414,4 +414,139 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ok => 'حسناً';
+
+  @override
+  String get skipTutorial => 'تخطي الدليل';
+
+  @override
+  String get nextTutorial => 'التالي';
+
+  @override
+  String get doneTutorial => 'فهمت!';
+
+  @override
+  String get tutorialSidebarTitle => 'القائمة';
+
+  @override
+  String get tutorialSidebarDesc =>
+      'اضغط هنا لفتح القائمة الجانبية. الوصول إلى ملفك الشخصي والإعدادات والمزيد.';
+
+  @override
+  String get tutorialTopUpTitle => 'إضافة رصيد';
+
+  @override
+  String get tutorialTopUpDesc =>
+      'أضف المال إلى حساب العائلة. شارك الأموال مع أفراد عائلتك بسهولة.';
+
+  @override
+  String get tutorialWithdrawTitle => 'سحب';
+
+  @override
+  String get tutorialWithdrawDesc =>
+      'اطلب سحب المال من مدخرات عائلتك عند الحاجة.';
+
+  @override
+  String get tutorialStatementTitle => 'كشف الحساب';
+
+  @override
+  String get tutorialStatementDesc =>
+      'عرض سجل جميع معاملاتك. تتبع إنفاق ومدخرات عائلتك.';
+
+  @override
+  String get tutorialPointsTitle => 'نقاط المكافآت';
+
+  @override
+  String get tutorialPointsDesc =>
+      'اكسب نقاطاً مع كل نشاط! استبدلها بمكافآت ومزايا حصرية.';
+
+  @override
+  String get tutorialNotificationTitle => 'الإشعارات';
+
+  @override
+  String get tutorialNotificationDesc =>
+      'ابق على اطلاع بأنشطة العائلة والمعاملات والتنبيهات المهمة.';
+
+  @override
+  String get tutorialQrCodeTitle => 'ماسح QR';
+
+  @override
+  String get tutorialQrCodeDesc =>
+      'امسح رموز QR لإجراء مدفوعات سريعة أو إضافة أفراد جدد للعائلة.';
+
+  @override
+  String get tutorialRewardTitle => 'المكافآت';
+
+  @override
+  String get tutorialRewardDesc =>
+      'استكشف واستبدل نقاطك المكتسبة بمكافآت وخصومات رائعة.';
+
+  @override
+  String get editProfile => 'تعديل الملف الشخصي';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get firstNameLabel => 'الاسم الأول';
+
+  @override
+  String get lastNameLabel => 'اسم العائلة';
+
+  @override
+  String get phoneNumberLabel => 'رقم الهاتف';
+
+  @override
+  String get firstNameRequired => 'الاسم الأول مطلوب';
+
+  @override
+  String get lastNameRequired => 'اسم العائلة مطلوب';
+
+  @override
+  String get profileUpdatedSuccessfully => 'تم تحديث الملف الشخصي بنجاح!';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get edit => 'تعديل';
+
+  @override
+  String get changeEmail => 'تغيير البريد الإلكتروني';
+
+  @override
+  String get verifyCurrentEmailDesc =>
+      'لتغيير بريدك الإلكتروني، نحتاج أولاً للتحقق من بريدك الإلكتروني الحالي.';
+
+  @override
+  String get sendVerificationCode => 'إرسال رمز التحقق';
+
+  @override
+  String enterCodeSentTo(String email) {
+    return 'أدخل الرمز المكون من 6 أرقام المرسل إلى $email';
+  }
+
+  @override
+  String get currentEmailVerified => 'تم التحقق من البريد الإلكتروني الحالي';
+
+  @override
+  String get enterNewEmail => 'أدخل عنوان بريدك الإلكتروني الجديد';
+
+  @override
+  String get newEmailPlaceholder => 'newemail@example.com';
+
+  @override
+  String get confirmChange => 'تأكيد التغيير';
+
+  @override
+  String get emailUpdatedSuccessfully => 'تم تحديث البريد الإلكتروني بنجاح!';
+
+  @override
+  String get phoneNumberMustBe8Digits =>
+      'يجب أن يتكون رقم الهاتف من 8 أرقام بالضبط';
+
+  @override
+  String get phoneNumberAlreadyInUse => 'رقم الهاتف هذا مستخدم بالفعل';
 }

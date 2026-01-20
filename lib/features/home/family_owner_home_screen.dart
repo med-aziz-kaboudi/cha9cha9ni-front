@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
+import '../../core/services/session_manager.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
+import '../../core/widgets/tutorial_overlay.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
+import '../profile/screens/edit_profile_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -27,53 +31,76 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   bool _isLoadingCode = true;
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
+  final _sessionManager = SessionManager();
   int _currentNavIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Timer? _sessionCheckTimer;
+  StreamSubscription<String>? _sessionExpiredSubscription;
+  
+  // Tutorial keys
+  bool _showTutorial = false;
+  final GlobalKey _sidebarKey = GlobalKey();
+  final GlobalKey _topUpKey = GlobalKey();
+  final GlobalKey _withdrawKey = GlobalKey();
+  final GlobalKey _statementKey = GlobalKey();
+  final GlobalKey _pointsKey = GlobalKey();
+  final GlobalKey _notificationKey = GlobalKey();
+  final GlobalKey _qrCodeKey = GlobalKey();
+  final GlobalKey _rewardKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
-    _startSessionValidation();
+    _listenToSessionExpired();
+    _checkTutorialStatus();
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    final hasCompleted = await TutorialOverlay.hasCompletedTutorial();
+    if (!hasCompleted && mounted) {
+      // Small delay to let the UI render first
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _showTutorial = true;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sessionCheckTimer?.cancel();
+    _sessionExpiredSubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // App came back from background - check if session is still valid
+      // App came back from background - validate session once
       debugPrint('📱 App resumed - validating session');
-      _validateSession();
+      _validateSessionOnce();
     }
   }
 
-  /// Start periodic session validation (every 5 seconds)
-  void _startSessionValidation() {
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+  /// Listen to session expired events from any API call
+  void _listenToSessionExpired() {
+    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((reason) {
       if (mounted) {
-        _validateSession();
+        _showSessionExpiredDialog();
       }
     });
   }
 
-  /// Validate session and logout if invalid
-  Future<void> _validateSession() async {
+  /// Validate session once (called when app resumes from background)
+  Future<void> _validateSessionOnce() async {
     try {
       await _familyApiService.validateSession();
     } on AuthenticationException catch (e) {
       debugPrint('🚫 Session validation failed: $e');
-      if (mounted) {
-        _sessionCheckTimer?.cancel(); // Stop checking
-        await _showSessionExpiredDialog();
-      }
+      // SessionManager.notifySessionExpired() is called in the API service
     } catch (e) {
       // Network errors or other issues - don't logout, just log
       debugPrint('⚠️ Session validation error (non-auth): $e');
@@ -83,6 +110,16 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
   /// Show dialog informing user another device logged in, then logout
   Future<void> _showSessionExpiredDialog() async {
     if (!mounted) return;
+    
+    // Check if already handling to prevent duplicate dialogs
+    if (_sessionManager.isHandlingExpiration) {
+      // Already showing dialog from another source, skip
+      debugPrint('⚠️ Session expired dialog already showing, skipping');
+      return;
+    }
+    
+    // Mark as handling
+    _sessionManager.markHandling();
     
     // Store parent context for navigation after dialog closes
     final parentContext = context;
@@ -202,26 +239,53 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
 
   /// Perform sign out and navigate to sign in screen
   Future<void> _performSignOut(BuildContext parentContext) async {
+    debugPrint('🚪 Starting sign out process...');
     try {
       await _tokenStorage.clearTokens();
+      debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
+      debugPrint('✅ Pending verification cleared');
       
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
+        debugPrint('✅ Supabase signed out');
       }
       
+      // Reset session manager flag for next login
+      _sessionManager.resetHandlingFlag();
+      
+      debugPrint('🔄 Attempting navigation to SignInScreen...');
+      debugPrint('   parentContext.mounted = ${parentContext.mounted}');
+      
       if (parentContext.mounted) {
-        Navigator.of(parentContext).pushAndRemoveUntil(
+        Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
           (route) => false,
         );
+        debugPrint('✅ Navigation initiated');
+      } else {
+        debugPrint('❌ parentContext not mounted, trying global navigation');
+        // Fallback: use the current context if available
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const SignInScreen()),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       debugPrint('❌ Sign out error: $e');
+      // Reset flag even on error
+      _sessionManager.resetHandlingFlag();
       // Force navigate even if sign out fails
       if (parentContext.mounted) {
-        Navigator.of(parentContext).pushAndRemoveUntil(
+        Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SignInScreen()),
+          (route) => false,
+        );
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
           (route) => false,
         );
@@ -306,12 +370,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign out failed: ${e.toString()}'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+        AppToast.error(context, 'Sign out failed: ${e.toString()}');
       }
     }
   }
@@ -325,83 +384,75 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
       case 0:
         break;
       case 1:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.scanButtonTapped)),
-        );
+        AppToast.comingSoon(context, AppLocalizations.of(context)!.scanButtonTapped);
         break;
       case 2:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.rewardScreenComingSoon)),
-        );
+        AppToast.comingSoon(context, AppLocalizations.of(context)!.rewardScreenComingSoon);
         break;
     }
   }
 
   void _handleNotificationTap(BuildContext context) {
     // TODO: Navigate to notifications screen when implemented
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Notifications coming soon!'),
-        backgroundColor: AppColors.secondary,
-      ),
-    );
+    AppToast.comingSoon(context, 'Notifications');
   }
 
   // ignore: unused_element
   void _copyInviteCode() {
     if (_inviteCode != null) {
       // Clipboard.setData(ClipboardData(text: _inviteCode!));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.inviteCodeCopiedToClipboard),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppToast.success(context, AppLocalizations.of(context)!.inviteCodeCopiedToClipboard);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFFAFAFA),
-      drawer: CustomDrawer(
-        onLogout: () {
-          Navigator.pop(context);
-          _handleSignOut(context);
-        },
-        onPersonalInfo: () {
-          Navigator.pop(context);
-        },
-        onCurrentPack: () {
-          Navigator.pop(context);
-        },
-        onLoginSecurity: () {
-          Navigator.pop(context);
-        },
-        onLanguages: () {
-          Navigator.pop(context);
-        },
-        onNotifications: () {
-          Navigator.pop(context);
-        },
-        onHelp: () {
-          Navigator.pop(context);
-        },
-        onLegalAgreements: () {
-          Navigator.pop(context);
-        },
-      ),
-      body: Stack(
-        children: [
-          // Scrollable content - behind everything
-          Positioned.fill(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+    return Stack(
+      children: [
+        Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: const Color(0xFFFAFAFA),
+          drawer: CustomDrawer(
+            onLogout: () {
+              Navigator.pop(context);
+              _handleSignOut(context);
+            },
+            onPersonalInfo: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+              );
+            },
+            onCurrentPack: () {
+              Navigator.pop(context);
+            },
+            onLoginSecurity: () {
+              Navigator.pop(context);
+            },
+            onLanguages: () {
+              Navigator.pop(context);
+            },
+            onNotifications: () {
+              Navigator.pop(context);
+            },
+            onHelp: () {
+              Navigator.pop(context);
+            },
+            onLegalAgreements: () {
+              Navigator.pop(context);
+            },
+          ),
+          body: Stack(
+            children: [
+              // Scrollable content - behind everything
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   // Space for the fixed header
                   SizedBox(height: MediaQuery.of(context).size.height * 0.32),
                   
@@ -436,6 +487,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
               onStatement: () {},
               onNotification: () => _handleNotificationTap(context),
               notificationCount: 3, // TODO: Replace with actual notification count
+              topUpKey: _topUpKey,
+              withdrawKey: _withdrawKey,
+              statementKey: _statementKey,
+              pointsKey: _pointsKey,
+              notificationKey: _notificationKey,
             ),
           ),
           
@@ -445,6 +501,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
             left: Directionality.of(context) == TextDirection.rtl ? null : 0,
             right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
             child: GestureDetector(
+              key: _sidebarKey,
               onTap: () => _scaffoldKey.currentState?.openDrawer(),
               child: Container(
                 width: 24,
@@ -478,8 +535,81 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen> with Widg
       bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _currentNavIndex,
         onTap: _onNavBarTap,
+        qrCodeKey: _qrCodeKey,
+        rewardKey: _rewardKey,
       ),
-    );
+    ),
+    // Tutorial overlay
+    if (_showTutorial)
+      TutorialOverlay(
+        steps: _buildTutorialSteps(),
+        onComplete: () {
+          setState(() {
+            _showTutorial = false;
+          });
+        },
+        onSkip: () {
+          setState(() {
+            _showTutorial = false;
+          });
+        },
+      ),
+    ],
+  );
+  }
+
+  List<TutorialStep> _buildTutorialSteps() {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      TutorialStep(
+        targetKey: _sidebarKey,
+        title: l10n.tutorialSidebarTitle,
+        description: l10n.tutorialSidebarDesc,
+        icon: Icons.menu_rounded,
+      ),
+      TutorialStep(
+        targetKey: _topUpKey,
+        title: l10n.tutorialTopUpTitle,
+        description: l10n.tutorialTopUpDesc,
+        icon: Icons.add_circle_outline,
+      ),
+      TutorialStep(
+        targetKey: _withdrawKey,
+        title: l10n.tutorialWithdrawTitle,
+        description: l10n.tutorialWithdrawDesc,
+        icon: Icons.account_balance_wallet_outlined,
+      ),
+      TutorialStep(
+        targetKey: _statementKey,
+        title: l10n.tutorialStatementTitle,
+        description: l10n.tutorialStatementDesc,
+        icon: Icons.receipt_long_outlined,
+      ),
+      TutorialStep(
+        targetKey: _pointsKey,
+        title: l10n.tutorialPointsTitle,
+        description: l10n.tutorialPointsDesc,
+        icon: Icons.stars_rounded,
+      ),
+      TutorialStep(
+        targetKey: _notificationKey,
+        title: l10n.tutorialNotificationTitle,
+        description: l10n.tutorialNotificationDesc,
+        icon: Icons.notifications_outlined,
+      ),
+      TutorialStep(
+        targetKey: _qrCodeKey,
+        title: l10n.tutorialQrCodeTitle,
+        description: l10n.tutorialQrCodeDesc,
+        icon: Icons.qr_code_scanner,
+      ),
+      TutorialStep(
+        targetKey: _rewardKey,
+        title: l10n.tutorialRewardTitle,
+        description: l10n.tutorialRewardDesc,
+        icon: Icons.emoji_events_outlined,
+      ),
+    ];
   }
 
   Widget _buildNextWithdrawalCard(BuildContext context) {

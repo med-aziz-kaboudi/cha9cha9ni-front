@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
+import '../../core/services/session_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
+import '../profile/screens/edit_profile_screen.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
   const FamilyMemberHomeScreen({super.key});
@@ -26,53 +29,51 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
   bool _isLoadingFamily = true;
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
+  final _sessionManager = SessionManager();
   int _currentNavIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Timer? _sessionCheckTimer;
+  StreamSubscription<String>? _sessionExpiredSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
-    _startSessionValidation();
+    _listenToSessionExpired();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sessionCheckTimer?.cancel();
+    _sessionExpiredSubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // App came back from background - check if session is still valid
+      // App came back from background - validate session once
       debugPrint('📱 App resumed - validating session');
-      _validateSession();
+      _validateSessionOnce();
     }
   }
 
-  /// Start periodic session validation (every 5 seconds)
-  void _startSessionValidation() {
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+  /// Listen to session expired events from any API call
+  void _listenToSessionExpired() {
+    _sessionExpiredSubscription = _sessionManager.onSessionExpired.listen((reason) {
       if (mounted) {
-        _validateSession();
+        _showSessionExpiredDialog();
       }
     });
   }
 
-  /// Validate session and logout if invalid
-  Future<void> _validateSession() async {
+  /// Validate session once (called when app resumes from background)
+  Future<void> _validateSessionOnce() async {
     try {
       await _familyApiService.validateSession();
     } on AuthenticationException catch (e) {
       debugPrint('🚫 Session validation failed: $e');
-      if (mounted) {
-        _sessionCheckTimer?.cancel(); // Stop checking
-        await _showSessionExpiredDialog();
-      }
+      // SessionManager.notifySessionExpired() is called in the API service
     } catch (e) {
       // Network errors or other issues - don't logout, just log
       debugPrint('⚠️ Session validation error (non-auth): $e');
@@ -82,6 +83,16 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
   /// Show dialog informing user another device logged in, then logout
   Future<void> _showSessionExpiredDialog() async {
     if (!mounted) return;
+    
+    // Check if already handling to prevent duplicate dialogs
+    if (_sessionManager.isHandlingExpiration) {
+      // Already showing dialog from another source, skip
+      debugPrint('⚠️ Session expired dialog already showing, skipping');
+      return;
+    }
+    
+    // Mark as handling
+    _sessionManager.markHandling();
     
     // Store parent context for navigation after dialog closes
     final parentContext = context;
@@ -201,26 +212,53 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
 
   /// Perform sign out and navigate to sign in screen
   Future<void> _performSignOut(BuildContext parentContext) async {
+    debugPrint('🚪 Starting sign out process...');
     try {
       await _tokenStorage.clearTokens();
+      debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
+      debugPrint('✅ Pending verification cleared');
       
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
+        debugPrint('✅ Supabase signed out');
       }
       
+      // Reset session manager flag for next login
+      _sessionManager.resetHandlingFlag();
+      
+      debugPrint('🔄 Attempting navigation to SignInScreen...');
+      debugPrint('   parentContext.mounted = ${parentContext.mounted}');
+      
       if (parentContext.mounted) {
-        Navigator.of(parentContext).pushAndRemoveUntil(
+        Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
           (route) => false,
         );
+        debugPrint('✅ Navigation initiated');
+      } else {
+        debugPrint('❌ parentContext not mounted, trying global navigation');
+        // Fallback: use the current context if available
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const SignInScreen()),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       debugPrint('❌ Sign out error: $e');
+      // Reset flag even on error
+      _sessionManager.resetHandlingFlag();
       // Force navigate even if sign out fails
       if (parentContext.mounted) {
-        Navigator.of(parentContext).pushAndRemoveUntil(
+        Navigator.of(parentContext, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SignInScreen()),
+          (route) => false,
+        );
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const SignInScreen()),
           (route) => false,
         );
@@ -325,12 +363,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Sign out failed: ${e.toString()}'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+        AppToast.error(context, 'Sign out failed: ${e.toString()}');
       }
     }
   }
@@ -344,14 +377,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
       case 0:
         break;
       case 1:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.scanButtonTapped)),
-        );
+        AppToast.comingSoon(context, AppLocalizations.of(context)!.scanButtonTapped);
         break;
       case 2:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.rewardScreenComingSoon)),
-        );
+        AppToast.comingSoon(context, AppLocalizations.of(context)!.rewardScreenComingSoon);
         break;
     }
   }
@@ -367,6 +396,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
         },
         onPersonalInfo: () {
           Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+          );
         },
         onCurrentPack: () {
           Navigator.pop(context);

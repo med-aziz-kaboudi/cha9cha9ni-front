@@ -861,6 +861,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'OK'**
   String get ok;
+
+  /// No description provided for @skipTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Guide'**
+  String get skipTutorial;
+
+  /// No description provided for @nextTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextTutorial;
+
+  /// No description provided for @doneTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get doneTutorial;
+
+  /// No description provided for @tutorialSidebarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get tutorialSidebarTitle;
+
+  /// No description provided for @tutorialSidebarDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap here to open the sidebar menu. Access your profile, settings, and more options.'**
+  String get tutorialSidebarDesc;
+
+  /// No description provided for @tutorialTopUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up'**
+  String get tutorialTopUpTitle;
+
+  /// No description provided for @tutorialTopUpDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money to your family account. Share funds with your family members easily.'**
+  String get tutorialTopUpDesc;
+
+  /// No description provided for @tutorialWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get tutorialWithdrawTitle;
+
+  /// No description provided for @tutorialWithdrawDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Request to withdraw money from your family savings when you need it.'**
+  String get tutorialWithdrawDesc;
+
+  /// No description provided for @tutorialStatementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement'**
+  String get tutorialStatementTitle;
+
+  /// No description provided for @tutorialStatementDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View all your transactions history. Track your family\'s spending and savings.'**
+  String get tutorialStatementDesc;
+
+  /// No description provided for @tutorialPointsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward Points'**
+  String get tutorialPointsTitle;
+
+  /// No description provided for @tutorialPointsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn points for every activity! Redeem them for exclusive rewards and benefits.'**
+  String get tutorialPointsDesc;
+
+  /// No description provided for @tutorialNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get tutorialNotificationTitle;
+
+  /// No description provided for @tutorialNotificationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay updated with family activities, transactions, and important alerts.'**
+  String get tutorialNotificationDesc;
+
+  /// No description provided for @tutorialQrCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Scanner'**
+  String get tutorialQrCodeTitle;
+
+  /// No description provided for @tutorialQrCodeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR codes to make quick payments or add new family members.'**
+  String get tutorialQrCodeDesc;
+
+  /// No description provided for @tutorialRewardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards'**
+  String get tutorialRewardTitle;
+
+  /// No description provided for @tutorialRewardDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore and redeem your earned points for amazing rewards and discounts.'**
+  String get tutorialRewardDesc;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @firstNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get firstNameLabel;
+
+  /// No description provided for @lastNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get lastNameLabel;
+
+  /// No description provided for @phoneNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phoneNumberLabel;
+
+  /// No description provided for @firstNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required'**
+  String get firstNameRequired;
+
+  /// No description provided for @lastNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name is required'**
+  String get lastNameRequired;
+
+  /// No description provided for @profileUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profileUpdatedSuccessfully;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get fullName;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Email'**
+  String get changeEmail;
+
+  /// No description provided for @verifyCurrentEmailDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To change your email, we first need to verify your current email address.'**
+  String get verifyCurrentEmailDesc;
+
+  /// No description provided for @sendVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Verification Code'**
+  String get sendVerificationCode;
+
+  /// No description provided for @enterCodeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {email}'**
+  String enterCodeSentTo(String email);
+
+  /// No description provided for @currentEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Current email verified'**
+  String get currentEmailVerified;
+
+  /// No description provided for @enterNewEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new email address'**
+  String get enterNewEmail;
+
+  /// No description provided for @newEmailPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'newemail@example.com'**
+  String get newEmailPlaceholder;
+
+  /// No description provided for @confirmChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Change'**
+  String get confirmChange;
+
+  /// No description provided for @emailUpdatedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Email updated successfully!'**
+  String get emailUpdatedSuccessfully;
+
+  /// No description provided for @phoneNumberMustBe8Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number must be exactly 8 digits'**
+  String get phoneNumberMustBe8Digits;
+
+  /// No description provided for @phoneNumberAlreadyInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone number is already in use'**
+  String get phoneNumberAlreadyInUse;
 }
 
 class _AppLocalizationsDelegate

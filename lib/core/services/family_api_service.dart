@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/family_model.dart';
 import '../services/token_storage_service.dart';
+import '../services/session_manager.dart';
 
 /// Exception thrown when authentication fails and user should be logged out
 class AuthenticationException implements Exception {
@@ -17,6 +18,7 @@ class AuthenticationException implements Exception {
 class FamilyApiService {
   final _baseUrl = ApiConfig.baseUrl;
   final _tokenStorage = TokenStorageService();
+  final _sessionManager = SessionManager();
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _tokenStorage.getAccessToken();
@@ -137,10 +139,12 @@ class FamilyApiService {
         // If still 401 after refresh, user needs to re-login
         if (response.statusCode == 401) {
           debugPrint('❌ Still 401 after token refresh - user needs to re-login');
+          _sessionManager.notifySessionExpired('Another device may have logged in');
           throw AuthenticationException('Session invalidated. Another device may have logged in.');
         }
       } else {
         debugPrint('❌ Token refresh failed - user needs to re-login');
+        _sessionManager.notifySessionExpired('Session expired');
         throw AuthenticationException('Session expired. Please sign in again.');
       }
     }
@@ -228,10 +232,12 @@ class FamilyApiService {
         // If still 401 after refresh, session is definitely invalid
         if (response.statusCode == 401) {
           debugPrint('❌ Session invalidated - another device logged in');
+          _sessionManager.notifySessionExpired('Another device may have logged in');
           throw AuthenticationException('Session invalidated. Another device may have logged in.');
         }
       } else {
         debugPrint('❌ Token refresh failed - session expired');
+        _sessionManager.notifySessionExpired('Session expired');
         throw AuthenticationException('Session expired. Please sign in again.');
       }
     }

@@ -414,4 +414,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ok => 'OK';
+
+  @override
+  String get skipTutorial => 'Skip Guide';
+
+  @override
+  String get nextTutorial => 'Next';
+
+  @override
+  String get doneTutorial => 'Got it!';
+
+  @override
+  String get tutorialSidebarTitle => 'Menu';
+
+  @override
+  String get tutorialSidebarDesc =>
+      'Tap here to open the sidebar menu. Access your profile, settings, and more options.';
+
+  @override
+  String get tutorialTopUpTitle => 'Top Up';
+
+  @override
+  String get tutorialTopUpDesc =>
+      'Add money to your family account. Share funds with your family members easily.';
+
+  @override
+  String get tutorialWithdrawTitle => 'Withdraw';
+
+  @override
+  String get tutorialWithdrawDesc =>
+      'Request to withdraw money from your family savings when you need it.';
+
+  @override
+  String get tutorialStatementTitle => 'Statement';
+
+  @override
+  String get tutorialStatementDesc =>
+      'View all your transactions history. Track your family\'s spending and savings.';
+
+  @override
+  String get tutorialPointsTitle => 'Reward Points';
+
+  @override
+  String get tutorialPointsDesc =>
+      'Earn points for every activity! Redeem them for exclusive rewards and benefits.';
+
+  @override
+  String get tutorialNotificationTitle => 'Notifications';
+
+  @override
+  String get tutorialNotificationDesc =>
+      'Stay updated with family activities, transactions, and important alerts.';
+
+  @override
+  String get tutorialQrCodeTitle => 'QR Scanner';
+
+  @override
+  String get tutorialQrCodeDesc =>
+      'Scan QR codes to make quick payments or add new family members.';
+
+  @override
+  String get tutorialRewardTitle => 'Rewards';
+
+  @override
+  String get tutorialRewardDesc =>
+      'Explore and redeem your earned points for amazing rewards and discounts.';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get firstNameLabel => 'First name';
+
+  @override
+  String get lastNameLabel => 'Last name';
+
+  @override
+  String get phoneNumberLabel => 'Phone number';
+
+  @override
+  String get firstNameRequired => 'First name is required';
+
+  @override
+  String get lastNameRequired => 'Last name is required';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully!';
+
+  @override
+  String get fullName => 'Full name';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get changeEmail => 'Change Email';
+
+  @override
+  String get verifyCurrentEmailDesc =>
+      'To change your email, we first need to verify your current email address.';
+
+  @override
+  String get sendVerificationCode => 'Send Verification Code';
+
+  @override
+  String enterCodeSentTo(String email) {
+    return 'Enter the 6-digit code sent to $email';
+  }
+
+  @override
+  String get currentEmailVerified => 'Current email verified';
+
+  @override
+  String get enterNewEmail => 'Enter your new email address';
+
+  @override
+  String get newEmailPlaceholder => 'newemail@example.com';
+
+  @override
+  String get confirmChange => 'Confirm Change';
+
+  @override
+  String get emailUpdatedSuccessfully => 'Email updated successfully!';
+
+  @override
+  String get phoneNumberMustBe8Digits =>
+      'Phone number must be exactly 8 digits';
+
+  @override
+  String get phoneNumberAlreadyInUse => 'This phone number is already in use';
 }

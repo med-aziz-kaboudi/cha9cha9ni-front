@@ -10,6 +10,12 @@ class HomeHeaderWidget extends StatelessWidget {
   final VoidCallback onStatement;
   final VoidCallback? onNotification;
   final int notificationCount;
+  // Tutorial keys
+  final GlobalKey? topUpKey;
+  final GlobalKey? withdrawKey;
+  final GlobalKey? statementKey;
+  final GlobalKey? pointsKey;
+  final GlobalKey? notificationKey;
 
   const HomeHeaderWidget({
     super.key,
@@ -20,6 +26,11 @@ class HomeHeaderWidget extends StatelessWidget {
     required this.onStatement,
     this.onNotification,
     this.notificationCount = 0,
+    this.topUpKey,
+    this.withdrawKey,
+    this.statementKey,
+    this.pointsKey,
+    this.notificationKey,
   });
 
   @override
@@ -187,6 +198,7 @@ class HomeHeaderWidget extends StatelessWidget {
                 right: isRTL ? null : badgeMargin,
                 left: isRTL ? badgeMargin : null,
                 child: Container(
+                  key: pointsKey,
                   padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEBC11),
@@ -245,6 +257,7 @@ class HomeHeaderWidget extends StatelessWidget {
       right: isRTL ? null : 20,
       left: isRTL ? 20 : null,
       child: GestureDetector(
+        key: notificationKey,
         onTap: onNotification,
         child: Stack(
           clipBehavior: Clip.none,
@@ -312,6 +325,7 @@ class HomeHeaderWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildActionButton(
+              key: topUpKey,
               icon: Icons.add_circle_outline,
               label: AppLocalizations.of(context)!.topUp,
               onTap: onTopUp,
@@ -320,6 +334,7 @@ class HomeHeaderWidget extends StatelessWidget {
               labelSize: labelSize,
             ),
             _buildActionButton(
+              key: withdrawKey,
               icon: Icons.account_balance_wallet_outlined,
               label: AppLocalizations.of(context)!.withdraw,
               onTap: onWithdraw,
@@ -328,6 +343,7 @@ class HomeHeaderWidget extends StatelessWidget {
               labelSize: labelSize,
             ),
             _buildActionButton(
+              key: statementKey,
               icon: Icons.receipt_long_outlined,
               label: AppLocalizations.of(context)!.statement,
               onTap: onStatement,
@@ -342,6 +358,7 @@ class HomeHeaderWidget extends StatelessWidget {
   }
 
   Widget _buildActionButton({
+    GlobalKey? key,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -350,6 +367,7 @@ class HomeHeaderWidget extends StatelessWidget {
     required double labelSize,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
