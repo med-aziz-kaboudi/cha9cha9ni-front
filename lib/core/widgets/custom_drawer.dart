@@ -86,22 +86,22 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
     
     // Responsive values
     final drawerWidth = screenWidth * 0.75;
-    final headerHeight = (screenHeight * 0.28).clamp(200.0, 280.0);
-    final logoWidth = (drawerWidth * 0.55).clamp(140.0, 200.0);
-    final avatarSize = (screenHeight * 0.06).clamp(42.0, 60.0);
-    final closeButtonSize = (screenHeight * 0.045).clamp(32.0, 42.0);
-    final closeIconSize = (closeButtonSize * 0.5).clamp(14.0, 20.0);
-    final avatarIconSize = (avatarSize * 0.52).clamp(22.0, 32.0);
-    final userNameFontSize = (screenHeight * 0.019).clamp(14.0, 18.0);
-    final logoutFontSize = (screenHeight * 0.028).clamp(20.0, 28.0);
-    final logoutIconSize = (screenHeight * 0.028).clamp(20.0, 28.0);
-    final menuItemFontSize = (screenHeight * 0.018).clamp(13.0, 17.0);
-    final menuIconSize = (screenHeight * 0.026).clamp(18.0, 26.0);
-    final headerPadding = (screenWidth * 0.04).clamp(12.0, 20.0);
-    final avatarTopSpacing = (screenHeight * 0.02).clamp(12.0, 24.0);
-    final nameTopSpacing = (screenHeight * 0.012).clamp(8.0, 14.0);
-    final menuItemPaddingV = (screenHeight * 0.02).clamp(14.0, 22.0);
-    final menuItemPaddingH = (screenWidth * 0.05).clamp(16.0, 24.0);
+    final headerHeight = (screenHeight * 0.25).clamp(180.0, 240.0);
+    final logoWidth = (drawerWidth * 0.50).clamp(120.0, 170.0);
+    final avatarSize = (screenHeight * 0.05).clamp(36.0, 50.0);
+    final closeButtonSize = (screenHeight * 0.04).clamp(28.0, 36.0);
+    final closeIconSize = (closeButtonSize * 0.5).clamp(12.0, 16.0);
+    final avatarIconSize = (avatarSize * 0.52).clamp(18.0, 26.0);
+    final userNameFontSize = (screenHeight * 0.017).clamp(13.0, 16.0);
+    final logoutFontSize = (screenHeight * 0.020).clamp(15.0, 19.0);
+    final logoutIconSize = (screenHeight * 0.022).clamp(16.0, 20.0);
+    final menuItemFontSize = (screenHeight * 0.016).clamp(13.0, 15.0);
+    final menuIconSize = (screenHeight * 0.022).clamp(18.0, 22.0);
+    final headerPadding = (screenWidth * 0.035).clamp(10.0, 16.0);
+    final avatarTopSpacing = (screenHeight * 0.015).clamp(8.0, 16.0);
+    final nameTopSpacing = (screenHeight * 0.008).clamp(4.0, 10.0);
+    final menuItemPaddingV = (screenHeight * 0.014).clamp(10.0, 14.0);
+    final menuItemPaddingH = (screenWidth * 0.04).clamp(14.0, 20.0);
     
     return Drawer(
       width: drawerWidth,
