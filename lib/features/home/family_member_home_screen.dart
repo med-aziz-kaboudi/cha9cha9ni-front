@@ -83,95 +83,149 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen> with Wi
   Future<void> _showSessionExpiredDialog() async {
     if (!mounted) return;
     
+    // Store parent context for navigation after dialog closes
+    final parentContext = context;
+    bool hasLoggedOut = false;
+    
+    // Auto logout timer - will logout after 3 seconds even if user doesn't click OK
+    Timer? autoLogoutTimer;
+    
     await showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.6),
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        elevation: 16,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon with gradient background
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+      builder: (dialogContext) {
+        // Start auto-logout timer
+        autoLogoutTimer = Timer(const Duration(seconds: 3), () {
+          if (!hasLoggedOut && Navigator.of(dialogContext).canPop()) {
+            hasLoggedOut = true;
+            Navigator.of(dialogContext).pop();
+            _performSignOut(parentContext);
+          }
+        });
+        
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          elevation: 16,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon with gradient background
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
                   ),
-                  shape: BoxShape.circle,
+                  child: Icon(
+                    Icons.phonelink_erase_rounded,
+                    size: 36,
+                    color: AppColors.primary,
+                  ),
                 ),
-                child: Icon(
-                  Icons.phonelink_erase_rounded,
-                  size: 36,
-                  color: AppColors.primary,
+                const SizedBox(height: 20),
+                // Title
+                Text(
+                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ?? 'Session Expired',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.dark,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Title
-              Text(
-                AppLocalizations.of(context)?.sessionExpiredTitle ?? 'Session Expired',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.dark,
+                const SizedBox(height: 12),
+                // Message
+                Text(
+                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ?? 
+                    'Another device has logged into your account. You will be signed out for security.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              // Message
-              Text(
-                AppLocalizations.of(context)?.sessionExpiredMessage ?? 
-                  'Another device has logged into your account. You will be signed out for security.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              // Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _handleSignOut(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 24),
+                // Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!hasLoggedOut) {
+                        hasLoggedOut = true;
+                        autoLogoutTimer?.cancel();
+                        Navigator.of(dialogContext).pop();
+                        _performSignOut(parentContext);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(dialogContext)?.ok ?? 'OK',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  child: Text(
-                    AppLocalizations.of(context)?.ok ?? 'OK',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+    
+    // Clean up timer if dialog was dismissed another way
+    autoLogoutTimer?.cancel();
+  }
+
+  /// Perform sign out and navigate to sign in screen
+  Future<void> _performSignOut(BuildContext parentContext) async {
+    try {
+      await _tokenStorage.clearTokens();
+      await PendingVerificationHelper.clear();
+      
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        await Supabase.instance.client.auth.signOut();
+      }
+      
+      if (parentContext.mounted) {
+        Navigator.of(parentContext).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SignInScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Sign out error: $e');
+      // Force navigate even if sign out fails
+      if (parentContext.mounted) {
+        Navigator.of(parentContext).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SignInScreen()),
+          (route) => false,
+        );
+      }
+    }
   }
 
   Future<void> _loadCachedDataFirst() async {
