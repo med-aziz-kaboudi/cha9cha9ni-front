@@ -69,6 +69,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get passwordRequirement4 => 'Contient un caractère spécial';
 
   @override
+  String get passwordStrong => 'Mot de passe fort !';
+
+  @override
+  String get passwordRequirements => 'Exigences du mot de passe';
+
+  @override
   String termsAgreement(String action) {
     return 'En cliquant sur \"$action\", vous acceptez les ';
   }
@@ -1063,4 +1069,35 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get retryHint =>
       'L\'application se reconnectera automatiquement en ligne';
+
+  @override
+  String get changePassword => 'Changer le mot de passe';
+
+  @override
+  String get changePasswordDesc =>
+      'Mettre à jour le mot de passe de votre compte';
+
+  @override
+  String get changePasswordDialogDesc =>
+      'Entrez votre mot de passe actuel et choisissez-en un nouveau';
+
+  @override
+  String get currentPassword => 'Mot de passe actuel';
+
+  @override
+  String get currentPasswordRequired => 'Le mot de passe actuel est requis';
+
+  @override
+  String get passwordDoesNotMeetRequirements =>
+      'Le mot de passe ne répond pas aux exigences';
+
+  @override
+  String get newPasswordMustBeDifferent =>
+      'Le nouveau mot de passe doit être différent de l\'actuel';
+
+  @override
+  String get passwordChangedSuccess => 'Mot de passe changé avec succès';
+
+  @override
+  String get failedToChangePassword => 'Échec du changement de mot de passe';
 }

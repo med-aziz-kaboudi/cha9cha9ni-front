@@ -521,4 +521,39 @@ class BiometricService {
     await prefs.remove(_biometricEnabledKey);
     await prefs.remove(_passkeyEnabledKey);
   }
+
+  /// Change user password (requires current password verification)
+  Future<({bool success, String? error})> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) {
+        return (success: false, error: 'Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/change-password'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return (success: true, error: null);
+      } else {
+        final data = json.decode(response.body);
+        return (success: false, error: (data['message'] as String?) ?? 'Failed to change password');
+      }
+    } catch (e) {
+      debugPrint('Error changing password: $e');
+      return (success: false, error: 'Network error');
+    }
+  }
 }

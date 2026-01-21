@@ -69,6 +69,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get passwordRequirement4 => 'تحتوي على رمز خاص';
 
   @override
+  String get passwordStrong => 'كلمة مرور قوية!';
+
+  @override
+  String get passwordRequirements => 'متطلبات كلمة المرور';
+
+  @override
   String termsAgreement(String action) {
     return 'بالنقر على \"$action\" فإنك توافق على ';
   }
@@ -1044,4 +1050,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get retryHint => 'سيتصل التطبيق تلقائياً عند الاتصال بالإنترنت';
+
+  @override
+  String get changePassword => 'تغيير كلمة المرور';
+
+  @override
+  String get changePasswordDesc => 'تحديث كلمة مرور حسابك';
+
+  @override
+  String get changePasswordDialogDesc =>
+      'أدخل كلمة المرور الحالية واختر كلمة مرور جديدة';
+
+  @override
+  String get currentPassword => 'كلمة المرور الحالية';
+
+  @override
+  String get currentPasswordRequired => 'كلمة المرور الحالية مطلوبة';
+
+  @override
+  String get passwordDoesNotMeetRequirements =>
+      'كلمة المرور لا تستوفي المتطلبات';
+
+  @override
+  String get newPasswordMustBeDifferent =>
+      'كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية';
+
+  @override
+  String get passwordChangedSuccess => 'تم تغيير كلمة المرور بنجاح';
+
+  @override
+  String get failedToChangePassword => 'فشل في تغيير كلمة المرور';
 }

@@ -220,6 +220,18 @@ abstract class AppLocalizations {
   /// **'Contains a special character'**
   String get passwordRequirement4;
 
+  /// No description provided for @passwordStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong password!'**
+  String get passwordStrong;
+
+  /// No description provided for @passwordRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Password requirements'**
+  String get passwordRequirements;
+
   /// No description provided for @termsAgreement.
   ///
   /// In en, this message translates to:
@@ -2025,6 +2037,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'App will automatically reconnect when online'**
   String get retryHint;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// No description provided for @changePasswordDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your account password'**
+  String get changePasswordDesc;
+
+  /// No description provided for @changePasswordDialogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current password and choose a new one'**
+  String get changePasswordDialogDesc;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPassword;
+
+  /// No description provided for @currentPasswordRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password is required'**
+  String get currentPasswordRequired;
+
+  /// No description provided for @passwordDoesNotMeetRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Password does not meet requirements'**
+  String get passwordDoesNotMeetRequirements;
+
+  /// No description provided for @newPasswordMustBeDifferent.
+  ///
+  /// In en, this message translates to:
+  /// **'New password must be different from current password'**
+  String get newPasswordMustBeDifferent;
+
+  /// No description provided for @passwordChangedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccess;
+
+  /// No description provided for @failedToChangePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change password'**
+  String get failedToChangePassword;
 }
 
 class _AppLocalizationsDelegate

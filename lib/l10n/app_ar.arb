@@ -20,6 +20,8 @@
   "passwordRequirement2": "تحتوي على رقم",
   "passwordRequirement3": "تحتوي على حرف كبير",
   "passwordRequirement4": "تحتوي على رمز خاص",
+  "passwordStrong": "كلمة مرور قوية!",
+  "passwordRequirements": "متطلبات كلمة المرور",
   "termsAgreement": "بالنقر على \"{action}\" فإنك توافق على ",
   "termOfUse": "شروط الاستخدام ",
   "and": "و ",
@@ -438,5 +440,15 @@
   "offlineMessage": "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى. يجب أن تكون متصلاً لاستخدام هذا التطبيق.",
   "connectionTip": "نصيحة: حاول تفعيل الواي فاي أو بيانات الهاتف",
   "closeApp": "إغلاق التطبيق",
-  "retryHint": "سيتصل التطبيق تلقائياً عند الاتصال بالإنترنت"
+  "retryHint": "سيتصل التطبيق تلقائياً عند الاتصال بالإنترنت",
+  
+  "changePassword": "تغيير كلمة المرور",
+  "changePasswordDesc": "تحديث كلمة مرور حسابك",
+  "changePasswordDialogDesc": "أدخل كلمة المرور الحالية واختر كلمة مرور جديدة",
+  "currentPassword": "كلمة المرور الحالية",
+  "currentPasswordRequired": "كلمة المرور الحالية مطلوبة",
+  "passwordDoesNotMeetRequirements": "كلمة المرور لا تستوفي المتطلبات",
+  "newPasswordMustBeDifferent": "كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية",
+  "passwordChangedSuccess": "تم تغيير كلمة المرور بنجاح",
+  "failedToChangePassword": "فشل في تغيير كلمة المرور"
 }

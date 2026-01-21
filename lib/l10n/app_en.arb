@@ -20,6 +20,8 @@
   "passwordRequirement2": "Contains a number",
   "passwordRequirement3": "Contains an uppercase letter",
   "passwordRequirement4": "Contains a special character",
+  "passwordStrong": "Strong password!",
+  "passwordRequirements": "Password requirements",
   "termsAgreement": "By clicking \"{action}\" you agree to Cha9cha9ni ",
   "@termsAgreement": {
     "placeholders": {
@@ -452,5 +454,15 @@
   "offlineMessage": "Please check your internet connection and try again. You need to be connected to use this app.",
   "connectionTip": "Tip: Try enabling Wi-Fi or mobile data",
   "closeApp": "Close App",
-  "retryHint": "App will automatically reconnect when online"
+  "retryHint": "App will automatically reconnect when online",
+  
+  "changePassword": "Change Password",
+  "changePasswordDesc": "Update your account password",
+  "changePasswordDialogDesc": "Enter your current password and choose a new one",
+  "currentPassword": "Current Password",
+  "currentPasswordRequired": "Current password is required",
+  "passwordDoesNotMeetRequirements": "Password does not meet requirements",
+  "newPasswordMustBeDifferent": "New password must be different from current password",
+  "passwordChangedSuccess": "Password changed successfully",
+  "failedToChangePassword": "Failed to change password"
 }

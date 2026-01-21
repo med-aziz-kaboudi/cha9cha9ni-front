@@ -69,6 +69,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordRequirement4 => 'Contains a special character';
 
   @override
+  String get passwordStrong => 'Strong password!';
+
+  @override
+  String get passwordRequirements => 'Password requirements';
+
+  @override
   String termsAgreement(String action) {
     return 'By clicking \"$action\" you agree to Cha9cha9ni ';
   }
@@ -1048,4 +1054,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retryHint => 'App will automatically reconnect when online';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get changePasswordDesc => 'Update your account password';
+
+  @override
+  String get changePasswordDialogDesc =>
+      'Enter your current password and choose a new one';
+
+  @override
+  String get currentPassword => 'Current Password';
+
+  @override
+  String get currentPasswordRequired => 'Current password is required';
+
+  @override
+  String get passwordDoesNotMeetRequirements =>
+      'Password does not meet requirements';
+
+  @override
+  String get newPasswordMustBeDifferent =>
+      'New password must be different from current password';
+
+  @override
+  String get passwordChangedSuccess => 'Password changed successfully';
+
+  @override
+  String get failedToChangePassword => 'Failed to change password';
 }

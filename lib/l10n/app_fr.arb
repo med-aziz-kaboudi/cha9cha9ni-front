@@ -20,6 +20,8 @@
   "passwordRequirement2": "Contient un chiffre",
   "passwordRequirement3": "Contient une lettre majuscule",
   "passwordRequirement4": "Contient un caractère spécial",
+  "passwordStrong": "Mot de passe fort !",
+  "passwordRequirements": "Exigences du mot de passe",
   "termsAgreement": "En cliquant sur \"{action}\", vous acceptez les ",
   "termOfUse": "Conditions d'utilisation ",
   "and": "et la ",
@@ -438,5 +440,15 @@
   "offlineMessage": "Veuillez vérifier votre connexion Internet et réessayer. Vous devez être connecté pour utiliser cette application.",
   "connectionTip": "Astuce: Essayez d'activer le Wi-Fi ou les données mobiles",
   "closeApp": "Fermer l'application",
-  "retryHint": "L'application se reconnectera automatiquement en ligne"
+  "retryHint": "L'application se reconnectera automatiquement en ligne",
+  
+  "changePassword": "Changer le mot de passe",
+  "changePasswordDesc": "Mettre à jour le mot de passe de votre compte",
+  "changePasswordDialogDesc": "Entrez votre mot de passe actuel et choisissez-en un nouveau",
+  "currentPassword": "Mot de passe actuel",
+  "currentPasswordRequired": "Le mot de passe actuel est requis",
+  "passwordDoesNotMeetRequirements": "Le mot de passe ne répond pas aux exigences",
+  "newPasswordMustBeDifferent": "Le nouveau mot de passe doit être différent de l'actuel",
+  "passwordChangedSuccess": "Mot de passe changé avec succès",
+  "failedToChangePassword": "Échec du changement de mot de passe"
 }

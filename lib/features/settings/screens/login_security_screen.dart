@@ -4,6 +4,7 @@ import '../../../core/services/biometric_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
+import 'change_password_screen.dart';
 
 class LoginSecurityScreen extends StatefulWidget {
   const LoginSecurityScreen({super.key});
@@ -86,7 +87,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
   Future<void> _setupPinCode() async {
     final pin = await _showPinDialog(
       title: AppLocalizations.of(context)?.setupPinCode ?? 'Set Up PIN Code',
-      subtitle: AppLocalizations.of(context)?.enterNewPin ?? 
+      subtitle:
+          AppLocalizations.of(context)?.enterNewPin ??
           'Enter a 6-digit PIN to secure your account',
       confirmRequired: true,
     );
@@ -103,14 +105,16 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
       if (result.success) {
         AppToast.success(
           context,
-          AppLocalizations.of(context)?.pinSetupSuccess ?? 
+          AppLocalizations.of(context)?.pinSetupSuccess ??
               'PIN Code set up successfully',
         );
         _loadSettings();
       } else {
         AppToast.error(
           context,
-          result.error ?? (AppLocalizations.of(context)?.failedToSetupPin ?? 'Failed to set up PIN Code'),
+          result.error ??
+              (AppLocalizations.of(context)?.failedToSetupPin ??
+                  'Failed to set up PIN Code'),
         );
       }
     }
@@ -120,7 +124,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     // First verify current PIN
     final currentPin = await _showPinDialog(
       title: AppLocalizations.of(context)?.currentPin ?? 'Current PIN',
-      subtitle: AppLocalizations.of(context)?.enterCurrentPin ?? 
+      subtitle:
+          AppLocalizations.of(context)?.enterCurrentPin ??
           'Enter your current PIN',
       confirmRequired: false,
     );
@@ -130,7 +135,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     // Then get new PIN
     final newPin = await _showPinDialog(
       title: AppLocalizations.of(context)?.newPin ?? 'New PIN',
-      subtitle: AppLocalizations.of(context)?.enterNewPin ?? 
+      subtitle:
+          AppLocalizations.of(context)?.enterNewPin ??
           'Enter your new 6-digit PIN',
       confirmRequired: true,
     );
@@ -147,13 +153,15 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
       if (result.success) {
         AppToast.success(
           context,
-          AppLocalizations.of(context)?.pinChangedSuccess ?? 
+          AppLocalizations.of(context)?.pinChangedSuccess ??
               'PIN changed successfully',
         );
       } else {
         AppToast.error(
           context,
-          result.error ?? (AppLocalizations.of(context)?.failedToChangePin ?? 'Failed to change PIN'),
+          result.error ??
+              (AppLocalizations.of(context)?.failedToChangePin ??
+                  'Failed to change PIN'),
         );
       }
     }
@@ -165,17 +173,12 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _RemovePinDialog(
-        biometricService: _biometricService,
-        l10n: l10n,
-      ),
+      builder: (context) =>
+          _RemovePinDialog(biometricService: _biometricService, l10n: l10n),
     );
 
     if (result == true && mounted) {
-      AppToast.success(
-        context,
-        l10n?.pinRemovedSuccess ?? 'PIN Code removed',
-      );
+      AppToast.success(context, l10n?.pinRemovedSuccess ?? 'PIN Code removed');
       _loadSettings();
     }
   }
@@ -183,7 +186,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
   Future<void> _toggleBiometric(bool enable) async {
     final l10n = AppLocalizations.of(context);
     final isPinEnabled = _settings?.passkeyEnabled ?? false;
-    
+
     // PIN is required before enabling Face ID
     if (enable && !isPinEnabled) {
       AppToast.info(
@@ -192,11 +195,11 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
       );
       return;
     }
-    
+
     if (!_canUseBiometrics) {
       AppToast.error(
         context,
-        l10n?.biometricsNotAvailable ?? 
+        l10n?.biometricsNotAvailable ??
             'Biometrics not available on this device',
       );
       return;
@@ -205,15 +208,14 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     if (enable) {
       // First verify biometric works
       final authenticated = await _biometricService.authenticateWithBiometrics(
-        reason: l10n?.confirmBiometric ?? 
-            'Confirm biometric to enable',
+        reason: l10n?.confirmBiometric ?? 'Confirm biometric to enable',
       );
 
       if (!authenticated) {
         if (mounted) {
           AppToast.error(
             context,
-            AppLocalizations.of(context)?.biometricAuthFailed ?? 
+            AppLocalizations.of(context)?.biometricAuthFailed ??
                 'Biometric authentication failed',
           );
         }
@@ -223,7 +225,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
 
     setState(() => _isSaving = true);
 
-    final result = enable 
+    final result = enable
         ? await _biometricService.enableBiometric()
         : await _biometricService.disableBiometric();
 
@@ -233,15 +235,19 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
       if (result.success) {
         AppToast.success(
           context,
-          enable 
-              ? (AppLocalizations.of(context)?.biometricEnabled ?? '$_biometricName enabled')
-              : (AppLocalizations.of(context)?.biometricDisabled ?? '$_biometricName disabled'),
+          enable
+              ? (AppLocalizations.of(context)?.biometricEnabled ??
+                    '$_biometricName enabled')
+              : (AppLocalizations.of(context)?.biometricDisabled ??
+                    '$_biometricName disabled'),
         );
         _loadSettings();
       } else {
         AppToast.error(
           context,
-          result.error ?? (AppLocalizations.of(context)?.failedToUpdateBiometric ?? 'Failed to update biometric settings'),
+          result.error ??
+              (AppLocalizations.of(context)?.failedToUpdateBiometric ??
+                  'Failed to update biometric settings'),
         );
       }
     }
@@ -265,8 +271,10 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
       barrierColor: Colors.black.withOpacity(0.6),
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final currentController = isConfirmStep ? confirmController : pinController;
-          final currentTitle = isConfirmStep 
+          final currentController = isConfirmStep
+              ? confirmController
+              : pinController;
+          final currentTitle = isConfirmStep
               ? (l10n?.confirmPin ?? 'Confirm PIN')
               : title;
           final currentSubtitle = isConfirmStep
@@ -302,7 +310,9 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isConfirmStep ? Icons.check_circle_outline : Icons.lock_outline,
+                        isConfirmStep
+                            ? Icons.check_circle_outline
+                            : Icons.lock_outline,
                         color: AppColors.secondary,
                         size: 32,
                       ),
@@ -338,8 +348,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                         color: AppColors.gray,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: errorMessage != null 
-                              ? AppColors.primary 
+                          color: errorMessage != null
+                              ? AppColors.primary
                               : Colors.grey.withOpacity(0.2),
                           width: errorMessage != null ? 2 : 1,
                         ),
@@ -436,7 +446,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                                 ),
                               ),
                               child: Text(
-                                isConfirmStep 
+                                isConfirmStep
                                     ? (l10n?.back ?? 'Back')
                                     : (l10n?.cancel ?? 'Cancel'),
                                 style: const TextStyle(
@@ -460,11 +470,12 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                               child: ElevatedButton(
                                 onPressed: () {
                                   final pin = currentController.text;
-                                  
+
                                   // Validate PIN length
                                   if (pin.length != 6) {
                                     setDialogState(() {
-                                      errorMessage = l10n?.pinMustBe6Digits ?? 
+                                      errorMessage =
+                                          l10n?.pinMustBe6Digits ??
                                           'PIN must be 6 digits';
                                     });
                                     return;
@@ -478,18 +489,26 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                                     });
                                   } else if (confirmRequired && isConfirmStep) {
                                     // Validate PINs match
-                                    if (pinController.text != confirmController.text) {
+                                    if (pinController.text !=
+                                        confirmController.text) {
                                       setDialogState(() {
-                                        errorMessage = l10n?.pinsDoNotMatch ?? 
+                                        errorMessage =
+                                            l10n?.pinsDoNotMatch ??
                                             'PINs do not match';
                                         confirmController.clear();
                                       });
                                       return;
                                     }
-                                    Navigator.pop(dialogContext, pinController.text);
+                                    Navigator.pop(
+                                      dialogContext,
+                                      pinController.text,
+                                    );
                                   } else {
                                     // No confirmation needed
-                                    Navigator.pop(dialogContext, pinController.text);
+                                    Navigator.pop(
+                                      dialogContext,
+                                      pinController.text,
+                                    );
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -526,8 +545,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: !isConfirmStep 
-                                  ? AppColors.secondary 
+                              color: !isConfirmStep
+                                  ? AppColors.secondary
                                   : Colors.grey[300],
                               shape: BoxShape.circle,
                             ),
@@ -537,8 +556,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: isConfirmStep 
-                                  ? AppColors.secondary 
+                              color: isConfirmStep
+                                  ? AppColors.secondary
                                   : Colors.grey[300],
                               shape: BoxShape.circle,
                             ),
@@ -684,6 +703,10 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                                 _build2FACard(),
                                 const SizedBox(height: 16),
 
+                                // Change Password section
+                                _buildChangePasswordCard(),
+                                const SizedBox(height: 16),
+
                                 // Security info
                                 _buildSecurityInfoCard(),
                               ],
@@ -725,7 +748,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isEnabled 
+                  color: isEnabled
                       ? AppColors.secondary.withOpacity(0.1)
                       : Colors.grey.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -763,11 +786,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 ),
               ),
               if (isEnabled)
-                Icon(
-                  Icons.check_circle,
-                  color: AppColors.secondary,
-                  size: 24,
-                ),
+                Icon(Icons.check_circle, color: AppColors.secondary, size: 24),
             ],
           ),
           if (isEnabled) ...[
@@ -832,11 +851,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
               color: Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.key,
-              color: Colors.grey,
-              size: 24,
-            ),
+            child: const Icon(Icons.key, color: Colors.grey, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -854,10 +869,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 const SizedBox(height: 2),
                 Text(
                   l10n?.passkeyShortDesc ?? 'Passwordless login',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],
             ),
@@ -907,11 +919,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
               color: Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.security,
-              color: Colors.grey,
-              size: 24,
-            ),
+            child: const Icon(Icons.security, color: Colors.grey, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -929,10 +937,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 const SizedBox(height: 2),
                 Text(
                   l10n?.twoFAShortDesc ?? 'Google Authenticator, Authy',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],
             ),
@@ -953,6 +958,70 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChangePasswordCard() {
+    final l10n = AppLocalizations.of(context);
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.lock_reset,
+                color: AppColors.secondary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n?.changePassword ?? 'Change Password',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.dark,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n?.changePasswordDesc ?? 'Update your account password',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.grey, size: 24),
+          ],
+        ),
       ),
     );
   }
@@ -987,7 +1056,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isEnabled 
+                    color: isEnabled
                         ? AppColors.secondary.withOpacity(0.1)
                         : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -1016,13 +1085,15 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                         isLocked
                             ? (l10n?.requiresPinFirst ?? 'Requires PIN code')
                             : isEnabled
-                                ? (l10n?.biometricEnabled ?? 'Enabled')
-                                : (l10n?.biometricDisabled ?? 'Disabled'),
+                            ? (l10n?.biometricEnabled ?? 'Enabled')
+                            : (l10n?.biometricDisabled ?? 'Disabled'),
                         style: TextStyle(
                           fontSize: 13,
-                          color: isLocked 
+                          color: isLocked
                               ? Colors.orange
-                              : isEnabled ? AppColors.secondary : Colors.grey,
+                              : isEnabled
+                              ? AppColors.secondary
+                              : Colors.grey,
                         ),
                       ),
                     ],
@@ -1030,7 +1101,10 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 ),
                 if (isLocked)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -1115,7 +1189,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  l10n?.securityInfoShort ?? 'Face ID first, then PIN as backup. 3 failed attempts locks temporarily.',
+                  l10n?.securityInfoShort ??
+                      'Face ID first, then PIN as backup. 3 failed attempts locks temporarily.',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[600],
@@ -1178,15 +1253,13 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     );
   }
 }
+
 /// Separate dialog widget for removing PIN to properly manage TextEditingController lifecycle
 class _RemovePinDialog extends StatefulWidget {
   final BiometricService biometricService;
   final AppLocalizations? l10n;
 
-  const _RemovePinDialog({
-    required this.biometricService,
-    required this.l10n,
-  });
+  const _RemovePinDialog({required this.biometricService, required this.l10n});
 
   @override
   State<_RemovePinDialog> createState() => _RemovePinDialogState();
@@ -1217,22 +1290,23 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
       });
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _errorText = null;
     });
-    
+
     final result = await widget.biometricService.removePasskey(pin);
-    
+
     if (!mounted) return;
-    
+
     if (result.success) {
       Navigator.pop(context, true);
     } else {
       setState(() {
         _isLoading = false;
-        _errorText = result.error ?? (widget.l10n?.incorrectPin ?? 'Incorrect PIN');
+        _errorText =
+            result.error ?? (widget.l10n?.incorrectPin ?? 'Incorrect PIN');
       });
     }
   }
@@ -1240,7 +1314,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
-    
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
@@ -1266,10 +1340,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
               padding: const EdgeInsets.symmetric(vertical: 24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.red.shade400,
-                    Colors.red.shade600,
-                  ],
+                  colors: [Colors.red.shade400, Colors.red.shade600],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1305,7 +1376,8 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      l10n?.enterPinToRemove ?? 'Enter your current PIN to confirm removal',
+                      l10n?.enterPinToRemove ??
+                          'Enter your current PIN to confirm removal',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -1316,7 +1388,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                 ],
               ),
             ),
-            
+
             // PIN Input
             Padding(
               padding: const EdgeInsets.all(24),
@@ -1366,17 +1438,17 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                       LengthLimitingTextInputFormatter(6),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Action Buttons
                   Row(
                     children: [
                       // Cancel Button
                       Expanded(
                         child: TextButton(
-                          onPressed: _isLoading 
-                              ? null 
+                          onPressed: _isLoading
+                              ? null
                               : () => Navigator.pop(context, false),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -1424,7 +1496,9 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
                                 : Text(
