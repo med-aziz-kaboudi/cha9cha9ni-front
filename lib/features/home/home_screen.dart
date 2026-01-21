@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       }
     } catch (e) {
       if (context.mounted) {
-        AppToast.error(context, 'Sign out failed: ${e.toString()}');
+        AppToast.error(context, '${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}');
       }
     }
   }
@@ -396,7 +396,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ),
                     child: Center(
-                      child: Text('Sign Out', style: AppTextStyles.bodyMedium),
+                      child: Text(
+                        AppLocalizations.of(context)?.signOut ?? 'Sign Out',
+                        style: AppTextStyles.bodyMedium,
+                      ),
                     ),
                   ),
                 ),

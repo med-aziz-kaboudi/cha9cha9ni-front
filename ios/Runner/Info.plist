@@ -45,6 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID is used to unlock the app securely and protect your family data.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

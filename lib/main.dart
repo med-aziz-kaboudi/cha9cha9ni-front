@@ -1,9 +1,11 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'screens/splash_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/family/family_selection_screen.dart';
@@ -12,10 +14,13 @@ import 'features/home/family_member_home_screen.dart';
 import 'features/auth/screens/verify_email_screen.dart';
 import 'features/auth/services/auth_api_service.dart';
 import 'features/auth/models/auth_request_models.dart';
+import 'features/settings/screens/app_unlock_screen.dart';
+import 'core/screens/offline_screen.dart';
 import 'core/services/language_service.dart';
 import 'core/services/token_storage_service.dart';
 import 'core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
 import 'core/services/session_manager.dart';
+import 'core/services/biometric_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -154,17 +159,50 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   bool _isAuthenticated = false;
   bool _needsVerification = false;
   bool _isProcessingOAuth = false; // Loading state during OAuth callback
+  bool _needsSecurityUnlock = false; // Whether app is locked and needs unlock
+  bool _isCheckingSecurityStatus = false; // Prevent duplicate checks
+  bool _isOffline = false; // Whether device has no internet connection
+  DateTime? _backgroundedAt; // Track when app went to background
+  static const int _lockAfterSeconds = 30; // Only lock after 30 seconds in background
   String? _verificationEmail;
   Widget? _homeScreen; // Will be either FamilySelectionScreen, OwnerHome, or MemberHome
   final _authApiService = AuthApiService();
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
+  final _biometricService = BiometricService();
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _initializeConnectivity();
     _initializeApp();
+  }
+
+  /// Initialize connectivity monitoring
+  Future<void> _initializeConnectivity() async {
+    // Check initial connectivity status
+    final results = await Connectivity().checkConnectivity();
+    _updateConnectivityStatus(results);
+    
+    // Listen for connectivity changes
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(
+      _updateConnectivityStatus,
+    );
+  }
+
+  /// Update connectivity status
+  void _updateConnectivityStatus(List<ConnectivityResult> results) {
+    final isOffline = results.isEmpty || 
+        results.every((result) => result == ConnectivityResult.none);
+    
+    if (mounted && _isOffline != isOffline) {
+      debugPrint('📶 Connectivity changed: ${isOffline ? "OFFLINE" : "ONLINE"}');
+      setState(() {
+        _isOffline = isOffline;
+      });
+    }
   }
 
   /// Initialize app by checking saved state
@@ -181,6 +219,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       
       if (accessToken != null) {
         debugPrint('🔑 Found saved access token, restoring session');
+        
+        // Check if security is enabled and app needs unlock
+        await _checkSecurityStatus();
         
         // Determine home screen based on family status
         final homeScreen = await _determineHomeScreen();
@@ -203,6 +244,48 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     }
   }
 
+  /// Check if security is enabled and app needs unlock
+  Future<void> _checkSecurityStatus() async {
+    if (_isCheckingSecurityStatus) return;
+    _isCheckingSecurityStatus = true;
+
+    try {
+      // Use local cache for quick check instead of API call
+      final isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      
+      if (isSecurityEnabled) {
+        debugPrint('🔐 Security enabled - showing unlock screen');
+        if (mounted) {
+          setState(() {
+            _needsSecurityUnlock = true;
+          });
+        }
+      } else {
+        debugPrint('🔓 Security not enabled - no unlock needed');
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking security status: $e');
+      // On error, don't lock the user out
+    } finally {
+      _isCheckingSecurityStatus = false;
+    }
+  }
+
+  /// Called when user successfully unlocks the app
+  void _onAppUnlocked() {
+    debugPrint('🔓 App unlocked successfully');
+    if (mounted) {
+      setState(() {
+        _needsSecurityUnlock = false;
+      });
+    }
+  }
+
+  /// Called when user logs out from unlock screen
+  Future<void> _onLogoutFromUnlock() async {
+    await _handleAuthFailure();
+  }
+
   /// Load pending verification email from local storage
   Future<void> _loadPendingVerification() async {
     final email = await PendingVerificationHelper.get();
@@ -218,15 +301,54 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _connectivitySubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // App came back from background (e.g., after OAuth in browser)
-      debugPrint('📱 App resumed - checking session');
-      _checkInitialSession();
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // App going to background - record the time
+      _backgroundedAt = DateTime.now();
+      debugPrint('📱 App going to background at: $_backgroundedAt');
+    } else if (state == AppLifecycleState.resumed) {
+      debugPrint('📱 App resumed');
+      
+      // Only check security lock if app was in background for more than the threshold
+      // Don't do session checks here - only security
+      if (_isAuthenticated && !_needsSecurityUnlock && !_showSplash) {
+        final wasInBackgroundLongEnough = _backgroundedAt != null &&
+            DateTime.now().difference(_backgroundedAt!).inSeconds >= _lockAfterSeconds;
+        
+        if (wasInBackgroundLongEnough) {
+          debugPrint('📱 App was in background for ${DateTime.now().difference(_backgroundedAt!).inSeconds}s - checking security');
+          _checkSecurityOnResume();
+        } else {
+          debugPrint('📱 App resumed quickly - skipping security check');
+        }
+      }
+      
+      // Clear the background timestamp
+      _backgroundedAt = null;
+    }
+  }
+
+  /// Check if security lock should be shown when app resumes from background
+  Future<void> _checkSecurityOnResume() async {
+    try {
+      // Use local cache check instead of API call for better performance
+      final isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      
+      if (isSecurityEnabled) {
+        debugPrint('🔐 App resumed with security enabled - showing unlock');
+        if (mounted) {
+          setState(() {
+            _needsSecurityUnlock = true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking security on resume: $e');
     }
   }
 
@@ -289,15 +411,24 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         // Initialize WebSocket for real-time session monitoring
         SessionManager().initializeSocket(accessToken);
         
-        // Determine home screen based on family status
-        final homeScreen = await _determineHomeScreen();
-        
-        if (mounted) {
-          setState(() {
-            _isAuthenticated = true;
-            _needsVerification = false;
-            _homeScreen = homeScreen;
-          });
+        // Only determine home screen if we don't already have one
+        if (_homeScreen == null) {
+          final homeScreen = await _determineHomeScreen();
+          if (mounted) {
+            setState(() {
+              _isAuthenticated = true;
+              _needsVerification = false;
+              _homeScreen = homeScreen;
+            });
+          }
+        } else {
+          // Already have a home screen, just mark as authenticated
+          if (mounted && !_isAuthenticated) {
+            setState(() {
+              _isAuthenticated = true;
+              _needsVerification = false;
+            });
+          }
         }
       } else {
         // No backend tokens - need to call backend (first time linking Supabase session)
@@ -397,6 +528,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           email: response.user?.email ?? user.email,
         );
         
+        // Check if security (PIN/Face ID) is enabled - user must verify themselves
+        await _checkSecurityStatus();
+        
         // Check family status and determine which screen to show
         final homeScreen = await _determineHomeScreen();
         
@@ -410,7 +544,8 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         }
         
         // Only navigate programmatically if splash is already done
-        if (!_showSplash) {
+        // If security is enabled, the build method will show AppUnlockScreen first
+        if (!_showSplash && !_needsSecurityUnlock) {
           final navigator = navigatorKey.currentState;
           if (navigator != null) {
             navigator.pushAndRemoveUntil(
@@ -507,30 +642,58 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🏗️ Building AppEntry: splash=$_showSplash, needsVerification=$_needsVerification, email=$_verificationEmail, isAuth=$_isAuthenticated, processing=$_isProcessingOAuth');
+    debugPrint('🏗️ Building AppEntry: splash=$_showSplash, needsVerification=$_needsVerification, email=$_verificationEmail, isAuth=$_isAuthenticated, processing=$_isProcessingOAuth, needsUnlock=$_needsSecurityUnlock, offline=$_isOffline');
     
     if (_showSplash) {
       return SplashScreen(onFinished: _onSplashFinished);
     }
     
-    // Show loading screen while processing OAuth callback
-    if (_isProcessingOAuth) {
-      return const _OAuthLoadingScreen();
-    }
+    // Determine which screen to show
+    Widget currentScreen;
     
-    // If user needs verification, show verify screen
-    if (_needsVerification && _verificationEmail != null) {
+    // Check for offline status - show offline screen if no internet
+    if (_isOffline) {
+      debugPrint('📶 Showing OfflineScreen');
+      currentScreen = const OfflineScreen();
+    } else if (_isProcessingOAuth) {
+      // Show loading screen while processing OAuth callback
+      currentScreen = const _OAuthLoadingScreen();
+    } else if (_needsVerification && _verificationEmail != null) {
+      // If user needs verification, show verify screen
       debugPrint('🏗️ Showing VerifyEmailScreen for $_verificationEmail');
-      return VerifyEmailScreen(email: _verificationEmail!);
+      currentScreen = VerifyEmailScreen(email: _verificationEmail!);
+    } else if (_isAuthenticated) {
+      // AuthGate: Check if user is authenticated
+      if (_needsSecurityUnlock) {
+        debugPrint('🏗️ Showing AppUnlockScreen');
+        currentScreen = AppUnlockScreen(
+          onUnlocked: _onAppUnlocked,
+          onLogout: _onLogoutFromUnlock,
+        );
+      } else {
+        currentScreen = _homeScreen ?? const FamilySelectionScreen();
+      }
+    } else {
+      // Always show onboarding after splash
+      currentScreen = const OnboardingScreen();
     }
     
-    // AuthGate: Check if user is authenticated
-    if (_isAuthenticated) {
-      return _homeScreen ?? const FamilySelectionScreen();
-    }
-    
-    // Always show onboarding after splash
-    return const OnboardingScreen();
+    // Wrap in AnimatedSwitcher for smooth transitions (especially offline -> online)
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey<String>(currentScreen.runtimeType.toString() + (_isOffline ? '_offline' : '')),
+        child: currentScreen,
+      ),
+    );
   }
 }
 

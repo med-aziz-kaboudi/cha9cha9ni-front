@@ -659,4 +659,408 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pendingRemoval => 'En attente';
+
+  @override
+  String get selectLanguage => 'Sélectionner la langue';
+
+  @override
+  String get choosePreferredLanguage => 'Choisissez votre langue préférée';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageChanged => 'Langue modifiée avec succès';
+
+  @override
+  String get currentLanguage => 'Actuel';
+
+  @override
+  String get loginSecurity => 'Connexion & Sécurité';
+
+  @override
+  String get securityDescription =>
+      'Ajoutez une couche de sécurité supplémentaire pour protéger votre compte et les données de votre famille.';
+
+  @override
+  String get passkey => 'Code d\'accès';
+
+  @override
+  String get sixDigitPasskey => 'Code à 6 chiffres';
+
+  @override
+  String get passkeyEnabled => 'Activé';
+
+  @override
+  String get passkeyNotSet => 'Non configuré';
+
+  @override
+  String get passkeyEnabledDescription =>
+      'Votre compte est protégé par un code à 6 chiffres.';
+
+  @override
+  String get passkeyDescription =>
+      'Enregistrez cet appareil pour une connexion sans mot de passe. Comme PayPal et Wise, vous pourrez vous connecter instantanément.';
+
+  @override
+  String get setupPasskey => 'Configurer la clé d\'accès';
+
+  @override
+  String get changePasskey => 'Modifier';
+
+  @override
+  String get removePasskey => 'Supprimer le code';
+
+  @override
+  String get removePasskeyConfirm =>
+      'Cela désactivera également l\'authentification biométrique. Vous devrez configurer un nouveau code pour réactiver les fonctionnalités de sécurité.';
+
+  @override
+  String get verifyPasskey => 'Vérifier le code';
+
+  @override
+  String get enterPasskeyToRemove =>
+      'Entrez votre code pour confirmer la suppression';
+
+  @override
+  String get currentPasskey => 'Code actuel';
+
+  @override
+  String get enterCurrentPasskey => 'Entrez votre code actuel';
+
+  @override
+  String get newPasskey => 'Nouveau code';
+
+  @override
+  String get enterNewPasskey => 'Entrez votre nouveau code à 6 chiffres';
+
+  @override
+  String get confirmPasskey => 'Confirmer le code';
+
+  @override
+  String get passkeyMustBe6Digits => 'Le code doit contenir 6 chiffres';
+
+  @override
+  String get passkeysDoNotMatch => 'Les codes ne correspondent pas';
+
+  @override
+  String get passkeySetupSuccess => 'Code configuré avec succès';
+
+  @override
+  String get passkeyChangedSuccess => 'Code modifié avec succès';
+
+  @override
+  String get passkeyRemovedSuccess => 'Paramètres de sécurité supprimés';
+
+  @override
+  String get faceId => 'Face ID';
+
+  @override
+  String get fingerprint => 'Empreinte digitale';
+
+  @override
+  String get biometrics => 'Biométrie';
+
+  @override
+  String get biometricEnabled => 'Activé';
+
+  @override
+  String get biometricDisabled => 'Désactivé';
+
+  @override
+  String get biometricDescription =>
+      'Utilisez la biométrie pour un accès rapide et sécurisé. Revient au code en cas d\'échec.';
+
+  @override
+  String get biometricsNotAvailable =>
+      'Biométrie non disponible sur cet appareil';
+
+  @override
+  String get confirmBiometric => 'Confirmez la biométrie pour activer';
+
+  @override
+  String get biometricAuthFailed => 'Échec de l\'authentification biométrique';
+
+  @override
+  String get howItWorks => 'Comment ça marche';
+
+  @override
+  String get securityStep1 =>
+      'Lorsque vous ouvrez l\'application, vous devrez vérifier votre identité.';
+
+  @override
+  String get securityStep2 =>
+      'D\'abord, la vérification biométrique (Face ID / Empreinte) est tentée si activée.';
+
+  @override
+  String get securityStep3 =>
+      'Si la biométrie échoue ou est désactivée, entrez votre code à 6 chiffres.';
+
+  @override
+  String get securityStep4 =>
+      'Après 3 échecs, votre compte sera temporairement verrouillé pour votre protection.';
+
+  @override
+  String get confirm => 'Confirmer';
+
+  @override
+  String get unlockApp => 'Déverrouiller l\'application';
+
+  @override
+  String get enterPasskeyToUnlock => 'Entrez votre code pour déverrouiller';
+
+  @override
+  String attemptsRemaining(int count) {
+    return '$count tentatives restantes';
+  }
+
+  @override
+  String get accountLocked => 'Compte verrouillé';
+
+  @override
+  String accountLockedFor(String duration) {
+    return 'Compte verrouillé pendant $duration';
+  }
+
+  @override
+  String get accountPermanentlyLocked =>
+      'Compte définitivement verrouillé. Veuillez contacter le support.';
+
+  @override
+  String tryAgainIn(String time) {
+    return 'Réessayez dans $time';
+  }
+
+  @override
+  String useBiometric(String type) {
+    return 'Utiliser $type';
+  }
+
+  @override
+  String get usePasskeyInstead => 'Utiliser le code à la place';
+
+  @override
+  String get usePinInstead => 'Utiliser le PIN à la place';
+
+  @override
+  String get contactSupport => 'Contacter le support';
+
+  @override
+  String get pinCode => 'Code PIN';
+
+  @override
+  String get sixDigitPin => 'PIN à 6 chiffres';
+
+  @override
+  String get setupPinCode => 'Configurer le code PIN';
+
+  @override
+  String get setupPin => 'Configurer PIN';
+
+  @override
+  String get enterNewPin =>
+      'Entrez un PIN à 6 chiffres pour sécuriser votre compte';
+
+  @override
+  String get pinSetupSuccess => 'Code PIN configuré avec succès';
+
+  @override
+  String get currentPin => 'PIN actuel';
+
+  @override
+  String get enterCurrentPin => 'Entrez votre PIN actuel';
+
+  @override
+  String get newPin => 'Nouveau PIN';
+
+  @override
+  String get changePin => 'Modifier';
+
+  @override
+  String get pinChangedSuccess => 'PIN modifié avec succès';
+
+  @override
+  String get removePin => 'Supprimer le code PIN';
+
+  @override
+  String get removePinConfirm =>
+      'Cela supprimera votre code PIN. Vous pouvez en configurer un nouveau à tout moment.';
+
+  @override
+  String get verifyPin => 'Vérifier le PIN';
+
+  @override
+  String get enterPinToRemove => 'Entrez votre PIN pour confirmer';
+
+  @override
+  String get pinRemovedSuccess => 'Code PIN supprimé';
+
+  @override
+  String get pinMustBe6Digits => 'Le PIN doit contenir 6 chiffres';
+
+  @override
+  String get incorrectPin => 'PIN incorrect';
+
+  @override
+  String get confirmPin => 'Confirmer';
+
+  @override
+  String get pinsDoNotMatch => 'Les PINs ne correspondent pas';
+
+  @override
+  String get pinEnabled => 'Activé';
+
+  @override
+  String get pinNotSet => 'Non configuré';
+
+  @override
+  String get pinEnabledDescription =>
+      'Votre compte est protégé par un PIN à 6 chiffres.';
+
+  @override
+  String get pinDescription =>
+      'Configurez un PIN à 6 chiffres comme méthode de secours pour déverrouiller l\'application.';
+
+  @override
+  String get enterPinToUnlock => 'Entrez votre PIN pour déverrouiller';
+
+  @override
+  String get devicePasskey => 'Clé d\'accès';
+
+  @override
+  String get passkeyShortDesc => 'Connexion sans mot de passe';
+
+  @override
+  String get twoFactorAuth => 'Authentification à deux facteurs';
+
+  @override
+  String get authenticatorApp => 'Application d\'authentification';
+
+  @override
+  String get twoFADescription =>
+      'Utilisez une application comme Google Authenticator ou Authy pour une sécurité supplémentaire.';
+
+  @override
+  String get twoFAShortDesc => 'Google Authenticator, Authy';
+
+  @override
+  String get setup2FA => 'Configurer 2FA';
+
+  @override
+  String get pinRequiredForFaceId => 'Veuillez d\'abord configurer le code PIN';
+
+  @override
+  String get requiresPinFirst => 'Nécessite un code PIN';
+
+  @override
+  String get pinFirst => 'PIN d\'abord';
+
+  @override
+  String get securityInfoShort =>
+      'Configurez d\'abord le PIN, puis activez Face ID pour un déverrouillage rapide. Le PIN est votre secours.';
+
+  @override
+  String get failedToSetupPin => 'Échec de la configuration du PIN';
+
+  @override
+  String get failedToChangePin => 'Échec de la modification du PIN';
+
+  @override
+  String get failedToRemovePin => 'Échec de la suppression du PIN';
+
+  @override
+  String get failedToUpdateBiometric =>
+      'Échec de la mise à jour des paramètres biométriques';
+
+  @override
+  String get orDivider => 'OU';
+
+  @override
+  String get codeExpiresAfterUse =>
+      'Le code expire après la première utilisation';
+
+  @override
+  String get signInFailed => 'Échec de la connexion';
+
+  @override
+  String get signUpFailed => 'Échec de l\'inscription';
+
+  @override
+  String get signOutFailed => 'Échec de la déconnexion';
+
+  @override
+  String get googleSignInFailed => 'Échec de la connexion Google';
+
+  @override
+  String get googleSignUpFailed => 'Échec de l\'inscription Google';
+
+  @override
+  String get reenterPinToConfirm => 'Ressaisissez votre PIN pour confirmer';
+
+  @override
+  String get continueText => 'Continuer';
+
+  @override
+  String get comingSoon => 'Bientôt disponible';
+
+  @override
+  String get soon => 'Bientôt';
+
+  @override
+  String get featureComingSoon => 'Cette fonctionnalité arrive bientôt!';
+
+  @override
+  String get useAnotherMethod => 'Utiliser une autre méthode';
+
+  @override
+  String get unlockOptions => 'Options de déverrouillage';
+
+  @override
+  String get chooseUnlockMethod => 'Choisissez comment déverrouiller';
+
+  @override
+  String get tryFaceIdAgain => 'Réessayer Face ID';
+
+  @override
+  String get usePasskey => 'Utiliser le passkey';
+
+  @override
+  String get use2FACode => 'Utiliser le code 2FA';
+
+  @override
+  String get enter2FACode => 'Entrez le code 2FA';
+
+  @override
+  String get enter6DigitCode =>
+      'Entrez le code à 6 chiffres de votre application d\'authentification';
+
+  @override
+  String get verifyCode => 'Vérifier le code';
+
+  @override
+  String get invalidCode => 'Code invalide. Veuillez réessayer.';
+
+  @override
+  String get noInternetConnection => 'Pas de connexion Internet';
+
+  @override
+  String get offlineMessage =>
+      'Veuillez vérifier votre connexion Internet et réessayer. Vous devez être connecté pour utiliser cette application.';
+
+  @override
+  String get connectionTip =>
+      'Astuce: Essayez d\'activer le Wi-Fi ou les données mobiles';
+
+  @override
+  String get closeApp => 'Fermer l\'application';
+
+  @override
+  String get retryHint =>
+      'L\'application se reconnectera automatiquement en ligne';
 }

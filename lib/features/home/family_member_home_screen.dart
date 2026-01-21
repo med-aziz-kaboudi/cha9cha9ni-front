@@ -15,6 +15,8 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
+import '../settings/screens/language_screen.dart';
+import '../settings/screens/login_security_screen.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
   const FamilyMemberHomeScreen({super.key});
@@ -386,7 +388,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       }
     } catch (e) {
       if (context.mounted) {
-        AppToast.error(context, 'Sign out failed: ${e.toString()}');
+        AppToast.error(context, '${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}');
       }
     }
   }
@@ -1048,9 +1050,17 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         },
         onLoginSecurity: () {
           Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginSecurityScreen()),
+          );
         },
         onLanguages: () {
           Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LanguageScreen()),
+          );
         },
         onNotifications: () {
           Navigator.pop(context);

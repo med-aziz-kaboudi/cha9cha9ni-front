@@ -7,6 +7,7 @@ import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
+import '../../core/services/socket_service.dart' show FamilyMemberJoinedData;
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
@@ -16,6 +17,8 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
+import '../settings/screens/language_screen.dart';
+import '../settings/screens/login_security_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -39,6 +42,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   int _currentNavIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   StreamSubscription<String>? _sessionExpiredSubscription;
+  StreamSubscription<FamilyMemberJoinedData>? _familyMemberJoinedSubscription;
 
   // Family members state
   List<FamilyMember> _familyMembers = [];
@@ -65,6 +69,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
     _listenToSessionExpired();
+    _listenToFamilyMemberJoined();
     // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
   }
@@ -86,6 +91,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionExpiredSubscription?.cancel();
+    _familyMemberJoinedSubscription?.cancel();
     super.dispose();
   }
 
@@ -105,6 +111,51 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     ) {
       if (mounted) {
         _showSessionExpiredDialog();
+      }
+    });
+  }
+
+  /// Listen to family member joined events via WebSocket
+  void _listenToFamilyMemberJoined() {
+    _familyMemberJoinedSubscription = _sessionManager.onFamilyMemberJoined.listen((
+      data,
+    ) {
+      if (mounted) {
+        debugPrint('👨‍👩‍👧 New family member joined: ${data.memberName}');
+        
+        // Add the new member to the list
+        final newMember = FamilyMember(
+          id: data.memberId,
+          name: data.memberName,
+          email: data.memberEmail,
+          isOwner: false,
+        );
+        
+        setState(() {
+          // Add member to list if not already present
+          if (!_familyMembers.any((m) => m.id == data.memberId)) {
+            _familyMembers.add(newMember);
+          }
+          // Update invite code
+          _inviteCode = data.newInviteCode;
+        });
+        
+        // Update cached data
+        _tokenStorage.saveFamilyMembers(
+          _familyMembers.map((m) => m.toJson()).toList(),
+        );
+        
+        // Update cached invite code and member count
+        _tokenStorage.saveFamilyInfo(
+          inviteCode: data.newInviteCode,
+          memberCount: _familyMembers.length,
+        );
+        
+        // Show a toast notification
+        AppToast.success(
+          context,
+          '${data.memberName} has joined your family!',
+        );
       }
     });
   }
@@ -464,7 +515,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       }
     } catch (e) {
       if (context.mounted) {
-        AppToast.error(context, 'Sign out failed: ${e.toString()}');
+        AppToast.error(context, '${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}');
       }
     }
   }
@@ -1209,9 +1260,17 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             },
             onLoginSecurity: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginSecurityScreen()),
+              );
             },
             onLanguages: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LanguageScreen()),
+              );
             },
             onNotifications: () {
               Navigator.pop(context);
@@ -1548,28 +1607,72 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               ),
             )
           else if (_familyMembers.where((m) => !m.isOwner).isEmpty)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.group_outlined, size: 48, color: Colors.grey[400]),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppLocalizations.of(context)?.noMembersYet ??
-                        'No members yet',
-                    style: TextStyle(color: Colors.grey[600]),
+            GestureDetector(
+              onTap: _showAddMemberDialog,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.secondary.withOpacity(0.08),
+                      AppColors.primary.withOpacity(0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context)?.tapAddMemberToInvite ??
-                        'Tap "Add Member" to invite your family',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.secondary.withOpacity(0.2),
+                    width: 1.5,
                   ),
-                ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.person_add_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context)?.noMembersYet ??
+                          'No members yet',
+                      style: const TextStyle(
+                        color: Color(0xFF23233F),
+                        fontSize: 16,
+                        fontFamily: 'DM Sans',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      AppLocalizations.of(context)?.tapAddMemberToInvite ??
+                          'Tap to invite your family members',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                        fontFamily: 'Nunito Sans',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           else

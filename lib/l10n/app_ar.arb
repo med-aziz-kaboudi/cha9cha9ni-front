@@ -266,5 +266,177 @@
   },
   "removalCancelled": "تم إلغاء طلب الإزالة",
   "waitingForMemberConfirmation": "في انتظار تأكيد العضو",
-  "pendingRemoval": "معلق"
+  "pendingRemoval": "معلق",
+  "selectLanguage": "اختر اللغة",
+  "choosePreferredLanguage": "اختر لغتك المفضلة",
+  "languageEnglish": "English",
+  "languageArabic": "العربية",
+  "languageFrench": "Français",
+  "languageChanged": "تم تغيير اللغة بنجاح",
+  "currentLanguage": "الحالية",
+  
+  "loginSecurity": "تسجيل الدخول والأمان",
+  "securityDescription": "أضف طبقة حماية إضافية لحماية حسابك وبيانات عائلتك.",
+  "passkey": "رمز الدخول",
+  "sixDigitPasskey": "رمز من 6 أرقام",
+  "passkeyEnabled": "مفعّل",
+  "passkeyNotSet": "غير مُعدّ",
+  "passkeyEnabledDescription": "حسابك محمي برمز من 6 أرقام.",
+  "passkeyDescription": "أعدّ رمزًا من 6 أرقام لحماية حسابك عند فتح التطبيق.",
+  "setupPasskey": "إعداد الرمز",
+  "changePasskey": "تغيير",
+  "remove": "حذف",
+  "removePasskey": "حذف الرمز",
+  "removePasskeyConfirm": "سيؤدي هذا أيضًا إلى تعطيل المصادقة البيومترية. ستحتاج إلى إعداد رمز جديد لإعادة تفعيل ميزات الأمان.",
+  "verifyPasskey": "التحقق من الرمز",
+  "enterPasskeyToRemove": "أدخل رمزك لتأكيد الحذف",
+  "currentPasskey": "الرمز الحالي",
+  "enterCurrentPasskey": "أدخل رمزك الحالي",
+  "newPasskey": "الرمز الجديد",
+  "enterNewPasskey": "أدخل رمزك الجديد المكون من 6 أرقام",
+  "confirmPasskey": "تأكيد الرمز",
+  "passkeyMustBe6Digits": "يجب أن يتكون الرمز من 6 أرقام",
+  "passkeysDoNotMatch": "الرموز غير متطابقة",
+  "passkeySetupSuccess": "تم إعداد الرمز بنجاح",
+  "passkeyChangedSuccess": "تم تغيير الرمز بنجاح",
+  "passkeyRemovedSuccess": "تم حذف إعدادات الأمان",
+  
+  "faceId": "التعرف على الوجه",
+  "fingerprint": "بصمة الإصبع",
+  "biometrics": "البيومترية",
+  "biometricEnabled": "مفعّل",
+  "biometricDisabled": "معطّل",
+  "biometricDescription": "استخدم البيومترية للوصول السريع والآمن. يرجع للرمز في حالة الفشل.",
+  "biometricsNotAvailable": "البيومترية غير متاحة على هذا الجهاز",
+  "confirmBiometric": "تأكيد البيومترية للتفعيل",
+  "biometricAuthFailed": "فشلت المصادقة البيومترية",
+  
+  "howItWorks": "كيف يعمل",
+  "securityStep1": "عند فتح التطبيق، سيُطلب منك التحقق من هويتك.",
+  "securityStep2": "أولاً، يتم محاولة التحقق البيومتري (التعرف على الوجه / البصمة) إذا كان مفعلاً.",
+  "securityStep3": "إذا فشلت البيومترية أو كانت معطلة، أدخل رمزك المكون من 6 أرقام.",
+  "securityStep4": "بعد 3 محاولات فاشلة، سيتم قفل حسابك مؤقتًا لحمايتك.",
+  
+  "cancel": "إلغاء",
+  "confirm": "تأكيد",
+  
+  "unlockApp": "فتح التطبيق",
+  "enterPasskeyToUnlock": "أدخل رمزك للفتح",
+  "attemptsRemaining": "{count} محاولات متبقية",
+  "@attemptsRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountLocked": "الحساب مقفل",
+  "accountLockedFor": "الحساب مقفل لمدة {duration}",
+  "@accountLockedFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPermanentlyLocked": "الحساب مقفل بشكل دائم. يرجى التواصل مع الدعم.",
+  "tryAgainIn": "حاول مرة أخرى خلال {time}",
+  "@tryAgainIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "useBiometric": "استخدام {type}",
+  "@useBiometric": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "usePasskeyInstead": "استخدام الرمز بدلاً من ذلك",
+  "usePinInstead": "استخدام رمز PIN بدلاً من ذلك",
+  "contactSupport": "تواصل مع الدعم",
+  
+  "pinCode": "رمز PIN",
+  "sixDigitPin": "رمز PIN من 6 أرقام",
+  "setupPinCode": "إعداد رمز PIN",
+  "setupPin": "إعداد PIN",
+  "enterNewPin": "أدخل رمز PIN مكون من 6 أرقام لتأمين حسابك",
+  "pinSetupSuccess": "تم إعداد رمز PIN بنجاح",
+  "currentPin": "رمز PIN الحالي",
+  "enterCurrentPin": "أدخل رمز PIN الحالي",
+  "newPin": "رمز PIN الجديد",
+  "changePin": "تغيير",
+  "pinChangedSuccess": "تم تغيير رمز PIN بنجاح",
+  "removePin": "حذف رمز PIN",
+  "removePinConfirm": "سيؤدي هذا إلى حذف رمز PIN الخاص بك. يمكنك إعداد رمز جديد في أي وقت.",
+  "verifyPin": "التحقق من رمز PIN",
+  "enterPinToRemove": "أدخل رمز PIN للتأكيد",
+  "pinRemovedSuccess": "تم حذف رمز PIN",
+  "pinMustBe6Digits": "يجب أن يكون رمز PIN مكون من 6 أرقام",
+  "incorrectPin": "رمز PIN غير صحيح",
+  "confirmPin": "تأكيد",
+  "pinsDoNotMatch": "رموز PIN غير متطابقة",
+  "pinEnabled": "مفعّل",
+  "pinNotSet": "غير مُعد",
+  "pinEnabledDescription": "حسابك محمي برمز PIN مكون من 6 أرقام.",
+  "pinDescription": "قم بإعداد رمز PIN مكون من 6 أرقام كطريقة احتياطية لفتح التطبيق.",
+  "enterPinToUnlock": "أدخل رمز PIN للفتح",
+  
+  "devicePasskey": "مفتاح المرور",
+  "passkeyDescription": "احفظ هذا الجهاز لتسجيل الدخول بدون كلمة مرور. مثل PayPal و Wise، ستتمكن من تسجيل الدخول فوراً.",
+  "passkeyShortDesc": "تسجيل دخول بدون كلمة مرور",
+  "setupPasskey": "إعداد مفتاح المرور",
+  
+  "twoFactorAuth": "المصادقة الثنائية",
+  "authenticatorApp": "تطبيق المصادقة",
+  "twoFADescription": "استخدم تطبيق مصادقة مثل Google Authenticator أو Authy لأمان إضافي.",
+  "twoFAShortDesc": "Google Authenticator، Authy",
+  "setup2FA": "إعداد المصادقة الثنائية",
+  
+  "pinRequiredForFaceId": "يرجى إعداد رمز PIN أولاً",
+  "requiresPinFirst": "يتطلب رمز PIN",
+  "pinFirst": "PIN أولاً",
+  "securityInfoShort": "قم بإعداد رمز PIN أولاً، ثم فعّل التعرف على الوجه للفتح السريع. رمز PIN هو الاحتياطي.",
+  
+  "failedToSetupPin": "فشل إعداد رمز PIN",
+  "failedToChangePin": "فشل تغيير رمز PIN",
+  "failedToRemovePin": "فشل حذف رمز PIN",
+  "failedToUpdateBiometric": "فشل تحديث إعدادات البيومترية",
+  
+  "orDivider": "أو",
+  "codeExpiresAfterUse": "ينتهي الرمز بعد الاستخدام الأول",
+  
+  "signInFailed": "فشل تسجيل الدخول",
+  "signUpFailed": "فشل إنشاء الحساب",
+  "signOutFailed": "فشل تسجيل الخروج",
+  "googleSignInFailed": "فشل تسجيل الدخول بجوجل",
+  "googleSignUpFailed": "فشل إنشاء الحساب بجوجل",
+  
+  "reenterPinToConfirm": "أعد إدخال رمز PIN للتأكيد",
+  "continueText": "متابعة",
+  
+  "comingSoon": "قريباً",
+  "soon": "قريباً",
+  "featureComingSoon": "هذه الميزة قادمة قريباً!",
+  
+  "useAnotherMethod": "استخدم طريقة أخرى",
+  "unlockOptions": "خيارات إلغاء القفل",
+  "chooseUnlockMethod": "اختر طريقة إلغاء القفل",
+  "tryFaceIdAgain": "حاول Face ID مرة أخرى",
+  "usePasskey": "استخدم مفتاح المرور",
+  "use2FACode": "استخدم رمز 2FA",
+  "enter2FACode": "أدخل رمز 2FA",
+  "enter6DigitCode": "أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة",
+  "verifyCode": "تحقق من الرمز",
+  "invalidCode": "رمز غير صالح. حاول مرة أخرى.",
+  
+  "noInternetConnection": "لا يوجد اتصال بالإنترنت",
+  "offlineMessage": "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى. يجب أن تكون متصلاً لاستخدام هذا التطبيق.",
+  "connectionTip": "نصيحة: حاول تفعيل الواي فاي أو بيانات الهاتف",
+  "closeApp": "إغلاق التطبيق",
+  "retryHint": "سيتصل التطبيق تلقائياً عند الاتصال بالإنترنت"
 }

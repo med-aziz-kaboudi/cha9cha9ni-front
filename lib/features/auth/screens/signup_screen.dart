@@ -1,4 +1,5 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -187,7 +188,7 @@ class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sign up failed: ${e.toString()}'),
+            content: Text('${AppLocalizations.of(context)?.signUpFailed ?? 'Sign up failed'}: ${e.toString()}'),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -234,7 +235,7 @@ class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Google sign up failed: ${e.toString()}'),
+            content: Text('${AppLocalizations.of(context)?.googleSignUpFailed ?? 'Google sign up failed'}: ${e.toString()}'),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -655,7 +656,14 @@ class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.termOfUse,
-                            style: AppTextStyles.bodyBold,
+                            style: AppTextStyles.bodyBold.copyWith(
+                              color: AppColors.secondary.withOpacity(0.7),
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                Uri.parse('https://www.cha9cha9ni.tn/terms'),
+                                mode: LaunchMode.externalApplication,
+                              ),
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.and,
@@ -665,7 +673,14 @@ class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.privacyPolicy,
-                            style: AppTextStyles.bodyBold,
+                            style: AppTextStyles.bodyBold.copyWith(
+                              color: AppColors.secondary.withOpacity(0.7),
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                Uri.parse('https://www.cha9cha9ni.tn/privacy'),
+                                mode: LaunchMode.externalApplication,
+                              ),
                           ),
                         ],
                       ),

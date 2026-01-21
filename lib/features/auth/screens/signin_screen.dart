@@ -1,5 +1,6 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
 import 'package:cha9cha9ni/main.dart' show PendingVerificationHelper;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,9 +10,11 @@ import '../../../core/widgets/language_selector.dart';
 import '../../../core/services/api_exception.dart';
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/family_api_service.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../family/family_selection_screen.dart';
 import '../../home/family_owner_home_screen.dart';
 import '../../home/family_member_home_screen.dart';
+import '../../settings/screens/app_unlock_screen.dart';
 import '../widgets/custom_text_field.dart';
 import '../models/auth_request_models.dart';
 import '../services/auth_api_service.dart';
@@ -32,6 +35,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
   final _authApiService = AuthApiService();
   final _tokenStorage = TokenStorageService();
   final _familyApiService = FamilyApiService();
+  final _biometricService = BiometricService();
 
   bool _obscurePassword = true;
   bool _showErrors = false;
@@ -110,6 +114,43 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
 
   Future<void> _navigateBasedOnFamilyStatus() async {
     try {
+      // First check if security (PIN/Face ID) is enabled - user must verify themselves
+      final isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      
+      if (isSecurityEnabled) {
+        debugPrint('🔐 Security enabled after login - showing unlock screen');
+        if (!mounted) return;
+        
+        // Get family info first to know where to go after unlock
+        final family = await _familyApiService.getMyFamily();
+        Widget destinationScreen;
+        
+        if (family != null) {
+          destinationScreen = family.isOwner == true 
+              ? const FamilyOwnerHomeScreen() 
+              : const FamilyMemberHomeScreen();
+        } else {
+          destinationScreen = const FamilySelectionScreen();
+        }
+        
+        // Show unlock screen with callback to navigate after unlock
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => AppUnlockScreen(
+              onUnlocked: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => destinationScreen),
+                  (route) => false,
+                );
+              },
+            ),
+          ),
+          (route) => false,
+        );
+        return;
+      }
+      
+      // No security enabled - navigate directly to home
       final family = await _familyApiService.getMyFamily();
       
       if (!mounted) return;
@@ -346,7 +387,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sign in failed: ${e.toString()}'),
+            content: Text('${AppLocalizations.of(context)?.signInFailed ?? 'Sign in failed'}: ${e.toString()}'),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -393,7 +434,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Google sign in failed: ${e.toString()}'),
+            content: Text('${AppLocalizations.of(context)?.googleSignInFailed ?? 'Google sign in failed'}: ${e.toString()}'),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -661,7 +702,14 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.termOfUse,
-                            style: AppTextStyles.bodyBold,
+                            style: AppTextStyles.bodyBold.copyWith(
+                              color: AppColors.secondary.withOpacity(0.7),
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                Uri.parse('https://www.cha9cha9ni.tn/terms'),
+                                mode: LaunchMode.externalApplication,
+                              ),
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.and,
@@ -671,7 +719,14 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
                           ),
                           TextSpan(
                             text: AppLocalizations.of(context)!.privacyPolicy,
-                            style: AppTextStyles.bodyBold,
+                            style: AppTextStyles.bodyBold.copyWith(
+                              color: AppColors.secondary.withOpacity(0.7),
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                Uri.parse('https://www.cha9cha9ni.tn/privacy'),
+                                mode: LaunchMode.externalApplication,
+                              ),
                           ),
                         ],
                       ),

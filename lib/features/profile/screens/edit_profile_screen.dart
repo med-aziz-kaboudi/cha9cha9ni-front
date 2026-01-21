@@ -317,6 +317,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildAppBar(AppLocalizations l10n) {
+    final locale = Localizations.localeOf(context);
+    final isRTL = locale.languageCode == 'ar';
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
@@ -334,22 +337,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withOpacity(0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: AppColors.dark,
+              child: Icon(
+                isRTL ? Icons.arrow_forward_ios : Icons.arrow_back_ios_new,
+                color: AppColors.secondary,
                 size: 20,
               ),
             ),
@@ -358,7 +361,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Text(
             l10n.editProfile,
             style: const TextStyle(
-              color: AppColors.dark,
+              color: AppColors.secondary,
               fontSize: 18,
               fontWeight: FontWeight.w700,
               height: 1.5,

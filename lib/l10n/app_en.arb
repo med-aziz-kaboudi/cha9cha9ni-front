@@ -280,5 +280,177 @@
   },
   "removalCancelled": "Removal request cancelled",
   "waitingForMemberConfirmation": "Waiting for member confirmation",
-  "pendingRemoval": "Pending"
+  "pendingRemoval": "Pending",
+  "selectLanguage": "Select Language",
+  "choosePreferredLanguage": "Choose your preferred language",
+  "languageEnglish": "English",
+  "languageArabic": "العربية",
+  "languageFrench": "Français",
+  "languageChanged": "Language changed successfully",
+  "currentLanguage": "Current",
+  
+  "loginSecurity": "Login & Security",
+  "securityDescription": "Add an extra layer of security to protect your account and family data.",
+  "passkey": "Passkey",
+  "sixDigitPasskey": "6-Digit Passkey",
+  "passkeyEnabled": "Enabled",
+  "passkeyNotSet": "Not set up",
+  "passkeyEnabledDescription": "Your account is protected with a 6-digit passkey.",
+  "passkeyDescription": "Set up a 6-digit passkey to protect your account when opening the app.",
+  "setupPasskey": "Set Up Passkey",
+  "changePasskey": "Change",
+  "remove": "Remove",
+  "removePasskey": "Remove Passkey",
+  "removePasskeyConfirm": "This will also disable biometric authentication. You will need to set up a new passkey to re-enable security features.",
+  "verifyPasskey": "Verify Passkey",
+  "enterPasskeyToRemove": "Enter your passkey to confirm removal",
+  "currentPasskey": "Current Passkey",
+  "enterCurrentPasskey": "Enter your current passkey",
+  "newPasskey": "New Passkey",
+  "enterNewPasskey": "Enter your new 6-digit passkey",
+  "confirmPasskey": "Confirm passkey",
+  "passkeyMustBe6Digits": "Passkey must be 6 digits",
+  "passkeysDoNotMatch": "Passkeys do not match",
+  "passkeySetupSuccess": "Passkey set up successfully",
+  "passkeyChangedSuccess": "Passkey changed successfully",
+  "passkeyRemovedSuccess": "Security settings removed",
+  
+  "faceId": "Face ID",
+  "fingerprint": "Fingerprint",
+  "biometrics": "Biometrics",
+  "biometricEnabled": "Enabled",
+  "biometricDisabled": "Disabled",
+  "biometricDescription": "Use biometrics for quick and secure access. Falls back to passkey if biometric fails.",
+  "biometricsNotAvailable": "Biometrics not available on this device",
+  "confirmBiometric": "Confirm biometric to enable",
+  "biometricAuthFailed": "Biometric authentication failed",
+  
+  "howItWorks": "How it works",
+  "securityStep1": "When you open the app, you'll be asked to verify your identity.",
+  "securityStep2": "First, biometric verification (Face ID / Fingerprint) is attempted if enabled.",
+  "securityStep3": "If biometric fails or is disabled, enter your 6-digit passkey.",
+  "securityStep4": "After 3 failed attempts, your account will be temporarily locked for your protection.",
+  
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  
+  "unlockApp": "Unlock App",
+  "enterPasskeyToUnlock": "Enter your passkey to unlock",
+  "attemptsRemaining": "{count} attempts remaining",
+  "@attemptsRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountLocked": "Account Locked",
+  "accountLockedFor": "Account locked for {duration}",
+  "@accountLockedFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPermanentlyLocked": "Account permanently locked. Please contact support.",
+  "tryAgainIn": "Try again in {time}",
+  "@tryAgainIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "useBiometric": "Use {type}",
+  "@useBiometric": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "usePasskeyInstead": "Use passkey instead",
+  "usePinInstead": "Use PIN instead",
+  "contactSupport": "Contact Support",
+  
+  "pinCode": "PIN Code",
+  "sixDigitPin": "6-Digit PIN",
+  "setupPinCode": "Set Up PIN Code",
+  "setupPin": "Set Up PIN",
+  "enterNewPin": "Enter a 6-digit PIN to secure your account",
+  "pinSetupSuccess": "PIN Code set up successfully",
+  "currentPin": "Current PIN",
+  "enterCurrentPin": "Enter your current PIN",
+  "newPin": "New PIN",
+  "changePin": "Change",
+  "pinChangedSuccess": "PIN changed successfully",
+  "removePin": "Remove PIN Code",
+  "removePinConfirm": "This will remove your PIN code. You can set up a new one anytime.",
+  "verifyPin": "Verify PIN",
+  "enterPinToRemove": "Enter your PIN to confirm removal",
+  "pinRemovedSuccess": "PIN Code removed",
+  "pinMustBe6Digits": "PIN must be 6 digits",
+  "incorrectPin": "Incorrect PIN",
+  "confirmPin": "Confirm",
+  "pinsDoNotMatch": "PINs do not match",
+  "pinEnabled": "Enabled",
+  "pinNotSet": "Not set up",
+  "pinEnabledDescription": "Your account is protected with a 6-digit PIN.",
+  "pinDescription": "Set up a 6-digit PIN as a backup method to unlock the app.",
+  "enterPinToUnlock": "Enter your PIN to unlock",
+  
+  "devicePasskey": "Device Passkey",
+  "passkeyDescription": "Save this device for passwordless login. Like PayPal and Wise, you'll be able to log in instantly without entering your password.",
+  "passkeyShortDesc": "Passwordless device login",
+  "setupPasskey": "Set Up Passkey",
+  
+  "twoFactorAuth": "Two-Factor Authentication",
+  "authenticatorApp": "Authenticator App",
+  "twoFADescription": "Use an authenticator app like Google Authenticator or Authy for additional security when logging in.",
+  "twoFAShortDesc": "Google Authenticator, Authy",
+  "setup2FA": "Set Up 2FA",
+  
+  "pinRequiredForFaceId": "Please set up PIN code first",
+  "requiresPinFirst": "Requires PIN code",
+  "pinFirst": "PIN first",
+  "securityInfoShort": "Set up PIN code first, then enable Face ID for quick unlock. PIN is your backup if Face ID fails.",
+  
+  "failedToSetupPin": "Failed to set up PIN Code",
+  "failedToChangePin": "Failed to change PIN",
+  "failedToRemovePin": "Failed to remove PIN",
+  "failedToUpdateBiometric": "Failed to update biometric settings",
+  
+  "orDivider": "OR",
+  "codeExpiresAfterUse": "Code expires after first use",
+  
+  "signInFailed": "Sign in failed",
+  "signUpFailed": "Sign up failed",
+  "signOutFailed": "Sign out failed",
+  "googleSignInFailed": "Google sign in failed",
+  "googleSignUpFailed": "Google sign up failed",
+  
+  "reenterPinToConfirm": "Re-enter your PIN to confirm",
+  "continueText": "Continue",
+  
+  "comingSoon": "Coming soon",
+  "soon": "Soon",
+  "featureComingSoon": "This feature is coming soon!",
+  
+  "useAnotherMethod": "Use another method",
+  "unlockOptions": "Unlock Options",
+  "chooseUnlockMethod": "Choose how to unlock",
+  "tryFaceIdAgain": "Try Face ID again",
+  "usePasskey": "Use Passkey",
+  "use2FACode": "Use 2FA Code",
+  "enter2FACode": "Enter 2FA Code",
+  "enter6DigitCode": "Enter the 6-digit code from your authenticator app",
+  "verifyCode": "Verify Code",
+  "invalidCode": "Invalid code. Please try again.",
+  
+  "noInternetConnection": "No Internet Connection",
+  "offlineMessage": "Please check your internet connection and try again. You need to be connected to use this app.",
+  "connectionTip": "Tip: Try enabling Wi-Fi or mobile data",
+  "closeApp": "Close App",
+  "retryHint": "App will automatically reconnect when online"
 }

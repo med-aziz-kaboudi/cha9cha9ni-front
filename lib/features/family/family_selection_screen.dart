@@ -83,7 +83,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sign out failed: ${e.toString()}'),
+            content: Text('${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -195,61 +195,155 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
   }
 
   Future<void> _showInviteCodeDialog(String code) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.familyInviteCode),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(AppLocalizations.of(context)!.shareThisCode),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Success icon
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.celebration_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    code,
-                    style: AppTextStyles.heading1.copyWith(
-                      fontSize: 24,
-                      color: AppColors.secondary,
-                      letterSpacing: 2,
+              const SizedBox(height: 16),
+              
+              // Title
+              Text(
+                l10n.familyInviteCode,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.dark,
+                ),
+              ),
+              const SizedBox(height: 6),
+              
+              // Subtitle
+              Text(
+                l10n.shareThisCode,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[500],
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Code display card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.gray,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      code,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.secondary,
+                        letterSpacing: 3,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: code));
+                        HapticFeedback.mediumImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.codeCopied),
+                            backgroundColor: AppColors.secondary,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.copy_rounded,
+                          color: AppColors.secondary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              
+              // Note
+              Text(
+                '⚡ ${l10n.codeExpiresAfterUse}',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[400],
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Got it button - Primary gradient
+              Container(
+                width: double.infinity,
+                height: 48,
+                decoration: ShapeDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.copy),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: code));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppLocalizations.of(context)!.codeCopied)),
-                      );
-                    },
+                  child: Text(
+                    l10n.gotIt,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Note: This code will change after someone uses it',
-              style: AppTextStyles.body.copyWith(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.gotIt),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -349,7 +443,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'OR',
+                        AppLocalizations.of(context)!.orDivider,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: Colors.grey.shade600,
                           fontWeight: FontWeight.w600,

@@ -1281,6 +1281,750 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pending'**
   String get pendingRemoval;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @choosePreferredLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language'**
+  String get choosePreferredLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageArabic.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية'**
+  String get languageArabic;
+
+  /// No description provided for @languageFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'Français'**
+  String get languageFrench;
+
+  /// No description provided for @languageChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Language changed successfully'**
+  String get languageChanged;
+
+  /// No description provided for @currentLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get currentLanguage;
+
+  /// No description provided for @loginSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Login & Security'**
+  String get loginSecurity;
+
+  /// No description provided for @securityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an extra layer of security to protect your account and family data.'**
+  String get securityDescription;
+
+  /// No description provided for @passkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey'**
+  String get passkey;
+
+  /// No description provided for @sixDigitPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'6-Digit Passkey'**
+  String get sixDigitPasskey;
+
+  /// No description provided for @passkeyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get passkeyEnabled;
+
+  /// No description provided for @passkeyNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up'**
+  String get passkeyNotSet;
+
+  /// No description provided for @passkeyEnabledDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is protected with a 6-digit passkey.'**
+  String get passkeyEnabledDescription;
+
+  /// No description provided for @passkeyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this device for passwordless login. Like PayPal and Wise, you\'ll be able to log in instantly without entering your password.'**
+  String get passkeyDescription;
+
+  /// No description provided for @setupPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up Passkey'**
+  String get setupPasskey;
+
+  /// No description provided for @changePasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changePasskey;
+
+  /// No description provided for @removePasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Passkey'**
+  String get removePasskey;
+
+  /// No description provided for @removePasskeyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will also disable biometric authentication. You will need to set up a new passkey to re-enable security features.'**
+  String get removePasskeyConfirm;
+
+  /// No description provided for @verifyPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Passkey'**
+  String get verifyPasskey;
+
+  /// No description provided for @enterPasskeyToRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your passkey to confirm removal'**
+  String get enterPasskeyToRemove;
+
+  /// No description provided for @currentPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Passkey'**
+  String get currentPasskey;
+
+  /// No description provided for @enterCurrentPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current passkey'**
+  String get enterCurrentPasskey;
+
+  /// No description provided for @newPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'New Passkey'**
+  String get newPasskey;
+
+  /// No description provided for @enterNewPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new 6-digit passkey'**
+  String get enterNewPasskey;
+
+  /// No description provided for @confirmPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm passkey'**
+  String get confirmPasskey;
+
+  /// No description provided for @passkeyMustBe6Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey must be 6 digits'**
+  String get passkeyMustBe6Digits;
+
+  /// No description provided for @passkeysDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkeys do not match'**
+  String get passkeysDoNotMatch;
+
+  /// No description provided for @passkeySetupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey set up successfully'**
+  String get passkeySetupSuccess;
+
+  /// No description provided for @passkeyChangedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey changed successfully'**
+  String get passkeyChangedSuccess;
+
+  /// No description provided for @passkeyRemovedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Security settings removed'**
+  String get passkeyRemovedSuccess;
+
+  /// No description provided for @faceId.
+  ///
+  /// In en, this message translates to:
+  /// **'Face ID'**
+  String get faceId;
+
+  /// No description provided for @fingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint'**
+  String get fingerprint;
+
+  /// No description provided for @biometrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics'**
+  String get biometrics;
+
+  /// No description provided for @biometricEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get biometricEnabled;
+
+  /// No description provided for @biometricDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get biometricDisabled;
+
+  /// No description provided for @biometricDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use biometrics for quick and secure access. Falls back to passkey if biometric fails.'**
+  String get biometricDescription;
+
+  /// No description provided for @biometricsNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics not available on this device'**
+  String get biometricsNotAvailable;
+
+  /// No description provided for @confirmBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm biometric to enable'**
+  String get confirmBiometric;
+
+  /// No description provided for @biometricAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication failed'**
+  String get biometricAuthFailed;
+
+  /// No description provided for @howItWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get howItWorks;
+
+  /// No description provided for @securityStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'When you open the app, you\'ll be asked to verify your identity.'**
+  String get securityStep1;
+
+  /// No description provided for @securityStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'First, biometric verification (Face ID / Fingerprint) is attempted if enabled.'**
+  String get securityStep2;
+
+  /// No description provided for @securityStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'If biometric fails or is disabled, enter your 6-digit passkey.'**
+  String get securityStep3;
+
+  /// No description provided for @securityStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'After 3 failed attempts, your account will be temporarily locked for your protection.'**
+  String get securityStep4;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @unlockApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock App'**
+  String get unlockApp;
+
+  /// No description provided for @enterPasskeyToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your passkey to unlock'**
+  String get enterPasskeyToUnlock;
+
+  /// No description provided for @attemptsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} attempts remaining'**
+  String attemptsRemaining(int count);
+
+  /// No description provided for @accountLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Locked'**
+  String get accountLocked;
+
+  /// No description provided for @accountLockedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Account locked for {duration}'**
+  String accountLockedFor(String duration);
+
+  /// No description provided for @accountPermanentlyLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Account permanently locked. Please contact support.'**
+  String get accountPermanentlyLocked;
+
+  /// No description provided for @tryAgainIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in {time}'**
+  String tryAgainIn(String time);
+
+  /// No description provided for @useBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {type}'**
+  String useBiometric(String type);
+
+  /// No description provided for @usePasskeyInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use passkey instead'**
+  String get usePasskeyInstead;
+
+  /// No description provided for @usePinInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use PIN instead'**
+  String get usePinInstead;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// No description provided for @pinCode.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Code'**
+  String get pinCode;
+
+  /// No description provided for @sixDigitPin.
+  ///
+  /// In en, this message translates to:
+  /// **'6-Digit PIN'**
+  String get sixDigitPin;
+
+  /// No description provided for @setupPinCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up PIN Code'**
+  String get setupPinCode;
+
+  /// No description provided for @setupPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up PIN'**
+  String get setupPin;
+
+  /// No description provided for @enterNewPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a 6-digit PIN to secure your account'**
+  String get enterNewPin;
+
+  /// No description provided for @pinSetupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Code set up successfully'**
+  String get pinSetupSuccess;
+
+  /// No description provided for @currentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN'**
+  String get currentPin;
+
+  /// No description provided for @enterCurrentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current PIN'**
+  String get enterCurrentPin;
+
+  /// No description provided for @newPin.
+  ///
+  /// In en, this message translates to:
+  /// **'New PIN'**
+  String get newPin;
+
+  /// No description provided for @changePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changePin;
+
+  /// No description provided for @pinChangedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN changed successfully'**
+  String get pinChangedSuccess;
+
+  /// No description provided for @removePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove PIN Code'**
+  String get removePin;
+
+  /// No description provided for @removePinConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove your PIN code. You can set up a new one anytime.'**
+  String get removePinConfirm;
+
+  /// No description provided for @verifyPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify PIN'**
+  String get verifyPin;
+
+  /// No description provided for @enterPinToRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN to confirm removal'**
+  String get enterPinToRemove;
+
+  /// No description provided for @pinRemovedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Code removed'**
+  String get pinRemovedSuccess;
+
+  /// No description provided for @pinMustBe6Digits.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN must be 6 digits'**
+  String get pinMustBe6Digits;
+
+  /// No description provided for @incorrectPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN'**
+  String get incorrectPin;
+
+  /// No description provided for @confirmPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirmPin;
+
+  /// No description provided for @pinsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'PINs do not match'**
+  String get pinsDoNotMatch;
+
+  /// No description provided for @pinEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get pinEnabled;
+
+  /// No description provided for @pinNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up'**
+  String get pinNotSet;
+
+  /// No description provided for @pinEnabledDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is protected with a 6-digit PIN.'**
+  String get pinEnabledDescription;
+
+  /// No description provided for @pinDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up a 6-digit PIN as a backup method to unlock the app.'**
+  String get pinDescription;
+
+  /// No description provided for @enterPinToUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN to unlock'**
+  String get enterPinToUnlock;
+
+  /// No description provided for @devicePasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Passkey'**
+  String get devicePasskey;
+
+  /// No description provided for @passkeyShortDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwordless device login'**
+  String get passkeyShortDesc;
+
+  /// No description provided for @twoFactorAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-Factor Authentication'**
+  String get twoFactorAuth;
+
+  /// No description provided for @authenticatorApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticator App'**
+  String get authenticatorApp;
+
+  /// No description provided for @twoFADescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an authenticator app like Google Authenticator or Authy for additional security when logging in.'**
+  String get twoFADescription;
+
+  /// No description provided for @twoFAShortDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Authenticator, Authy'**
+  String get twoFAShortDesc;
+
+  /// No description provided for @setup2FA.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up 2FA'**
+  String get setup2FA;
+
+  /// No description provided for @pinRequiredForFaceId.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set up PIN code first'**
+  String get pinRequiredForFaceId;
+
+  /// No description provided for @requiresPinFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires PIN code'**
+  String get requiresPinFirst;
+
+  /// No description provided for @pinFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN first'**
+  String get pinFirst;
+
+  /// No description provided for @securityInfoShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up PIN code first, then enable Face ID for quick unlock. PIN is your backup if Face ID fails.'**
+  String get securityInfoShort;
+
+  /// No description provided for @failedToSetupPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to set up PIN Code'**
+  String get failedToSetupPin;
+
+  /// No description provided for @failedToChangePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change PIN'**
+  String get failedToChangePin;
+
+  /// No description provided for @failedToRemovePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove PIN'**
+  String get failedToRemovePin;
+
+  /// No description provided for @failedToUpdateBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update biometric settings'**
+  String get failedToUpdateBiometric;
+
+  /// No description provided for @orDivider.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get orDivider;
+
+  /// No description provided for @codeExpiresAfterUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Code expires after first use'**
+  String get codeExpiresAfterUse;
+
+  /// No description provided for @signInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed'**
+  String get signInFailed;
+
+  /// No description provided for @signUpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up failed'**
+  String get signUpFailed;
+
+  /// No description provided for @signOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out failed'**
+  String get signOutFailed;
+
+  /// No description provided for @googleSignInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign in failed'**
+  String get googleSignInFailed;
+
+  /// No description provided for @googleSignUpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign up failed'**
+  String get googleSignUpFailed;
+
+  /// No description provided for @reenterPinToConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your PIN to confirm'**
+  String get reenterPinToConfirm;
+
+  /// No description provided for @continueText.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueText;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
+  /// No description provided for @soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Soon'**
+  String get soon;
+
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is coming soon!'**
+  String get featureComingSoon;
+
+  /// No description provided for @useAnotherMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Use another method'**
+  String get useAnotherMethod;
+
+  /// No description provided for @unlockOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Options'**
+  String get unlockOptions;
+
+  /// No description provided for @chooseUnlockMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how to unlock'**
+  String get chooseUnlockMethod;
+
+  /// No description provided for @tryFaceIdAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Face ID again'**
+  String get tryFaceIdAgain;
+
+  /// No description provided for @usePasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Passkey'**
+  String get usePasskey;
+
+  /// No description provided for @use2FACode.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 2FA Code'**
+  String get use2FACode;
+
+  /// No description provided for @enter2FACode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 2FA Code'**
+  String get enter2FACode;
+
+  /// No description provided for @enter6DigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code from your authenticator app'**
+  String get enter6DigitCode;
+
+  /// No description provided for @verifyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Code'**
+  String get verifyCode;
+
+  /// No description provided for @invalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid code. Please try again.'**
+  String get invalidCode;
+
+  /// No description provided for @noInternetConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No Internet Connection'**
+  String get noInternetConnection;
+
+  /// No description provided for @offlineMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection and try again. You need to be connected to use this app.'**
+  String get offlineMessage;
+
+  /// No description provided for @connectionTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Try enabling Wi-Fi or mobile data'**
+  String get connectionTip;
+
+  /// No description provided for @closeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Close App'**
+  String get closeApp;
+
+  /// No description provided for @retryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'App will automatically reconnect when online'**
+  String get retryHint;
 }
 
 class _AppLocalizationsDelegate

@@ -266,5 +266,177 @@
   },
   "removalCancelled": "Demande de suppression annulée",
   "waitingForMemberConfirmation": "En attente de la confirmation du membre",
-  "pendingRemoval": "En attente"
+  "pendingRemoval": "En attente",
+  "selectLanguage": "Sélectionner la langue",
+  "choosePreferredLanguage": "Choisissez votre langue préférée",
+  "languageEnglish": "English",
+  "languageArabic": "العربية",
+  "languageFrench": "Français",
+  "languageChanged": "Langue modifiée avec succès",
+  "currentLanguage": "Actuel",
+  
+  "loginSecurity": "Connexion & Sécurité",
+  "securityDescription": "Ajoutez une couche de sécurité supplémentaire pour protéger votre compte et les données de votre famille.",
+  "passkey": "Code d'accès",
+  "sixDigitPasskey": "Code à 6 chiffres",
+  "passkeyEnabled": "Activé",
+  "passkeyNotSet": "Non configuré",
+  "passkeyEnabledDescription": "Votre compte est protégé par un code à 6 chiffres.",
+  "passkeyDescription": "Configurez un code à 6 chiffres pour protéger votre compte à l'ouverture de l'application.",
+  "setupPasskey": "Configurer le code",
+  "changePasskey": "Modifier",
+  "remove": "Supprimer",
+  "removePasskey": "Supprimer le code",
+  "removePasskeyConfirm": "Cela désactivera également l'authentification biométrique. Vous devrez configurer un nouveau code pour réactiver les fonctionnalités de sécurité.",
+  "verifyPasskey": "Vérifier le code",
+  "enterPasskeyToRemove": "Entrez votre code pour confirmer la suppression",
+  "currentPasskey": "Code actuel",
+  "enterCurrentPasskey": "Entrez votre code actuel",
+  "newPasskey": "Nouveau code",
+  "enterNewPasskey": "Entrez votre nouveau code à 6 chiffres",
+  "confirmPasskey": "Confirmer le code",
+  "passkeyMustBe6Digits": "Le code doit contenir 6 chiffres",
+  "passkeysDoNotMatch": "Les codes ne correspondent pas",
+  "passkeySetupSuccess": "Code configuré avec succès",
+  "passkeyChangedSuccess": "Code modifié avec succès",
+  "passkeyRemovedSuccess": "Paramètres de sécurité supprimés",
+  
+  "faceId": "Face ID",
+  "fingerprint": "Empreinte digitale",
+  "biometrics": "Biométrie",
+  "biometricEnabled": "Activé",
+  "biometricDisabled": "Désactivé",
+  "biometricDescription": "Utilisez la biométrie pour un accès rapide et sécurisé. Revient au code en cas d'échec.",
+  "biometricsNotAvailable": "Biométrie non disponible sur cet appareil",
+  "confirmBiometric": "Confirmez la biométrie pour activer",
+  "biometricAuthFailed": "Échec de l'authentification biométrique",
+  
+  "howItWorks": "Comment ça marche",
+  "securityStep1": "Lorsque vous ouvrez l'application, vous devrez vérifier votre identité.",
+  "securityStep2": "D'abord, la vérification biométrique (Face ID / Empreinte) est tentée si activée.",
+  "securityStep3": "Si la biométrie échoue ou est désactivée, entrez votre code à 6 chiffres.",
+  "securityStep4": "Après 3 échecs, votre compte sera temporairement verrouillé pour votre protection.",
+  
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  
+  "unlockApp": "Déverrouiller l'application",
+  "enterPasskeyToUnlock": "Entrez votre code pour déverrouiller",
+  "attemptsRemaining": "{count} tentatives restantes",
+  "@attemptsRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountLocked": "Compte verrouillé",
+  "accountLockedFor": "Compte verrouillé pendant {duration}",
+  "@accountLockedFor": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPermanentlyLocked": "Compte définitivement verrouillé. Veuillez contacter le support.",
+  "tryAgainIn": "Réessayez dans {time}",
+  "@tryAgainIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "useBiometric": "Utiliser {type}",
+  "@useBiometric": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "usePasskeyInstead": "Utiliser le code à la place",
+  "usePinInstead": "Utiliser le PIN à la place",
+  "contactSupport": "Contacter le support",
+  
+  "pinCode": "Code PIN",
+  "sixDigitPin": "PIN à 6 chiffres",
+  "setupPinCode": "Configurer le code PIN",
+  "setupPin": "Configurer PIN",
+  "enterNewPin": "Entrez un PIN à 6 chiffres pour sécuriser votre compte",
+  "pinSetupSuccess": "Code PIN configuré avec succès",
+  "currentPin": "PIN actuel",
+  "enterCurrentPin": "Entrez votre PIN actuel",
+  "newPin": "Nouveau PIN",
+  "changePin": "Modifier",
+  "pinChangedSuccess": "PIN modifié avec succès",
+  "removePin": "Supprimer le code PIN",
+  "removePinConfirm": "Cela supprimera votre code PIN. Vous pouvez en configurer un nouveau à tout moment.",
+  "verifyPin": "Vérifier le PIN",
+  "enterPinToRemove": "Entrez votre PIN pour confirmer",
+  "pinRemovedSuccess": "Code PIN supprimé",
+  "pinMustBe6Digits": "Le PIN doit contenir 6 chiffres",
+  "incorrectPin": "PIN incorrect",
+  "confirmPin": "Confirmer",
+  "pinsDoNotMatch": "Les PINs ne correspondent pas",
+  "pinEnabled": "Activé",
+  "pinNotSet": "Non configuré",
+  "pinEnabledDescription": "Votre compte est protégé par un PIN à 6 chiffres.",
+  "pinDescription": "Configurez un PIN à 6 chiffres comme méthode de secours pour déverrouiller l'application.",
+  "enterPinToUnlock": "Entrez votre PIN pour déverrouiller",
+  
+  "devicePasskey": "Clé d'accès",
+  "passkeyDescription": "Enregistrez cet appareil pour une connexion sans mot de passe. Comme PayPal et Wise, vous pourrez vous connecter instantanément.",
+  "passkeyShortDesc": "Connexion sans mot de passe",
+  "setupPasskey": "Configurer la clé d'accès",
+  
+  "twoFactorAuth": "Authentification à deux facteurs",
+  "authenticatorApp": "Application d'authentification",
+  "twoFADescription": "Utilisez une application comme Google Authenticator ou Authy pour une sécurité supplémentaire.",
+  "twoFAShortDesc": "Google Authenticator, Authy",
+  "setup2FA": "Configurer 2FA",
+  
+  "pinRequiredForFaceId": "Veuillez d'abord configurer le code PIN",
+  "requiresPinFirst": "Nécessite un code PIN",
+  "pinFirst": "PIN d'abord",
+  "securityInfoShort": "Configurez d'abord le PIN, puis activez Face ID pour un déverrouillage rapide. Le PIN est votre secours.",
+  
+  "failedToSetupPin": "Échec de la configuration du PIN",
+  "failedToChangePin": "Échec de la modification du PIN",
+  "failedToRemovePin": "Échec de la suppression du PIN",
+  "failedToUpdateBiometric": "Échec de la mise à jour des paramètres biométriques",
+  
+  "orDivider": "OU",
+  "codeExpiresAfterUse": "Le code expire après la première utilisation",
+  
+  "signInFailed": "Échec de la connexion",
+  "signUpFailed": "Échec de l'inscription",
+  "signOutFailed": "Échec de la déconnexion",
+  "googleSignInFailed": "Échec de la connexion Google",
+  "googleSignUpFailed": "Échec de l'inscription Google",
+  
+  "reenterPinToConfirm": "Ressaisissez votre PIN pour confirmer",
+  "continueText": "Continuer",
+  
+  "comingSoon": "Bientôt disponible",
+  "soon": "Bientôt",
+  "featureComingSoon": "Cette fonctionnalité arrive bientôt!",
+  
+  "useAnotherMethod": "Utiliser une autre méthode",
+  "unlockOptions": "Options de déverrouillage",
+  "chooseUnlockMethod": "Choisissez comment déverrouiller",
+  "tryFaceIdAgain": "Réessayer Face ID",
+  "usePasskey": "Utiliser le passkey",
+  "use2FACode": "Utiliser le code 2FA",
+  "enter2FACode": "Entrez le code 2FA",
+  "enter6DigitCode": "Entrez le code à 6 chiffres de votre application d'authentification",
+  "verifyCode": "Vérifier le code",
+  "invalidCode": "Code invalide. Veuillez réessayer.",
+  
+  "noInternetConnection": "Pas de connexion Internet",
+  "offlineMessage": "Veuillez vérifier votre connexion Internet et réessayer. Vous devez être connecté pour utiliser cette application.",
+  "connectionTip": "Astuce: Essayez d'activer le Wi-Fi ou les données mobiles",
+  "closeApp": "Fermer l'application",
+  "retryHint": "L'application se reconnectera automatiquement en ligne"
 }

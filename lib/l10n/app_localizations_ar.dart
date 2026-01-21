@@ -575,7 +575,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get remove => 'إزالة';
+  String get remove => 'حذف';
 
   @override
   String get confirmRemoval => 'تأكيد الإزالة';
@@ -650,4 +650,398 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pendingRemoval => 'معلق';
+
+  @override
+  String get selectLanguage => 'اختر اللغة';
+
+  @override
+  String get choosePreferredLanguage => 'اختر لغتك المفضلة';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageArabic => 'العربية';
+
+  @override
+  String get languageFrench => 'Français';
+
+  @override
+  String get languageChanged => 'تم تغيير اللغة بنجاح';
+
+  @override
+  String get currentLanguage => 'الحالية';
+
+  @override
+  String get loginSecurity => 'تسجيل الدخول والأمان';
+
+  @override
+  String get securityDescription =>
+      'أضف طبقة حماية إضافية لحماية حسابك وبيانات عائلتك.';
+
+  @override
+  String get passkey => 'رمز الدخول';
+
+  @override
+  String get sixDigitPasskey => 'رمز من 6 أرقام';
+
+  @override
+  String get passkeyEnabled => 'مفعّل';
+
+  @override
+  String get passkeyNotSet => 'غير مُعدّ';
+
+  @override
+  String get passkeyEnabledDescription => 'حسابك محمي برمز من 6 أرقام.';
+
+  @override
+  String get passkeyDescription =>
+      'احفظ هذا الجهاز لتسجيل الدخول بدون كلمة مرور. مثل PayPal و Wise، ستتمكن من تسجيل الدخول فوراً.';
+
+  @override
+  String get setupPasskey => 'إعداد مفتاح المرور';
+
+  @override
+  String get changePasskey => 'تغيير';
+
+  @override
+  String get removePasskey => 'حذف الرمز';
+
+  @override
+  String get removePasskeyConfirm =>
+      'سيؤدي هذا أيضًا إلى تعطيل المصادقة البيومترية. ستحتاج إلى إعداد رمز جديد لإعادة تفعيل ميزات الأمان.';
+
+  @override
+  String get verifyPasskey => 'التحقق من الرمز';
+
+  @override
+  String get enterPasskeyToRemove => 'أدخل رمزك لتأكيد الحذف';
+
+  @override
+  String get currentPasskey => 'الرمز الحالي';
+
+  @override
+  String get enterCurrentPasskey => 'أدخل رمزك الحالي';
+
+  @override
+  String get newPasskey => 'الرمز الجديد';
+
+  @override
+  String get enterNewPasskey => 'أدخل رمزك الجديد المكون من 6 أرقام';
+
+  @override
+  String get confirmPasskey => 'تأكيد الرمز';
+
+  @override
+  String get passkeyMustBe6Digits => 'يجب أن يتكون الرمز من 6 أرقام';
+
+  @override
+  String get passkeysDoNotMatch => 'الرموز غير متطابقة';
+
+  @override
+  String get passkeySetupSuccess => 'تم إعداد الرمز بنجاح';
+
+  @override
+  String get passkeyChangedSuccess => 'تم تغيير الرمز بنجاح';
+
+  @override
+  String get passkeyRemovedSuccess => 'تم حذف إعدادات الأمان';
+
+  @override
+  String get faceId => 'التعرف على الوجه';
+
+  @override
+  String get fingerprint => 'بصمة الإصبع';
+
+  @override
+  String get biometrics => 'البيومترية';
+
+  @override
+  String get biometricEnabled => 'مفعّل';
+
+  @override
+  String get biometricDisabled => 'معطّل';
+
+  @override
+  String get biometricDescription =>
+      'استخدم البيومترية للوصول السريع والآمن. يرجع للرمز في حالة الفشل.';
+
+  @override
+  String get biometricsNotAvailable => 'البيومترية غير متاحة على هذا الجهاز';
+
+  @override
+  String get confirmBiometric => 'تأكيد البيومترية للتفعيل';
+
+  @override
+  String get biometricAuthFailed => 'فشلت المصادقة البيومترية';
+
+  @override
+  String get howItWorks => 'كيف يعمل';
+
+  @override
+  String get securityStep1 => 'عند فتح التطبيق، سيُطلب منك التحقق من هويتك.';
+
+  @override
+  String get securityStep2 =>
+      'أولاً، يتم محاولة التحقق البيومتري (التعرف على الوجه / البصمة) إذا كان مفعلاً.';
+
+  @override
+  String get securityStep3 =>
+      'إذا فشلت البيومترية أو كانت معطلة، أدخل رمزك المكون من 6 أرقام.';
+
+  @override
+  String get securityStep4 =>
+      'بعد 3 محاولات فاشلة، سيتم قفل حسابك مؤقتًا لحمايتك.';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get unlockApp => 'فتح التطبيق';
+
+  @override
+  String get enterPasskeyToUnlock => 'أدخل رمزك للفتح';
+
+  @override
+  String attemptsRemaining(int count) {
+    return '$count محاولات متبقية';
+  }
+
+  @override
+  String get accountLocked => 'الحساب مقفل';
+
+  @override
+  String accountLockedFor(String duration) {
+    return 'الحساب مقفل لمدة $duration';
+  }
+
+  @override
+  String get accountPermanentlyLocked =>
+      'الحساب مقفل بشكل دائم. يرجى التواصل مع الدعم.';
+
+  @override
+  String tryAgainIn(String time) {
+    return 'حاول مرة أخرى خلال $time';
+  }
+
+  @override
+  String useBiometric(String type) {
+    return 'استخدام $type';
+  }
+
+  @override
+  String get usePasskeyInstead => 'استخدام الرمز بدلاً من ذلك';
+
+  @override
+  String get usePinInstead => 'استخدام رمز PIN بدلاً من ذلك';
+
+  @override
+  String get contactSupport => 'تواصل مع الدعم';
+
+  @override
+  String get pinCode => 'رمز PIN';
+
+  @override
+  String get sixDigitPin => 'رمز PIN من 6 أرقام';
+
+  @override
+  String get setupPinCode => 'إعداد رمز PIN';
+
+  @override
+  String get setupPin => 'إعداد PIN';
+
+  @override
+  String get enterNewPin => 'أدخل رمز PIN مكون من 6 أرقام لتأمين حسابك';
+
+  @override
+  String get pinSetupSuccess => 'تم إعداد رمز PIN بنجاح';
+
+  @override
+  String get currentPin => 'رمز PIN الحالي';
+
+  @override
+  String get enterCurrentPin => 'أدخل رمز PIN الحالي';
+
+  @override
+  String get newPin => 'رمز PIN الجديد';
+
+  @override
+  String get changePin => 'تغيير';
+
+  @override
+  String get pinChangedSuccess => 'تم تغيير رمز PIN بنجاح';
+
+  @override
+  String get removePin => 'حذف رمز PIN';
+
+  @override
+  String get removePinConfirm =>
+      'سيؤدي هذا إلى حذف رمز PIN الخاص بك. يمكنك إعداد رمز جديد في أي وقت.';
+
+  @override
+  String get verifyPin => 'التحقق من رمز PIN';
+
+  @override
+  String get enterPinToRemove => 'أدخل رمز PIN للتأكيد';
+
+  @override
+  String get pinRemovedSuccess => 'تم حذف رمز PIN';
+
+  @override
+  String get pinMustBe6Digits => 'يجب أن يكون رمز PIN مكون من 6 أرقام';
+
+  @override
+  String get incorrectPin => 'رمز PIN غير صحيح';
+
+  @override
+  String get confirmPin => 'تأكيد';
+
+  @override
+  String get pinsDoNotMatch => 'رموز PIN غير متطابقة';
+
+  @override
+  String get pinEnabled => 'مفعّل';
+
+  @override
+  String get pinNotSet => 'غير مُعد';
+
+  @override
+  String get pinEnabledDescription => 'حسابك محمي برمز PIN مكون من 6 أرقام.';
+
+  @override
+  String get pinDescription =>
+      'قم بإعداد رمز PIN مكون من 6 أرقام كطريقة احتياطية لفتح التطبيق.';
+
+  @override
+  String get enterPinToUnlock => 'أدخل رمز PIN للفتح';
+
+  @override
+  String get devicePasskey => 'مفتاح المرور';
+
+  @override
+  String get passkeyShortDesc => 'تسجيل دخول بدون كلمة مرور';
+
+  @override
+  String get twoFactorAuth => 'المصادقة الثنائية';
+
+  @override
+  String get authenticatorApp => 'تطبيق المصادقة';
+
+  @override
+  String get twoFADescription =>
+      'استخدم تطبيق مصادقة مثل Google Authenticator أو Authy لأمان إضافي.';
+
+  @override
+  String get twoFAShortDesc => 'Google Authenticator، Authy';
+
+  @override
+  String get setup2FA => 'إعداد المصادقة الثنائية';
+
+  @override
+  String get pinRequiredForFaceId => 'يرجى إعداد رمز PIN أولاً';
+
+  @override
+  String get requiresPinFirst => 'يتطلب رمز PIN';
+
+  @override
+  String get pinFirst => 'PIN أولاً';
+
+  @override
+  String get securityInfoShort =>
+      'قم بإعداد رمز PIN أولاً، ثم فعّل التعرف على الوجه للفتح السريع. رمز PIN هو الاحتياطي.';
+
+  @override
+  String get failedToSetupPin => 'فشل إعداد رمز PIN';
+
+  @override
+  String get failedToChangePin => 'فشل تغيير رمز PIN';
+
+  @override
+  String get failedToRemovePin => 'فشل حذف رمز PIN';
+
+  @override
+  String get failedToUpdateBiometric => 'فشل تحديث إعدادات البيومترية';
+
+  @override
+  String get orDivider => 'أو';
+
+  @override
+  String get codeExpiresAfterUse => 'ينتهي الرمز بعد الاستخدام الأول';
+
+  @override
+  String get signInFailed => 'فشل تسجيل الدخول';
+
+  @override
+  String get signUpFailed => 'فشل إنشاء الحساب';
+
+  @override
+  String get signOutFailed => 'فشل تسجيل الخروج';
+
+  @override
+  String get googleSignInFailed => 'فشل تسجيل الدخول بجوجل';
+
+  @override
+  String get googleSignUpFailed => 'فشل إنشاء الحساب بجوجل';
+
+  @override
+  String get reenterPinToConfirm => 'أعد إدخال رمز PIN للتأكيد';
+
+  @override
+  String get continueText => 'متابعة';
+
+  @override
+  String get comingSoon => 'قريباً';
+
+  @override
+  String get soon => 'قريباً';
+
+  @override
+  String get featureComingSoon => 'هذه الميزة قادمة قريباً!';
+
+  @override
+  String get useAnotherMethod => 'استخدم طريقة أخرى';
+
+  @override
+  String get unlockOptions => 'خيارات إلغاء القفل';
+
+  @override
+  String get chooseUnlockMethod => 'اختر طريقة إلغاء القفل';
+
+  @override
+  String get tryFaceIdAgain => 'حاول Face ID مرة أخرى';
+
+  @override
+  String get usePasskey => 'استخدم مفتاح المرور';
+
+  @override
+  String get use2FACode => 'استخدم رمز 2FA';
+
+  @override
+  String get enter2FACode => 'أدخل رمز 2FA';
+
+  @override
+  String get enter6DigitCode =>
+      'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة';
+
+  @override
+  String get verifyCode => 'تحقق من الرمز';
+
+  @override
+  String get invalidCode => 'رمز غير صالح. حاول مرة أخرى.';
+
+  @override
+  String get noInternetConnection => 'لا يوجد اتصال بالإنترنت';
+
+  @override
+  String get offlineMessage =>
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى. يجب أن تكون متصلاً لاستخدام هذا التطبيق.';
+
+  @override
+  String get connectionTip => 'نصيحة: حاول تفعيل الواي فاي أو بيانات الهاتف';
+
+  @override
+  String get closeApp => 'إغلاق التطبيق';
+
+  @override
+  String get retryHint => 'سيتصل التطبيق تلقائياً عند الاتصال بالإنترنت';
 }

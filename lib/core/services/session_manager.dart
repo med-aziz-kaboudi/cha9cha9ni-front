@@ -6,6 +6,7 @@ import 'socket_service.dart';
 /// This is triggered by:
 /// 1. Any API call that returns 401 (session invalid)
 /// 2. WebSocket force_logout event (another device logged in)
+/// Also handles real-time family updates via WebSocket
 class SessionManager {
   static final SessionManager _instance = SessionManager._internal();
   factory SessionManager() => _instance;
@@ -19,9 +20,13 @@ class SessionManager {
 
   // Socket service subscription
   StreamSubscription<ForceLogoutData>? _forceLogoutSubscription;
+  StreamSubscription<FamilyMemberJoinedData>? _familyMemberJoinedSubscription;
 
   /// Stream that emits when session expires (message contains reason)
   Stream<String> get onSessionExpired => _sessionExpiredController.stream;
+
+  /// Stream that emits when a new family member joins (for owners)
+  Stream<FamilyMemberJoinedData> get onFamilyMemberJoined => SocketService().onFamilyMemberJoined;
 
   /// Check if currently handling an expiration (to prevent duplicate dialogs)
   bool get isHandlingExpiration => _isHandlingExpiration;
@@ -47,6 +52,8 @@ class SessionManager {
   void disconnectSocket() {
     _forceLogoutSubscription?.cancel();
     _forceLogoutSubscription = null;
+    _familyMemberJoinedSubscription?.cancel();
+    _familyMemberJoinedSubscription = null;
     SocketService().disconnect();
     debugPrint('🔌 SessionManager: Socket disconnected');
   }
@@ -77,6 +84,7 @@ class SessionManager {
   /// Dispose the stream controller and socket
   void dispose() {
     _forceLogoutSubscription?.cancel();
+    _familyMemberJoinedSubscription?.cancel();
     SocketService().disconnect();
     _sessionExpiredController.close();
   }

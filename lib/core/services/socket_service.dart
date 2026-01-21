@@ -8,6 +8,7 @@ enum SocketEvent {
   connected,
   disconnected,
   forceLogout,
+  familyMemberJoined,
   error,
 }
 
@@ -34,6 +35,35 @@ class ForceLogoutData {
   }
 }
 
+/// Data class for family member joined event
+class FamilyMemberJoinedData {
+  final String memberId;
+  final String memberName;
+  final String memberEmail;
+  final String newInviteCode;
+  final DateTime timestamp;
+
+  FamilyMemberJoinedData({
+    required this.memberId,
+    required this.memberName,
+    required this.memberEmail,
+    required this.newInviteCode,
+    required this.timestamp,
+  });
+
+  factory FamilyMemberJoinedData.fromJson(Map<String, dynamic> json) {
+    return FamilyMemberJoinedData(
+      memberId: json['memberId'] ?? '',
+      memberName: json['memberName'] ?? '',
+      memberEmail: json['memberEmail'] ?? '',
+      newInviteCode: json['newInviteCode'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -48,12 +78,16 @@ class SocketService {
   // Stream controllers for events
   final _eventController = StreamController<SocketEvent>.broadcast();
   final _forceLogoutController = StreamController<ForceLogoutData>.broadcast();
+  final _familyMemberJoinedController = StreamController<FamilyMemberJoinedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
 
   /// Stream of force logout events - listen to this to trigger logout
   Stream<ForceLogoutData> get onForceLogout => _forceLogoutController.stream;
+
+  /// Stream of family member joined events - listen to this to update UI
+  Stream<FamilyMemberJoinedData> get onFamilyMemberJoined => _familyMemberJoinedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -131,6 +165,16 @@ class SocketService {
       }
     });
 
+    // Listen for family member joined event (for owners)
+    _socket!.on('family_member_joined', (data) {
+      debugPrint('👨‍👩‍👧 Socket: Received family_member_joined event');
+      if (data is Map<String, dynamic>) {
+        final memberData = FamilyMemberJoinedData.fromJson(data);
+        _familyMemberJoinedController.add(memberData);
+        _eventController.add(SocketEvent.familyMemberJoined);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -177,5 +221,6 @@ class SocketService {
     disconnect();
     _eventController.close();
     _forceLogoutController.close();
+    _familyMemberJoinedController.close();
   }
 }
