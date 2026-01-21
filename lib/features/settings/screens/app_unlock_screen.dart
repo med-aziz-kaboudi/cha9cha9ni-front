@@ -479,239 +479,284 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
           return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Icon
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.security,
-                      color: Colors.purple,
-                      size: 32,
-                    ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary.withOpacity(0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Title
-                  Text(
-                    l10n?.enter2FACode ?? 'Enter 2FA Code',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.dark,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n?.enterCodeFromAuthenticator ?? 
-                        'Enter the 6-digit code from your authenticator app',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Code input
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.gray,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: errorText != null
-                            ? AppColors.primary
-                            : Colors.grey.withOpacity(0.2),
-                        width: errorText != null ? 2 : 1,
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon with gradient background
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.secondary,
+                            AppColors.secondary.withOpacity(0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withOpacity(0.3),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.shield_outlined,
+                        color: Colors.white,
+                        size: 36,
                       ),
                     ),
-                    child: TextField(
-                      controller: codeController,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      autofocus: true,
+                    const SizedBox(height: 24),
+
+                    // Title
+                    Text(
+                      l10n?.enter2FACode ?? 'Enter 2FA Code',
                       style: const TextStyle(
-                        fontSize: 28,
-                        letterSpacing: 12,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
                         color: AppColors.dark,
                       ),
-                      decoration: const InputDecoration(
-                        hintText: '000000',
-                        hintStyle: TextStyle(
-                          fontSize: 28,
-                          letterSpacing: 12,
-                          color: Colors.grey,
-                        ),
-                        counterText: '',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
-                        ),
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (value) {
-                        if (errorText != null) {
-                          setDialogState(() => errorText = null);
-                        }
-                      },
                     ),
-                  ),
-
-                  // Error message
-                  if (errorText != null) ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: AppColors.primary,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          errorText!,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-
-                  // Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: isVerifying
-                              ? null
-                              : () => Navigator.pop(dialogContext),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: BorderSide(color: Colors.grey[300]!),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            l10n?.cancel ?? 'Cancel',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n?.enterCodeFromAuthenticator ?? 
+                          'Enter the 6-digit code from your authenticator app',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                        height: 1.4,
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: isVerifying
-                              ? null
-                              : () async {
-                                  final code = codeController.text;
-                                  if (code.length != 6) {
-                                    setDialogState(() {
-                                      errorText = l10n?.enterSixDigitCode ??
-                                          'Enter 6-digit code';
-                                    });
-                                    return;
-                                  }
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
 
-                                  setDialogState(() {
-                                    isVerifying = true;
-                                    errorText = null;
-                                  });
-
-                                  final result = await _biometricService
-                                      .verifyAppUnlockWithTotp(code);
-
-                                  if (!context.mounted) return;
-
-                                  if (result.success) {
-                                    Navigator.pop(dialogContext);
-                                    HapticFeedback.mediumImpact();
-                                    widget.onUnlocked();
-                                  } else {
-                                    setDialogState(() {
-                                      isVerifying = false;
-                                      codeController.clear();
-                                      
-                                      if (result.isLocked == true) {
-                                        Navigator.pop(dialogContext);
-                                        _loadUnlockStatus();
-                                      } else if (result.permanentlyLocked == true) {
-                                        Navigator.pop(dialogContext);
-                                        setState(() {
-                                          _unlockStatus = UnlockStatus(
-                                            securityEnabled: true,
-                                            biometricEnabled: false,
-                                            passkeyEnabled: true,
-                                            totpEnabled: true,
-                                            isLocked: true,
-                                            permanentlyLocked: true,
-                                            remainingSeconds: 0,
-                                            lockoutLevel: 4,
-                                            failedAttempts: 0,
-                                            maxAttempts: 3,
-                                          );
-                                        });
-                                      } else {
-                                        errorText = result.message ??
-                                            (l10n?.invalidCode ?? 'Invalid code');
-                                      }
-                                    });
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    // Code input with individual boxes look
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.gray,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: errorText != null
+                              ? AppColors.primary
+                              : AppColors.secondary.withOpacity(0.3),
+                          width: errorText != null ? 2 : 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (errorText != null 
+                                ? AppColors.primary 
+                                : AppColors.secondary).withOpacity(0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                          child: isVerifying
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(
-                                  l10n?.verify ?? 'Verify',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: codeController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        textAlign: TextAlign.center,
+                        autofocus: true,
+                        style: const TextStyle(
+                          fontSize: 32,
+                          letterSpacing: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.dark,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '······',
+                          hintStyle: TextStyle(
+                            fontSize: 32,
+                            letterSpacing: 16,
+                            color: Colors.grey[300],
+                          ),
+                          counterText: '',
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 18,
+                          ),
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (value) {
+                          if (errorText != null) {
+                            setDialogState(() => errorText = null);
+                          }
+                        },
+                      ),
+                    ),
+
+                    // Error message
+                    if (errorText != null) ...[
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline_rounded,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              errorText!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ],
+                    const SizedBox(height: 28),
+
+                    // Verify button (full width)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isVerifying
+                            ? null
+                            : () async {
+                                final code = codeController.text;
+                                if (code.length != 6) {
+                                  setDialogState(() {
+                                    errorText = l10n?.enterSixDigitCode ??
+                                        'Enter 6-digit code';
+                                  });
+                                  return;
+                                }
+
+                                setDialogState(() {
+                                  isVerifying = true;
+                                  errorText = null;
+                                });
+
+                                final result = await _biometricService
+                                    .verifyAppUnlockWithTotp(code);
+
+                                if (!context.mounted) return;
+
+                                if (result.success) {
+                                  Navigator.pop(dialogContext);
+                                  HapticFeedback.mediumImpact();
+                                  widget.onUnlocked();
+                                } else {
+                                  setDialogState(() {
+                                    isVerifying = false;
+                                    codeController.clear();
+                                    
+                                    if (result.isLocked == true) {
+                                      Navigator.pop(dialogContext);
+                                      _loadUnlockStatus();
+                                    } else if (result.permanentlyLocked == true) {
+                                      Navigator.pop(dialogContext);
+                                      setState(() {
+                                        _unlockStatus = UnlockStatus(
+                                          securityEnabled: true,
+                                          biometricEnabled: false,
+                                          passkeyEnabled: true,
+                                          totpEnabled: true,
+                                          isLocked: true,
+                                          permanentlyLocked: true,
+                                          remainingSeconds: 0,
+                                          lockoutLevel: 4,
+                                          failedAttempts: 0,
+                                          maxAttempts: 3,
+                                        );
+                                      });
+                                    } else {
+                                      errorText = result.message ??
+                                          (l10n?.invalidCode ?? 'Invalid code');
+                                    }
+                                  });
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: AppColors.secondary.withOpacity(0.6),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: isVerifying
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                l10n?.verify ?? 'Verify',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Cancel button
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: isVerifying
+                            ? null
+                            : () => Navigator.pop(dialogContext),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: Text(
+                          l10n?.cancel ?? 'Cancel',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

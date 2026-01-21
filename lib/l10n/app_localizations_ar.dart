@@ -1035,66 +1035,65 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invalidCode => 'رمز غير صالح. حاول مرة أخرى.';
 
   @override
-  String get twoFAEnabled => 'Enabled';
+  String get twoFAEnabled => 'مفعّل';
 
   @override
-  String get twoFADisabled => '2FA disabled';
+  String get twoFADisabled => 'تم تعطيل المصادقة الثنائية';
 
   @override
-  String get disable => 'Disable';
+  String get disable => 'تعطيل';
 
   @override
-  String get disable2FA => 'Disable 2FA';
+  String get disable2FA => 'تعطيل المصادقة الثنائية';
 
   @override
-  String get pinRequiredFor2FA => 'Please set up PIN code first';
+  String get pinRequiredFor2FA => 'يرجى إعداد رمز PIN أولاً';
 
   @override
-  String get enterSixDigitCode => 'Please enter 6-digit code';
+  String get enterSixDigitCode => 'يرجى إدخال الرمز المكون من 6 أرقام';
 
   @override
-  String get enterCodeToDisable2FA =>
-      'Enter the code from your authenticator app to confirm';
+  String get enterCodeToDisable2FA => 'أدخل الرمز من تطبيق المصادقة للتأكيد';
 
   @override
-  String get twoFactorEnabled => 'Two-factor authentication enabled!';
+  String get twoFactorEnabled => 'تم تفعيل المصادقة الثنائية!';
 
   @override
-  String get secretCopied => 'Secret key copied to clipboard';
+  String get secretCopied => 'تم نسخ المفتاح السري';
 
   @override
-  String get scanQrCode => 'Scan this QR code';
+  String get scanQrCode => 'امسح رمز QR هذا';
 
   @override
   String get useAuthenticatorApp =>
-      'Open your authenticator app and scan this QR code to add your account';
+      'افتح تطبيق المصادقة وامسح رمز QR هذا لإضافة حسابك';
 
   @override
-  String get orText => 'OR';
+  String get orText => 'أو';
 
   @override
-  String get enterManually => 'Enter this key manually';
+  String get enterManually => 'أدخل هذا المفتاح يدوياً';
 
   @override
-  String get copySecretKey => 'Copy secret key';
+  String get copySecretKey => 'نسخ المفتاح السري';
 
   @override
   String get authenticatorAccountInfo =>
-      'The account name in your authenticator app will be your email address';
+      'سيكون اسم الحساب في تطبيق المصادقة هو عنوان بريدك الإلكتروني';
 
   @override
-  String get enterVerificationCode => 'Enter Verification Code';
+  String get enterVerificationCode => 'أدخل رمز التحقق';
 
   @override
   String get enterCodeFromAuthenticator =>
-      'Enter the 6-digit code from your authenticator app to complete setup';
+      'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة لإكمال الإعداد';
 
   @override
   String get codeRefreshesEvery30Seconds =>
-      'Codes refresh every 30 seconds. Make sure to enter the current code.';
+      'تتجدد الرموز كل 30 ثانية. تأكد من إدخال الرمز الحالي.';
 
   @override
-  String get activateTwoFactor => 'Activate 2FA';
+  String get activateTwoFactor => 'تفعيل المصادقة الثنائية';
 
   @override
   String get noInternetConnection => 'لا يوجد اتصال بالإنترنت';

@@ -1052,66 +1052,66 @@ class AppLocalizationsFr extends AppLocalizations {
   String get invalidCode => 'Code invalide. Veuillez réessayer.';
 
   @override
-  String get twoFAEnabled => 'Enabled';
+  String get twoFAEnabled => 'Activé';
 
   @override
-  String get twoFADisabled => '2FA disabled';
+  String get twoFADisabled => '2FA désactivé';
 
   @override
-  String get disable => 'Disable';
+  String get disable => 'Désactiver';
 
   @override
-  String get disable2FA => 'Disable 2FA';
+  String get disable2FA => 'Désactiver 2FA';
 
   @override
-  String get pinRequiredFor2FA => 'Please set up PIN code first';
+  String get pinRequiredFor2FA => 'Veuillez d\'abord configurer le code PIN';
 
   @override
-  String get enterSixDigitCode => 'Please enter 6-digit code';
+  String get enterSixDigitCode => 'Veuillez entrer le code à 6 chiffres';
 
   @override
   String get enterCodeToDisable2FA =>
-      'Enter the code from your authenticator app to confirm';
+      'Entrez le code de votre application d\'authentification pour confirmer';
 
   @override
-  String get twoFactorEnabled => 'Two-factor authentication enabled!';
+  String get twoFactorEnabled => 'Authentification à deux facteurs activée !';
 
   @override
-  String get secretCopied => 'Secret key copied to clipboard';
+  String get secretCopied => 'Clé secrète copiée dans le presse-papiers';
 
   @override
-  String get scanQrCode => 'Scan this QR code';
+  String get scanQrCode => 'Scanner ce code QR';
 
   @override
   String get useAuthenticatorApp =>
-      'Open your authenticator app and scan this QR code to add your account';
+      'Ouvrez votre application d\'authentification et scannez ce code QR pour ajouter votre compte';
 
   @override
-  String get orText => 'OR';
+  String get orText => 'ou';
 
   @override
-  String get enterManually => 'Enter this key manually';
+  String get enterManually => 'Entrer cette clé manuellement';
 
   @override
-  String get copySecretKey => 'Copy secret key';
+  String get copySecretKey => 'Copier la clé secrète';
 
   @override
   String get authenticatorAccountInfo =>
-      'The account name in your authenticator app will be your email address';
+      'Le nom du compte dans votre application d\'authentification sera votre adresse email';
 
   @override
-  String get enterVerificationCode => 'Enter Verification Code';
+  String get enterVerificationCode => 'Entrer le code de vérification';
 
   @override
   String get enterCodeFromAuthenticator =>
-      'Enter the 6-digit code from your authenticator app to complete setup';
+      'Entrez le code à 6 chiffres de votre application d\'authentification pour terminer la configuration';
 
   @override
   String get codeRefreshesEvery30Seconds =>
-      'Codes refresh every 30 seconds. Make sure to enter the current code.';
+      'Les codes se rafraîchissent toutes les 30 secondes. Assurez-vous d\'entrer le code actuel.';
 
   @override
-  String get activateTwoFactor => 'Activate 2FA';
+  String get activateTwoFactor => 'Activer 2FA';
 
   @override
   String get noInternetConnection => 'Pas de connexion Internet';
