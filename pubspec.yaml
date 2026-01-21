@@ -44,6 +44,7 @@ dependencies:
   socket_io_client: ^3.0.2
   local_auth: ^2.3.0
   connectivity_plus: ^7.0.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

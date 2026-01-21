@@ -81,6 +81,19 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
       final canUseBiometrics = await _biometricService.canUseBiometrics();
       final isBiometricEnabled = await _biometricService.isBiometricEnabledLocally();
       
+      // Always load unlock status in background for 2FA and lockout info
+      _biometricService.getUnlockStatus().then((status) {
+        if (mounted && status != null) {
+          setState(() {
+            _unlockStatus = status;
+          });
+          // If locked, start countdown timer
+          if (status.isLocked && !status.permanentlyLocked) {
+            _startLockoutTimer();
+          }
+        }
+      });
+      
       if (canUseBiometrics && isBiometricEnabled) {
         // Attempt biometric immediately without waiting for API
         if (mounted) {
@@ -96,17 +109,6 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
           _isLoading = false;
           _showPinInput = true;
         });
-      }
-      
-      // Load full status in background for lockout info
-      _unlockStatus = await _biometricService.getUnlockStatus();
-      
-      if (_unlockStatus != null && mounted) {
-        // If locked, start countdown timer
-        if (_unlockStatus!.isLocked && !_unlockStatus!.permanentlyLocked) {
-          _startLockoutTimer();
-          setState(() {}); // Refresh UI with lockout info
-        }
       }
     } catch (e) {
       debugPrint('Error loading unlock status: $e');
@@ -233,97 +235,104 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
   /// Show bottom sheet with alternative unlock options
   void _showUnlockOptions() {
     final l10n = AppLocalizations.of(context);
-    final biometricEnabled = _unlockStatus?.biometricEnabled == true;
-    // TODO: These would come from backend when implemented
-    // ignore: dead_code
-    final passkeyEnabled = false; // Device passkey - coming soon
-    // ignore: dead_code
-    final twoFAEnabled = false; // 2FA - coming soon
+    final twoFAEnabled = _unlockStatus?.totpEnabled == true;
+    // Passkey will be added here when implemented
+    // final passkeyEnabled = _unlockStatus?.passkeyEnabled == true;
     
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Handle bar
                 Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+                
+                // Icon
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.secondary.withOpacity(0.15),
+                        AppColors.secondary.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.shield_outlined,
+                    color: AppColors.secondary,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 
                 // Title
                 Text(
-                  l10n?.unlockOptions ?? 'Unlock Options',
+                  l10n?.alternativeUnlock ?? 'Alternative Unlock',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: AppColors.dark,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
-                  l10n?.chooseUnlockMethod ?? 'Choose how to unlock',
+                  l10n?.chooseSecureMethod ?? 'Choose a secure method to unlock',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: Colors.grey[500],
                   ),
                 ),
                 const SizedBox(height: 24),
                 
-                // Face ID option
-                if (biometricEnabled)
-                  _buildUnlockOptionTile(
-                    icon: _hasFaceId ? Icons.face : Icons.fingerprint,
-                    title: l10n?.tryFaceIdAgain ?? 'Try Face ID again',
-                    subtitle: _hasFaceId 
-                        ? (l10n?.faceId ?? 'Face ID')
-                        : (l10n?.fingerprint ?? 'Fingerprint'),
-                    iconColor: AppColors.secondary,
+                // 2FA option - only show if 2FA is enabled
+                if (twoFAEnabled)
+                  _buildModernUnlockOption(
+                    icon: Icons.apps_rounded,
+                    title: l10n?.authenticatorCode ?? 'Authenticator Code',
+                    subtitle: l10n?.enter6DigitCode ?? 'Enter 6-digit code from your app',
+                    gradientColors: [const Color(0xFF9C27B0), const Color(0xFF7B1FA2)],
                     onTap: () {
                       Navigator.pop(context);
-                      _attemptBiometricUnlock();
+                      _show2FAInputDialog();
                     },
                   ),
                 
-                // Passkey option (coming soon)
-                _buildUnlockOptionTile(
-                  icon: Icons.key,
-                  title: l10n?.usePasskey ?? 'Use Passkey',
-                  subtitle: l10n?.devicePasskey ?? 'Device Passkey',
-                  iconColor: Colors.blue,
-                  enabled: passkeyEnabled,
-                  comingSoon: !passkeyEnabled,
-                  onTap: null, // Will be enabled when passkey is implemented
-                ),
-                
-                // 2FA option (coming soon)
-                _buildUnlockOptionTile(
-                  icon: Icons.security,
-                  title: l10n?.use2FACode ?? 'Use 2FA Code',
-                  subtitle: l10n?.authenticatorApp ?? 'Authenticator App',
-                  iconColor: Colors.purple,
-                  enabled: twoFAEnabled,
-                  comingSoon: !twoFAEnabled,
-                  onTap: null, // Will be enabled when 2FA is implemented
-                ),
+                // Passkey option will be added here when implemented
+                // if (passkeyEnabled)
+                //   _buildModernUnlockOption(...),
                 
                 const SizedBox(height: 16),
                 
@@ -335,8 +344,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                     child: Text(
@@ -344,7 +352,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
+                        color: Colors.grey[500],
                       ),
                     ),
                   ),
@@ -356,98 +364,358 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
       ),
     );
   }
-
-  Widget _buildUnlockOptionTile({
+  
+  /// Modern unlock option tile with gradient icon
+  Widget _buildModernUnlockOption({
     required IconData icon,
     required String title,
     required String subtitle,
-    required Color iconColor,
-    bool enabled = true,
-    bool comingSoon = false,
-    VoidCallback? onTap,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
   }) {
-    final l10n = AppLocalizations.of(context);
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: enabled ? Colors.grey[50] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Icon container
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: (enabled ? iconColor : Colors.grey).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: enabled ? iconColor : Colors.grey,
-                    size: 24,
-                  ),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.15),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors[0].withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Gradient icon container
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                const SizedBox(width: 16),
-                
-                // Text
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: enabled ? AppColors.dark : Colors.grey[500],
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradientColors[0].withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            
+            // Text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.dark,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Arrow
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Show dialog for 2FA code input
+  void _show2FAInputDialog() {
+    final l10n = AppLocalizations.of(context);
+    final codeController = TextEditingController();
+    bool isVerifying = false;
+    String? errorText;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Icon
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.security,
+                      color: Colors.purple,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title
+                  Text(
+                    l10n?.enter2FACode ?? 'Enter 2FA Code',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.dark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n?.enterCodeFromAuthenticator ?? 
+                        'Enter the 6-digit code from your authenticator app',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Code input
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.gray,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: errorText != null
+                            ? AppColors.primary
+                            : Colors.grey.withOpacity(0.2),
+                        width: errorText != null ? 2 : 1,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: codeController,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      textAlign: TextAlign.center,
+                      autofocus: true,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        letterSpacing: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.dark,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: '000000',
+                        hintStyle: TextStyle(
+                          fontSize: 28,
+                          letterSpacing: 12,
+                          color: Colors.grey,
+                        ),
+                        counterText: '',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[500],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      onChanged: (value) {
+                        if (errorText != null) {
+                          setDialogState(() => errorText = null);
+                        }
+                      },
+                    ),
+                  ),
+
+                  // Error message
+                  if (errorText != null) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: AppColors.primary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          errorText!,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: isVerifying
+                              ? null
+                              : () => Navigator.pop(dialogContext),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: Colors.grey[300]!),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            l10n?.cancel ?? 'Cancel',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isVerifying
+                              ? null
+                              : () async {
+                                  final code = codeController.text;
+                                  if (code.length != 6) {
+                                    setDialogState(() {
+                                      errorText = l10n?.enterSixDigitCode ??
+                                          'Enter 6-digit code';
+                                    });
+                                    return;
+                                  }
+
+                                  setDialogState(() {
+                                    isVerifying = true;
+                                    errorText = null;
+                                  });
+
+                                  final result = await _biometricService
+                                      .verifyAppUnlockWithTotp(code);
+
+                                  if (!context.mounted) return;
+
+                                  if (result.success) {
+                                    Navigator.pop(dialogContext);
+                                    HapticFeedback.mediumImpact();
+                                    widget.onUnlocked();
+                                  } else {
+                                    setDialogState(() {
+                                      isVerifying = false;
+                                      codeController.clear();
+                                      
+                                      if (result.isLocked == true) {
+                                        Navigator.pop(dialogContext);
+                                        _loadUnlockStatus();
+                                      } else if (result.permanentlyLocked == true) {
+                                        Navigator.pop(dialogContext);
+                                        setState(() {
+                                          _unlockStatus = UnlockStatus(
+                                            securityEnabled: true,
+                                            biometricEnabled: false,
+                                            passkeyEnabled: true,
+                                            totpEnabled: true,
+                                            isLocked: true,
+                                            permanentlyLocked: true,
+                                            remainingSeconds: 0,
+                                            lockoutLevel: 4,
+                                            failedAttempts: 0,
+                                            maxAttempts: 3,
+                                          );
+                                        });
+                                      } else {
+                                        errorText = result.message ??
+                                            (l10n?.invalidCode ?? 'Invalid code');
+                                      }
+                                    });
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: isVerifying
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  l10n?.verify ?? 'Verify',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                
-                // Coming soon badge or arrow
-                if (comingSoon)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      l10n?.soon ?? 'Soon',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.orange[700],
-                      ),
-                    ),
-                  )
-                else if (enabled)
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey[400],
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -1051,8 +1319,9 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
               ),
             ],
 
-            // Use another method button (only if biometric is enabled)
-            if (_isBiometricEnabled) ...[
+            // Use another method button - only show when there are alternative methods available
+            // Currently shows when 2FA is enabled (passkey will be added later)
+            if (_unlockStatus?.totpEnabled == true) ...[
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: _showUnlockOptions,

@@ -12,6 +12,8 @@ import 'token_storage_service.dart';
 class SecuritySettings {
   final bool biometricEnabled;
   final bool passkeyEnabled;
+  final bool hasPassword;
+  final bool totpEnabled;
   final int lockoutLevel;
   final DateTime? lockedUntil;
   final bool permanentlyLocked;
@@ -21,6 +23,8 @@ class SecuritySettings {
   SecuritySettings({
     required this.biometricEnabled,
     required this.passkeyEnabled,
+    required this.hasPassword,
+    required this.totpEnabled,
     required this.lockoutLevel,
     this.lockedUntil,
     required this.permanentlyLocked,
@@ -32,6 +36,8 @@ class SecuritySettings {
     return SecuritySettings(
       biometricEnabled: json['biometricEnabled'] ?? false,
       passkeyEnabled: json['passkeyEnabled'] ?? false,
+      hasPassword: json['hasPassword'] ?? false,
+      totpEnabled: json['totpEnabled'] ?? false,
       lockoutLevel: json['lockoutLevel'] ?? 0,
       lockedUntil: json['lockedUntil'] != null 
         ? DateTime.parse(json['lockedUntil']) 
@@ -42,7 +48,7 @@ class SecuritySettings {
     );
   }
 
-  bool get isSecurityEnabled => biometricEnabled || passkeyEnabled;
+  bool get isSecurityEnabled => biometricEnabled || passkeyEnabled || totpEnabled;
   
   bool get isLocked {
     if (permanentlyLocked) return true;
@@ -61,6 +67,7 @@ class UnlockStatus {
   final bool securityEnabled;
   final bool biometricEnabled;
   final bool passkeyEnabled;
+  final bool totpEnabled;
   final bool isLocked;
   final bool permanentlyLocked;
   final DateTime? lockedUntil;
@@ -73,6 +80,7 @@ class UnlockStatus {
     required this.securityEnabled,
     required this.biometricEnabled,
     required this.passkeyEnabled,
+    this.totpEnabled = false,
     required this.isLocked,
     required this.permanentlyLocked,
     this.lockedUntil,
@@ -87,6 +95,7 @@ class UnlockStatus {
       securityEnabled: json['securityEnabled'] ?? false,
       biometricEnabled: json['biometricEnabled'] ?? false,
       passkeyEnabled: json['passkeyEnabled'] ?? false,
+      totpEnabled: json['totpEnabled'] ?? false,
       isLocked: json['isLocked'] ?? false,
       permanentlyLocked: json['permanentlyLocked'] ?? false,
       lockedUntil: json['lockedUntil'] != null 
@@ -118,6 +127,45 @@ class UnlockResult {
     this.permanentlyLocked,
     this.remainingSeconds,
     this.lockoutLevel,
+  });
+}
+
+/// TOTP Setup response
+class TotpSetupResponse {
+  final String secret;
+  final String qrCodeUrl;
+  final String issuer;
+  final String accountName;
+
+  TotpSetupResponse({
+    required this.secret,
+    required this.qrCodeUrl,
+    required this.issuer,
+    required this.accountName,
+  });
+
+  factory TotpSetupResponse.fromJson(Map<String, dynamic> json) {
+    return TotpSetupResponse(
+      secret: json['secret'] ?? '',
+      qrCodeUrl: json['qrCodeUrl'] ?? '',
+      issuer: json['issuer'] ?? '',
+      accountName: json['accountName'] ?? '',
+    );
+  }
+}
+
+/// Generic result for 2FA operations
+class TotpResult {
+  final bool success;
+  final String? message;
+  final String? error;
+  final bool? enabled;
+
+  TotpResult({
+    required this.success,
+    this.message,
+    this.error,
+    this.enabled,
   });
 }
 
@@ -483,7 +531,7 @@ class BiometricService {
         // Invalid passkey
         return UnlockResult(
           success: false,
-          message: data['message'] ?? 'Invalid passkey',
+          message: data['message'] ?? 'Invalid Pin code',
           remainingAttempts: data['remainingAttempts'],
         );
       } else if (response.statusCode == 429) {
@@ -554,6 +602,230 @@ class BiometricService {
     } catch (e) {
       debugPrint('Error changing password: $e');
       return (success: false, error: 'Network error');
+    }
+  }
+
+  /// Create password for OAuth users who don't have one
+  Future<({bool success, String? error})> createPassword({
+    required String newPassword,
+  }) async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) {
+        return (success: false, error: 'Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/create-password'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'newPassword': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return (success: true, error: null);
+      } else {
+        final data = json.decode(response.body);
+        return (success: false, error: (data['message'] as String?) ?? 'Failed to create password');
+      }
+    } catch (e) {
+      debugPrint('Error creating password: $e');
+      return (success: false, error: 'Network error');
+    }
+  }
+
+  // ==========================================
+  // TWO-FACTOR AUTHENTICATION (TOTP)
+  // ==========================================
+
+  /// Set up 2FA - generates secret and QR code URL
+  Future<TotpSetupResponse?> setupTotp() async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) return null;
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/2fa/setup'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return TotpSetupResponse.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error setting up TOTP: $e');
+      return null;
+    }
+  }
+
+  /// Verify TOTP code and enable 2FA
+  Future<TotpResult> verifyAndEnableTotp(String code) async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) {
+        return TotpResult(success: false, error: 'Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/2fa/verify'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'code': code}),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        // Update local cache
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_securityEnabledKey, true);
+        
+        return TotpResult(
+          success: true,
+          message: data['message'],
+          enabled: data['enabled'],
+        );
+      } else {
+        return TotpResult(
+          success: false,
+          error: data['message'] ?? 'Invalid verification code',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error verifying TOTP: $e');
+      return TotpResult(success: false, error: 'Network error');
+    }
+  }
+
+  /// Disable 2FA (requires valid TOTP code)
+  Future<TotpResult> disableTotp(String code) async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) {
+        return TotpResult(success: false, error: 'Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/2fa/disable'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'code': code}),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        // Refresh security settings
+        await getSecuritySettings();
+        
+        return TotpResult(
+          success: true,
+          message: data['message'],
+          enabled: false,
+        );
+      } else {
+        return TotpResult(
+          success: false,
+          error: data['message'] ?? 'Invalid verification code',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error disabling TOTP: $e');
+      return TotpResult(success: false, error: 'Network error');
+    }
+  }
+
+  /// Get 2FA status
+  Future<bool> isTotpEnabled() async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) return false;
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/2fa/status'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['enabled'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error getting TOTP status: $e');
+      return false;
+    }
+  }
+
+  /// Verify app unlock with TOTP
+  Future<UnlockResult> verifyAppUnlockWithTotp(String code) async {
+    try {
+      final token = await _tokenStorage.getAccessToken();
+      if (token == null) {
+        return UnlockResult(success: false, message: 'Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_apiBaseUrl/auth/security/unlock'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'method': 'totp',
+          'totpCode': code,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return UnlockResult(success: true, message: data['message']);
+      } else if (response.statusCode == 400) {
+        return UnlockResult(
+          success: false,
+          message: data['message'] ?? 'Invalid code',
+          remainingAttempts: data['remainingAttempts'],
+        );
+      } else if (response.statusCode == 429) {
+        return UnlockResult(
+          success: false,
+          message: data['message'] ?? 'Account locked',
+          isLocked: true,
+          remainingSeconds: data['remainingSeconds'],
+          lockoutLevel: data['lockoutLevel'],
+        );
+      } else if (response.statusCode == 403) {
+        return UnlockResult(
+          success: false,
+          message: data['message'] ?? 'Account permanently locked',
+          permanentlyLocked: true,
+        );
+      } else {
+        return UnlockResult(
+          success: false,
+          message: data['message'] ?? 'Verification failed',
+        );
+      }
+    } catch (e) {
+      debugPrint('Error verifying TOTP unlock: $e');
+      return UnlockResult(success: false, message: 'Network error');
     }
   }
 }

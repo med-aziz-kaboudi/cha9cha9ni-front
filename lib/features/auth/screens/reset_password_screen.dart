@@ -43,10 +43,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _validateConfirmPassword() {
-    // Trigger form validation to clear/show errors dynamically
-    if (_confirmPasswordController.text.isNotEmpty) {
-      _formKey.currentState?.validate();
-    }
+    // Trigger rebuild to update border colors and clear/show errors dynamically
+    setState(() {});
   }
 
   void _validatePassword() {
@@ -73,6 +71,42 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (strength >= 1.0) return const Color(0xFF4CC3C7); // Secondary - all requirements met
     if (strength >= 0.5) return const Color(0xFFFF9800); // Orange - half requirements
     return const Color(0xFFEE3764); // Primary - weak
+  }
+
+  Color _getConfirmPasswordBorderColor({bool focused = false}) {
+    final confirmPassword = _confirmPasswordController.text;
+    final password = _passwordController.text;
+    
+    // Empty field - default color
+    if (confirmPassword.isEmpty) {
+      return focused ? const Color(0xFF4CC3C7) : const Color(0xFFE0E0E6);
+    }
+    
+    // Passwords match - secondary (green/teal)
+    if (confirmPassword == password && password.isNotEmpty) {
+      return const Color(0xFF4CC3C7);
+    }
+    
+    // Passwords don't match - show error color
+    return const Color(0xFFEE3764);
+  }
+
+  String? _getConfirmPasswordError() {
+    final confirmPassword = _confirmPasswordController.text;
+    final password = _passwordController.text;
+    final l10n = AppLocalizations.of(context);
+    
+    // Don't show error if confirm field is empty
+    if (confirmPassword.isEmpty) {
+      return null;
+    }
+    
+    // Show mismatch error
+    if (confirmPassword != password) {
+      return l10n?.passwordsDoNotMatch ?? 'Passwords do not match';
+    }
+    
+    return null;
   }
 
   String _maskEmail(String email) {
@@ -479,22 +513,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE0E0E6),
+                        borderSide: BorderSide(
+                          color: _getConfirmPasswordBorderColor(),
                           width: 1,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFE0E0E6),
+                        borderSide: BorderSide(
+                          color: _getConfirmPasswordBorderColor(),
                           width: 1,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFEE3764),
+                        borderSide: BorderSide(
+                          color: _getConfirmPasswordBorderColor(focused: true),
                           width: 1.5,
                         ),
                       ),
@@ -512,6 +546,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           width: 1.5,
                         ),
                       ),
+                      // Show error text dynamically without form validation
+                      errorText: _getConfirmPasswordError(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {

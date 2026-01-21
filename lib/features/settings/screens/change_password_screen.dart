@@ -25,6 +25,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   late Animation<Offset> _slideAnimation;
 
   bool _isLoading = false;
+  bool _isLoadingSettings = true;
+  bool _hasPassword = true; // Default to true, will be updated from settings
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
@@ -57,6 +59,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         );
     _animationController.forward();
     _newPasswordController.addListener(_validatePassword);
+    _loadSecuritySettings();
+  }
+
+  Future<void> _loadSecuritySettings() async {
+    try {
+      final settings = await _biometricService.getSecuritySettings();
+      if (mounted) {
+        setState(() {
+          _hasPassword = settings?.hasPassword ?? true;
+          _isLoadingSettings = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSettings = false;
+        });
+      }
+    }
   }
 
   @override
@@ -88,7 +109,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     final newPassword = _newPasswordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (currentPassword.isEmpty) {
+    // Only validate current password if user has one
+    if (_hasPassword && currentPassword.isEmpty) {
       AppToast.error(
         context,
         l10n?.currentPasswordRequired ?? 'Current password is required',
@@ -113,7 +135,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       return;
     }
 
-    if (currentPassword == newPassword) {
+    // Only check if different from current when changing (not creating)
+    if (_hasPassword && currentPassword == newPassword) {
       AppToast.error(
         context,
         l10n?.newPasswordMustBeDifferent ?? 'New password must be different',
@@ -123,10 +146,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
     setState(() => _isLoading = true);
 
-    final result = await _biometricService.changePassword(
-      currentPassword: currentPassword,
-      newPassword: newPassword,
-    );
+    final ({bool success, String? error}) result;
+    
+    if (_hasPassword) {
+      // Change existing password
+      result = await _biometricService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+    } else {
+      // Create new password for OAuth users
+      result = await _biometricService.createPassword(
+        newPassword: newPassword,
+      );
+    }
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -135,7 +168,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         HapticFeedback.heavyImpact();
         AppToast.success(
           context,
-          l10n?.passwordChangedSuccess ?? 'Password changed successfully',
+          _hasPassword 
+              ? (l10n?.passwordChangedSuccess ?? 'Password changed successfully')
+              : (l10n?.passwordCreatedSuccess ?? 'Password created successfully'),
         );
         Navigator.pop(context);
       } else {
@@ -143,7 +178,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         AppToast.error(
           context,
           result.error ??
-              (l10n?.failedToChangePassword ?? 'Failed to change password'),
+              (_hasPassword 
+                  ? (l10n?.failedToChangePassword ?? 'Failed to change password')
+                  : (l10n?.failedToCreatePassword ?? 'Failed to create password')),
         );
       }
     }
@@ -276,6 +313,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     final locale = Localizations.localeOf(context);
     final isRTL = locale.languageCode == 'ar';
 
+    // Determine title and subtitle based on whether user has password
+    final title = _hasPassword 
+        ? (l10n?.changePassword ?? 'Change Password')
+        : (l10n?.createPassword ?? 'Create Password');
+    final subtitle = _hasPassword
+        ? (l10n?.changePasswordDialogDesc ?? 'Enter your current password and choose a new one')
+        : (l10n?.createPasswordDesc ?? 'Create a password for your account');
+    final buttonText = _hasPassword
+        ? (l10n?.changePassword ?? 'Change Password')
+        : (l10n?.createPassword ?? 'Create Password');
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -341,7 +389,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                     // Title
                     Expanded(
                       child: Text(
-                        l10n?.changePassword ?? 'Change Password',
+                        title,
                         style: const TextStyle(
                           color: AppColors.secondary,
                           fontSize: 18,
@@ -350,7 +398,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
                         ),
                       ),
                     ),
-                    if (_isLoading)
+                    if (_isLoading || _isLoadingSettings)
                       const SizedBox(
                         width: 20,
                         height: 20,
@@ -365,222 +413,230 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
               // Content
               Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Subtitle
-                          Text(
-                            l10n?.changePasswordDialogDesc ??
-                                'Enter your current password and choose a new one',
-                            style: AppTextStyles.body.copyWith(
-                              color: Colors.grey[600],
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Current Password
-                          _buildPasswordField(
-                            controller: _currentPasswordController,
-                            label: l10n?.currentPassword ?? 'Current Password',
-                            obscure: _obscureCurrentPassword,
-                            onToggle: () => setState(
-                              () => _obscureCurrentPassword =
-                                  !_obscureCurrentPassword,
-                            ),
-                            delay: 0,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // New Password
-                          _buildPasswordField(
-                            controller: _newPasswordController,
-                            label: l10n?.newPassword ?? 'New Password',
-                            obscure: _obscureNewPassword,
-                            onToggle: () => setState(
-                              () => _obscureNewPassword = !_obscureNewPassword,
-                            ),
-                            delay: 1,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Password Requirements Card
-                          TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 500),
-                            tween: Tween(begin: 0.0, end: 1.0),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, child) {
-                              return Transform.translate(
-                                offset: Offset(0, 20 * (1 - value)),
-                                child: Opacity(opacity: value, child: child),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: _isPasswordValid
-                                    ? AppColors.secondary.withOpacity(0.1)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: _isPasswordValid
-                                      ? AppColors.secondary.withOpacity(0.3)
-                                      : Colors.transparent,
+                child: _isLoadingSettings
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.secondary,
+                        ),
+                      )
+                    : FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SlideTransition(
+                          position: _slideAnimation,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Subtitle
+                                Text(
+                                  subtitle,
+                                  style: AppTextStyles.body.copyWith(
+                                    color: Colors.grey[600],
+                                    fontSize: 15,
+                                  ),
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
+                                const SizedBox(height: 24),
+
+                                // Current Password - only show if user has password
+                                if (_hasPassword) ...[
+                                  _buildPasswordField(
+                                    controller: _currentPasswordController,
+                                    label: l10n?.currentPassword ?? 'Current Password',
+                                    obscure: _obscureCurrentPassword,
+                                    onToggle: () => setState(
+                                      () => _obscureCurrentPassword =
+                                          !_obscureCurrentPassword,
+                                    ),
+                                    delay: 0,
                                   ),
+                                  const SizedBox(height: 16),
                                 ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: _isPasswordValid
-                                              ? AppColors.secondary.withOpacity(
-                                                  0.2,
-                                                )
-                                              : Colors.grey.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          _isPasswordValid
-                                              ? Icons.verified
-                                              : Icons.info_outline,
-                                          color: _isPasswordValid
-                                              ? AppColors.secondary
-                                              : Colors.grey,
-                                          size: 22,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        _isPasswordValid
-                                            ? (l10n?.passwordStrong ??
-                                                  'Strong password!')
-                                            : (l10n?.passwordRequirements ??
-                                                  'Password requirements'),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: _isPasswordValid
-                                              ? AppColors.secondary
-                                              : AppColors.dark,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  _buildRequirementRow(
-                                    _hasMinLength,
-                                    l10n?.passwordRequirement1 ??
-                                        'At least 8 characters',
-                                  ),
-                                  _buildRequirementRow(
-                                    _hasNumber,
-                                    l10n?.passwordRequirement2 ??
-                                        'Contains a number',
-                                  ),
-                                  _buildRequirementRow(
-                                    _hasUppercase,
-                                    l10n?.passwordRequirement3 ??
-                                        'Contains an uppercase letter',
-                                  ),
-                                  _buildRequirementRow(
-                                    _hasSpecialChar,
-                                    l10n?.passwordRequirement4 ??
-                                        'Contains a special character',
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
 
-                          // Confirm Password
-                          _buildPasswordField(
-                            controller: _confirmPasswordController,
-                            label: l10n?.confirmPassword ?? 'Confirm Password',
-                            obscure: _obscureConfirmPassword,
-                            onToggle: () => setState(
-                              () => _obscureConfirmPassword =
-                                  !_obscureConfirmPassword,
-                            ),
-                            delay: 2,
-                          ),
-
-                          const SizedBox(height: 32),
-
-                          // Submit Button - matching app design
-                          TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 600),
-                            tween: Tween(begin: 0.0, end: 1.0),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, child) {
-                              return Transform.translate(
-                                offset: Offset(0, 20 * (1 - value)),
-                                child: Opacity(opacity: value, child: child),
-                              );
-                            },
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 56,
-                              child: ElevatedButton(
-                                onPressed: _isLoading
-                                    ? null
-                                    : _handleChangePassword,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
+                                // New Password
+                                _buildPasswordField(
+                                  controller: _newPasswordController,
+                                  label: _hasPassword 
+                                      ? (l10n?.newPassword ?? 'New Password')
+                                      : (l10n?.password ?? 'Password'),
+                                  obscure: _obscureNewPassword,
+                                  onToggle: () => setState(
+                                    () => _obscureNewPassword = !_obscureNewPassword,
                                   ),
-                                  disabledBackgroundColor: AppColors.primary
-                                      .withOpacity(0.5),
+                                  delay: _hasPassword ? 1 : 0,
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        l10n?.changePassword ??
-                                            'Change Password',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                const SizedBox(height: 16),
+
+                                // Password Requirements Card
+                                TweenAnimationBuilder<double>(
+                                  duration: const Duration(milliseconds: 500),
+                                  tween: Tween(begin: 0.0, end: 1.0),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, value, child) {
+                                    return Transform.translate(
+                                      offset: Offset(0, 20 * (1 - value)),
+                                      child: Opacity(opacity: value, child: child),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: _isPasswordValid
+                                          ? AppColors.secondary.withOpacity(0.1)
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: _isPasswordValid
+                                            ? AppColors.secondary.withOpacity(0.3)
+                                            : Colors.transparent,
                                       ),
-                              ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 40,
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                color: _isPasswordValid
+                                                    ? AppColors.secondary.withOpacity(
+                                                        0.2,
+                                                      )
+                                                    : Colors.grey.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(
+                                                  10,
+                                                ),
+                                              ),
+                                              child: Icon(
+                                                _isPasswordValid
+                                                    ? Icons.verified
+                                                    : Icons.info_outline,
+                                                color: _isPasswordValid
+                                                    ? AppColors.secondary
+                                                    : Colors.grey,
+                                                size: 22,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              _isPasswordValid
+                                                  ? (l10n?.passwordStrong ??
+                                                        'Strong password!')
+                                                  : (l10n?.passwordRequirements ??
+                                                        'Password requirements'),
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: _isPasswordValid
+                                                    ? AppColors.secondary
+                                                    : AppColors.dark,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        _buildRequirementRow(
+                                          _hasMinLength,
+                                          l10n?.passwordRequirement1 ??
+                                              'At least 8 characters',
+                                        ),
+                                        _buildRequirementRow(
+                                          _hasNumber,
+                                          l10n?.passwordRequirement2 ??
+                                              'Contains a number',
+                                        ),
+                                        _buildRequirementRow(
+                                          _hasUppercase,
+                                          l10n?.passwordRequirement3 ??
+                                              'Contains an uppercase letter',
+                                        ),
+                                        _buildRequirementRow(
+                                          _hasSpecialChar,
+                                          l10n?.passwordRequirement4 ??
+                                              'Contains a special character',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Confirm Password
+                                _buildPasswordField(
+                                  controller: _confirmPasswordController,
+                                  label: l10n?.confirmPassword ?? 'Confirm Password',
+                                  obscure: _obscureConfirmPassword,
+                                  onToggle: () => setState(
+                                    () => _obscureConfirmPassword =
+                                        !_obscureConfirmPassword,
+                                  ),
+                                  delay: _hasPassword ? 2 : 1,
+                                ),
+
+                                const SizedBox(height: 32),
+
+                                // Submit Button - matching app design
+                                TweenAnimationBuilder<double>(
+                                  duration: const Duration(milliseconds: 600),
+                                  tween: Tween(begin: 0.0, end: 1.0),
+                                  curve: Curves.easeOutCubic,
+                                  builder: (context, value, child) {
+                                    return Transform.translate(
+                                      offset: Offset(0, 20 * (1 - value)),
+                                      child: Opacity(opacity: value, child: child),
+                                    );
+                                  },
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 56,
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading
+                                          ? null
+                                          : _handleChangePassword,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        disabledBackgroundColor: AppColors.primary
+                                            .withOpacity(0.5),
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : Text(
+                                              buttonText,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

@@ -1026,14 +1026,75 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enter2FACode => 'أدخل رمز 2FA';
 
   @override
-  String get enter6DigitCode =>
-      'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة';
+  String get enter6DigitCode => 'أدخل الرمز المكون من 6 أرقام من تطبيقك';
 
   @override
   String get verifyCode => 'تحقق من الرمز';
 
   @override
   String get invalidCode => 'رمز غير صالح. حاول مرة أخرى.';
+
+  @override
+  String get twoFAEnabled => 'Enabled';
+
+  @override
+  String get twoFADisabled => '2FA disabled';
+
+  @override
+  String get disable => 'Disable';
+
+  @override
+  String get disable2FA => 'Disable 2FA';
+
+  @override
+  String get pinRequiredFor2FA => 'Please set up PIN code first';
+
+  @override
+  String get enterSixDigitCode => 'Please enter 6-digit code';
+
+  @override
+  String get enterCodeToDisable2FA =>
+      'Enter the code from your authenticator app to confirm';
+
+  @override
+  String get twoFactorEnabled => 'Two-factor authentication enabled!';
+
+  @override
+  String get secretCopied => 'Secret key copied to clipboard';
+
+  @override
+  String get scanQrCode => 'Scan this QR code';
+
+  @override
+  String get useAuthenticatorApp =>
+      'Open your authenticator app and scan this QR code to add your account';
+
+  @override
+  String get orText => 'OR';
+
+  @override
+  String get enterManually => 'Enter this key manually';
+
+  @override
+  String get copySecretKey => 'Copy secret key';
+
+  @override
+  String get authenticatorAccountInfo =>
+      'The account name in your authenticator app will be your email address';
+
+  @override
+  String get enterVerificationCode => 'Enter Verification Code';
+
+  @override
+  String get enterCodeFromAuthenticator =>
+      'Enter the 6-digit code from your authenticator app to complete setup';
+
+  @override
+  String get codeRefreshesEvery30Seconds =>
+      'Codes refresh every 30 seconds. Make sure to enter the current code.';
+
+  @override
+  String get activateTwoFactor => 'Activate 2FA';
 
   @override
   String get noInternetConnection => 'لا يوجد اتصال بالإنترنت';
@@ -1080,4 +1141,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get failedToChangePassword => 'فشل في تغيير كلمة المرور';
+
+  @override
+  String get createPassword => 'إنشاء كلمة مرور';
+
+  @override
+  String get createPasswordDesc => 'أنشئ كلمة مرور لحسابك';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get passwordCreatedSuccess => 'تم إنشاء كلمة المرور بنجاح';
+
+  @override
+  String get failedToCreatePassword => 'فشل في إنشاء كلمة المرور';
+
+  @override
+  String get alternativeUnlock => 'فتح بديل';
+
+  @override
+  String get chooseSecureMethod => 'اختر طريقة آمنة للفتح';
+
+  @override
+  String get authenticatorCode => 'رمز المصادقة';
 }

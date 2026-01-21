@@ -450,5 +450,14 @@
   "passwordDoesNotMeetRequirements": "كلمة المرور لا تستوفي المتطلبات",
   "newPasswordMustBeDifferent": "كلمة المرور الجديدة يجب أن تكون مختلفة عن الحالية",
   "passwordChangedSuccess": "تم تغيير كلمة المرور بنجاح",
-  "failedToChangePassword": "فشل في تغيير كلمة المرور"
+  "failedToChangePassword": "فشل في تغيير كلمة المرور",
+  "createPassword": "إنشاء كلمة مرور",
+  "createPasswordDesc": "أنشئ كلمة مرور لحسابك",
+  "password": "كلمة المرور",
+  "passwordCreatedSuccess": "تم إنشاء كلمة المرور بنجاح",
+  "failedToCreatePassword": "فشل في إنشاء كلمة المرور",
+  "alternativeUnlock": "فتح بديل",
+  "chooseSecureMethod": "اختر طريقة آمنة للفتح",
+  "authenticatorCode": "رمز المصادقة",
+  "enter6DigitCode": "أدخل الرمز المكون من 6 أرقام من تطبيقك"
 }

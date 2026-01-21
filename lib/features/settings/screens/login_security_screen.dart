@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
 import 'change_password_screen.dart';
+import 'two_factor_setup_screen.dart';
 
 class LoginSecurityScreen extends StatefulWidget {
   const LoginSecurityScreen({super.key});
@@ -896,74 +897,177 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
 
   Widget _build2FACard() {
     final l10n = AppLocalizations.of(context);
+    final isEnabled = _settings?.totpEnabled ?? false;
+    final isPinEnabled = _settings?.passkeyEnabled ?? false;
+    final isLocked = !isPinEnabled;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+    return Opacity(
+      opacity: isLocked ? 0.6 : 1.0,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: const Icon(Icons.security, color: Colors.grey, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  l10n?.authenticatorApp ?? 'Authenticator App',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.dark,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isEnabled
+                        ? AppColors.secondary.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isEnabled ? Icons.verified_user : Icons.security,
+                    color: isEnabled ? AppColors.secondary : Colors.grey,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n?.twoFAShortDesc ?? 'Google Authenticator, Authy',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n?.authenticatorApp ?? 'Authenticator App',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.dark,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isLocked
+                            ? (l10n?.requiresPinFirst ?? 'Requires PIN code')
+                            : isEnabled
+                            ? (l10n?.twoFAEnabled ?? 'Enabled')
+                            : (l10n?.twoFAShortDesc ?? 'Google Authenticator, Authy'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isLocked
+                              ? Colors.orange
+                              : isEnabled
+                              ? AppColors.secondary
+                              : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                if (isLocked)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n?.pinFirst ?? 'PIN first',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isEnabled)
+                  Icon(Icons.check_circle, color: AppColors.secondary, size: 24),
               ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              l10n?.soon ?? 'Soon',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.secondary,
-              ),
-            ),
-          ),
-        ],
+            if (!isLocked) ...[
+              const SizedBox(height: 12),
+              if (isEnabled)
+                _buildActionButton(
+                  label: l10n?.disable ?? 'Disable',
+                  icon: Icons.remove_circle_outline,
+                  onTap: _disable2FA,
+                  isDestructive: true,
+                )
+              else
+                _buildActionButton(
+                  label: l10n?.setup2FA ?? 'Set Up 2FA',
+                  icon: Icons.add,
+                  onTap: _setup2FA,
+                  isPrimary: true,
+                ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
+  Future<void> _setup2FA() async {
+    final l10n = AppLocalizations.of(context);
+    final isPinEnabled = _settings?.passkeyEnabled ?? false;
+
+    if (!isPinEnabled) {
+      AppToast.info(
+        context,
+        l10n?.pinRequiredFor2FA ?? 'Please set up PIN code first',
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TwoFactorSetupScreen(
+          onSuccess: () {
+            _loadSettings();
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _disable2FA() async {
+    final l10n = AppLocalizations.of(context);
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) =>
+          _Disable2FADialog(biometricService: _biometricService, l10n: l10n),
+    );
+
+    if (result == true && mounted) {
+      AppToast.success(context, l10n?.twoFADisabled ?? '2FA disabled');
+      _loadSettings();
+    }
+  }
+
   Widget _buildChangePasswordCard() {
     final l10n = AppLocalizations.of(context);
+    final hasPassword = _settings?.hasPassword ?? true;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -992,8 +1096,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 color: AppColors.secondary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.lock_reset,
+              child: Icon(
+                hasPassword ? Icons.lock_reset : Icons.lock_outline,
                 color: AppColors.secondary,
                 size: 24,
               ),
@@ -1004,7 +1108,9 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n?.changePassword ?? 'Change Password',
+                    hasPassword 
+                        ? (l10n?.changePassword ?? 'Change Password')
+                        : (l10n?.createPassword ?? 'Create Password'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -1013,7 +1119,9 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l10n?.changePasswordDesc ?? 'Update your account password',
+                    hasPassword
+                        ? (l10n?.changePasswordDesc ?? 'Update your account password')
+                        : (l10n?.createPasswordDesc ?? 'Create a password for your account'),
                     style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
                 ],
@@ -1503,6 +1611,274 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                                   )
                                 : Text(
                                     l10n?.remove ?? 'Remove',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Dialog for disabling 2FA with code verification
+class _Disable2FADialog extends StatefulWidget {
+  final BiometricService biometricService;
+  final AppLocalizations? l10n;
+
+  const _Disable2FADialog({required this.biometricService, required this.l10n});
+
+  @override
+  State<_Disable2FADialog> createState() => _Disable2FADialogState();
+}
+
+class _Disable2FADialogState extends State<_Disable2FADialog> {
+  late TextEditingController _codeController;
+  String? _errorText;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _codeController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleDisable() async {
+    final code = _codeController.text;
+    if (code.length != 6) {
+      setState(() {
+        _errorText = widget.l10n?.enterSixDigitCode ?? 'Enter 6-digit code';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorText = null;
+    });
+
+    final result = await widget.biometricService.disableTotp(code);
+
+    if (!mounted) return;
+
+    if (result.success) {
+      Navigator.pop(context, true);
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorText = result.error ?? (widget.l10n?.invalidCode ?? 'Invalid code');
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 340),
+        decoration: BoxDecoration(
+          color: Theme.of(context).dialogBackgroundColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header with warning icon
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.red.shade400, Colors.red.shade600],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.security,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n?.disable2FA ?? 'Disable 2FA',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      l10n?.enterCodeToDisable2FA ??
+                          'Enter the code from your authenticator app to confirm',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Code Input
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _codeController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    autofocus: true,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 12,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '000000',
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade400,
+                        letterSpacing: 8,
+                      ),
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: Colors.red.shade400,
+                          width: 2,
+                        ),
+                      ),
+                      errorText: _errorText,
+                      errorStyle: const TextStyle(fontSize: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(6),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      // Cancel Button
+                      Expanded(
+                        child: TextButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () => Navigator.pop(context, false),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Text(
+                            l10n?.cancel ?? 'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Disable Button
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.shade400,
+                                Colors.red.shade600,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleDisable,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    l10n?.disable ?? 'Disable',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,

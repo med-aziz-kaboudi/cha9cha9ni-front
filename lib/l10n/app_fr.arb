@@ -450,5 +450,14 @@
   "passwordDoesNotMeetRequirements": "Le mot de passe ne répond pas aux exigences",
   "newPasswordMustBeDifferent": "Le nouveau mot de passe doit être différent de l'actuel",
   "passwordChangedSuccess": "Mot de passe changé avec succès",
-  "failedToChangePassword": "Échec du changement de mot de passe"
+  "failedToChangePassword": "Échec du changement de mot de passe",
+  "createPassword": "Créer un mot de passe",
+  "createPasswordDesc": "Créez un mot de passe pour votre compte",
+  "password": "Mot de passe",
+  "passwordCreatedSuccess": "Mot de passe créé avec succès",
+  "failedToCreatePassword": "Échec de la création du mot de passe",
+  "alternativeUnlock": "Déverrouillage alternatif",
+  "chooseSecureMethod": "Choisissez une méthode sécurisée",
+  "authenticatorCode": "Code d'authentification",
+  "enter6DigitCode": "Entrez le code à 6 chiffres de votre app"
 }

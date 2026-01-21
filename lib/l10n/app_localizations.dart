@@ -1993,7 +1993,7 @@ abstract class AppLocalizations {
   /// No description provided for @enter6DigitCode.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6-digit code from your authenticator app'**
+  /// **'Enter 6-digit code from your app'**
   String get enter6DigitCode;
 
   /// No description provided for @verifyCode.
@@ -2007,6 +2007,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid code. Please try again.'**
   String get invalidCode;
+
+  /// No description provided for @twoFAEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get twoFAEnabled;
+
+  /// No description provided for @twoFADisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'2FA disabled'**
+  String get twoFADisabled;
+
+  /// No description provided for @disable.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable'**
+  String get disable;
+
+  /// No description provided for @disable2FA.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable 2FA'**
+  String get disable2FA;
+
+  /// No description provided for @pinRequiredFor2FA.
+  ///
+  /// In en, this message translates to:
+  /// **'Please set up PIN code first'**
+  String get pinRequiredFor2FA;
+
+  /// No description provided for @enterSixDigitCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter 6-digit code'**
+  String get enterSixDigitCode;
+
+  /// No description provided for @enterCodeToDisable2FA.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code from your authenticator app to confirm'**
+  String get enterCodeToDisable2FA;
+
+  /// No description provided for @twoFactorEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-factor authentication enabled!'**
+  String get twoFactorEnabled;
+
+  /// No description provided for @secretCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Secret key copied to clipboard'**
+  String get secretCopied;
+
+  /// No description provided for @scanQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan this QR code'**
+  String get scanQrCode;
+
+  /// No description provided for @useAuthenticatorApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your authenticator app and scan this QR code to add your account'**
+  String get useAuthenticatorApp;
+
+  /// No description provided for @orText.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get orText;
+
+  /// No description provided for @enterManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this key manually'**
+  String get enterManually;
+
+  /// No description provided for @copySecretKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy secret key'**
+  String get copySecretKey;
+
+  /// No description provided for @authenticatorAccountInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'The account name in your authenticator app will be your email address'**
+  String get authenticatorAccountInfo;
+
+  /// No description provided for @enterVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Verification Code'**
+  String get enterVerificationCode;
+
+  /// No description provided for @enterCodeFromAuthenticator.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code from your authenticator app to complete setup'**
+  String get enterCodeFromAuthenticator;
+
+  /// No description provided for @codeRefreshesEvery30Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Codes refresh every 30 seconds. Make sure to enter the current code.'**
+  String get codeRefreshesEvery30Seconds;
+
+  /// No description provided for @activateTwoFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate 2FA'**
+  String get activateTwoFactor;
 
   /// No description provided for @noInternetConnection.
   ///
@@ -2091,6 +2205,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to change password'**
   String get failedToChangePassword;
+
+  /// No description provided for @createPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Password'**
+  String get createPassword;
+
+  /// No description provided for @createPasswordDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a password for your account'**
+  String get createPasswordDesc;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordCreatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password created successfully'**
+  String get passwordCreatedSuccess;
+
+  /// No description provided for @failedToCreatePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create password'**
+  String get failedToCreatePassword;
+
+  /// No description provided for @alternativeUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternative Unlock'**
+  String get alternativeUnlock;
+
+  /// No description provided for @chooseSecureMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a secure method to unlock'**
+  String get chooseSecureMethod;
+
+  /// No description provided for @authenticatorCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticator Code'**
+  String get authenticatorCode;
 }
 
 class _AppLocalizationsDelegate
