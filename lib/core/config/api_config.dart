@@ -1,10 +1,7 @@
 /// API Configuration
 class ApiConfig {
   // Base URL - Production API
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.cha9cha9ni.tn', // Production URL
-  );
+  static const String baseUrl = 'https://api.cha9cha9ni.tn';
 
   // API Endpoints
   static const String authEndpoint = '/auth';
