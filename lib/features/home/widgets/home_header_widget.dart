@@ -6,10 +6,11 @@ class HomeHeaderWidget extends StatelessWidget {
   final String balance;
   final int points;
   final VoidCallback onTopUp;
-  final VoidCallback onWithdraw;
+  final VoidCallback? onWithdraw;
   final VoidCallback onStatement;
   final VoidCallback? onNotification;
   final int notificationCount;
+  final bool showWithdraw;
   // Tutorial keys
   final GlobalKey? topUpKey;
   final GlobalKey? withdrawKey;
@@ -22,10 +23,11 @@ class HomeHeaderWidget extends StatelessWidget {
     this.balance = '12,769.00 TND',
     this.points = 120,
     required this.onTopUp,
-    required this.onWithdraw,
+    this.onWithdraw,
     required this.onStatement,
     this.onNotification,
     this.notificationCount = 0,
+    this.showWithdraw = true,
     this.topUpKey,
     this.withdrawKey,
     this.statementKey,
@@ -333,15 +335,16 @@ class HomeHeaderWidget extends StatelessWidget {
               iconSize: iconSize,
               labelSize: labelSize,
             ),
-            _buildActionButton(
-              key: withdrawKey,
-              icon: Icons.account_balance_wallet_outlined,
-              label: AppLocalizations.of(context)!.withdraw,
-              onTap: onWithdraw,
-              buttonSize: buttonSize,
-              iconSize: iconSize,
-              labelSize: labelSize,
-            ),
+            if (showWithdraw && onWithdraw != null)
+              _buildActionButton(
+                key: withdrawKey,
+                icon: Icons.account_balance_wallet_outlined,
+                label: AppLocalizations.of(context)!.withdraw,
+                onTap: onWithdraw!,
+                buttonSize: buttonSize,
+                iconSize: iconSize,
+                labelSize: labelSize,
+              ),
             _buildActionButton(
               key: statementKey,
               icon: Icons.receipt_long_outlined,

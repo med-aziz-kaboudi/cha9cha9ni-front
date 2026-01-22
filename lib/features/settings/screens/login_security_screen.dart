@@ -58,23 +58,54 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
   }
 
   Future<void> _loadSettings() async {
-    setState(() => _isLoading = true);
-
-    try {
-      // Check device capabilities
-      _canUseBiometrics = await _biometricService.canUseBiometrics();
-      _hasFaceId = await _biometricService.hasFaceId();
-      _hasFingerprint = await _biometricService.hasFingerprint();
-
-      // Get settings from backend
-      _settings = await _biometricService.getSecuritySettings();
-    } catch (e) {
-      debugPrint('Error loading security settings: $e');
+    // Check device capabilities first (local, no API)
+    _canUseBiometrics = await _biometricService.canUseBiometrics();
+    _hasFaceId = await _biometricService.hasFaceId();
+    _hasFingerprint = await _biometricService.hasFingerprint();
+    
+    // Load from cache first for instant display
+    final cachedSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+    final cachedBiometricEnabled = await _biometricService.isBiometricEnabledLocally();
+    final cachedTotpEnabled = await _biometricService.isTotpEnabledLocally();
+    final cachedHasPassword = await _biometricService.hasPasswordLocally();
+    
+    // Show cached data immediately (no loading spinner)
+    if (mounted) {
+      setState(() {
+        // Create a temporary settings object from cache
+        _settings = SecuritySettings(
+          passkeyEnabled: cachedSecurityEnabled,
+          biometricEnabled: cachedBiometricEnabled,
+          hasPassword: cachedHasPassword,
+          totpEnabled: cachedTotpEnabled,
+          lockoutLevel: 0,
+          permanentlyLocked: false,
+          failedAttempts: 0,
+          maxAttempts: 3,
+        );
+        _isLoading = false;
+      });
+      _animationController.forward();
     }
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      _animationController.forward();
+    // Check if data is fresh (fetched within last 60 seconds)
+    final isFresh = await _biometricService.isSecurityDataFresh(thresholdSeconds: 60);
+    if (isFresh) {
+      debugPrint('📦 Security data is fresh, skipping API fetch');
+      return;
+    }
+
+    // Fetch from API in background to get fresh data
+    try {
+      final freshSettings = await _biometricService.getSecuritySettings();
+      if (mounted && freshSettings != null) {
+        setState(() {
+          _settings = freshSettings;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading security settings from API: $e');
+      // Keep using cached data
     }
   }
 

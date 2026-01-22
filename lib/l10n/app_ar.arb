@@ -494,5 +494,85 @@
   "notificationProfileMessage": "لإجراء عمليات السحب والوصول إلى جميع ميزاتنا، يرجى إكمال معلوماتك الشخصية في إعدادات ملفك الشخصي. هذا يساعدنا على التحقق من هويتك والحفاظ على أمان حسابك.",
   "notificationSecurityTitle": "تأمين حسابك",
   "notificationSecurityMessage": "احمِ حسابك من خلال تفعيل المصادقة الثنائية (2FA) وإعداد رمز PIN. سيساعدك هذا على حماية بياناتك ومعاملاتك من أي وصول غير مصرح به.",
-  "read": "مقروء"
+  "read": "مقروء",
+  
+  "noRecentActivities": "لا توجد أنشطة حديثة",
+  "wantsToRemoveYou": "يريد إزالتك",
+  "ownerRequestedRemoval": "{ownerName} طلب إزالتك من العائلة",
+  "@ownerRequestedRemoval": {
+    "placeholders": {
+      "ownerName": {
+        "type": "String"
+      }
+    }
+  },
+  "respond": "رد",
+  
+  "signingYouIn": "جاري تسجيل دخولك...",
+  "justNow": "الآن",
+  "minAgo": "منذ دقيقة",
+  "@minAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minsAgo": "منذ {count} دقائق",
+  "@minsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourAgo": "منذ ساعة",
+  "@hourAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "منذ {count} ساعات",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgo": "منذ يوم",
+  "@dayAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "منذ {count} أيام",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthAgo": "منذ شهر",
+  "@monthAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "منذ {count} أشهر",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loading": "جاري التحميل..."
 }

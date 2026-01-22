@@ -509,5 +509,85 @@
   "notificationProfileMessage": "To make withdrawals and access all our features, please complete your personal information in your profile settings. This helps us verify your identity and keep your account secure.",
   "notificationSecurityTitle": "Secure Your Account",
   "notificationSecurityMessage": "Protect your account by enabling two-factor authentication (2FA) and setting up a PIN code. This will help safeguard your data and transactions from unauthorized access.",
-  "read": "Read"
+  "read": "Read",
+  
+  "noRecentActivities": "No recent activities",
+  "wantsToRemoveYou": "Wants to remove",
+  "ownerRequestedRemoval": "{ownerName} has requested to remove you from the family",
+  "@ownerRequestedRemoval": {
+    "placeholders": {
+      "ownerName": {
+        "type": "String"
+      }
+    }
+  },
+  "respond": "Respond",
+  
+  "signingYouIn": "Signing you in...",
+  "justNow": "Just now",
+  "minAgo": "{count} min ago",
+  "@minAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minsAgo": "{count} mins ago",
+  "@minsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourAgo": "{count} hour ago",
+  "@hourAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{count} hours ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgo": "{count} day ago",
+  "@dayAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{count} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthAgo": "{count} month ago",
+  "@monthAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthsAgo": "{count} months ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loading": "Loading..."
 }

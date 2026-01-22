@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../config/api_config.dart';
+import './token_storage_service.dart';
 
 /// Events that can be emitted by the SocketService
 enum SocketEvent {
@@ -70,6 +71,7 @@ class SocketService {
   factory SocketService() => _instance;
   SocketService._internal();
 
+  final _tokenStorage = TokenStorageService();
   io.Socket? _socket;
   String? _currentToken;
   bool _isConnecting = false;
@@ -126,6 +128,16 @@ class SocketService {
           .setReconnectionDelayMax(10000)
           .build(),
     );
+
+    // Update auth token BEFORE each reconnection attempt
+    _socket!.io.on('reconnect_attempt', (_) async {
+      debugPrint('🔌 Socket: Reconnection attempt - updating token');
+      final freshToken = await _tokenStorage.getAccessToken();
+      if (freshToken != null) {
+        _currentToken = freshToken;
+        _socket?.auth = {'token': freshToken};
+      }
+    });
 
     // Connection event handlers
     _socket!.onConnect((_) {

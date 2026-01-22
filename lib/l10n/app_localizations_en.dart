@@ -1214,4 +1214,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get read => 'Read';
+
+  @override
+  String get noRecentActivities => 'No recent activities';
+
+  @override
+  String get wantsToRemoveYou => 'Wants to remove';
+
+  @override
+  String ownerRequestedRemoval(String ownerName) {
+    return '$ownerName has requested to remove you from the family';
+  }
+
+  @override
+  String get respond => 'Respond';
+
+  @override
+  String get signingYouIn => 'Signing you in...';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String minsAgo(int count) {
+    return '$count mins ago';
+  }
+
+  @override
+  String hourAgo(int count) {
+    return '$count hour ago';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String dayAgo(int count) {
+    return '$count day ago';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '$count days ago';
+  }
+
+  @override
+  String monthAgo(int count) {
+    return '$count month ago';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '$count months ago';
+  }
+
+  @override
+  String get loading => 'Loading...';
 }

@@ -2337,6 +2337,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read'**
   String get read;
+
+  /// No description provided for @noRecentActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent activities'**
+  String get noRecentActivities;
+
+  /// No description provided for @wantsToRemoveYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Wants to remove'**
+  String get wantsToRemoveYou;
+
+  /// No description provided for @ownerRequestedRemoval.
+  ///
+  /// In en, this message translates to:
+  /// **'{ownerName} has requested to remove you from the family'**
+  String ownerRequestedRemoval(String ownerName);
+
+  /// No description provided for @respond.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond'**
+  String get respond;
+
+  /// No description provided for @signingYouIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing you in...'**
+  String get signingYouIn;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String minAgo(int count);
+
+  /// No description provided for @minsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} mins ago'**
+  String minsAgo(int count);
+
+  /// No description provided for @hourAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hour ago'**
+  String hourAgo(int count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} hours ago'**
+  String hoursAgo(int count);
+
+  /// No description provided for @dayAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day ago'**
+  String dayAgo(int count);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days ago'**
+  String daysAgo(int count);
+
+  /// No description provided for @monthAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} month ago'**
+  String monthAgo(int count);
+
+  /// No description provided for @monthsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months ago'**
+  String monthsAgo(int count);
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
 }
 
 class _AppLocalizationsDelegate

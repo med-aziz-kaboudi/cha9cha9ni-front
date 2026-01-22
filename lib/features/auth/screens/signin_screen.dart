@@ -114,11 +114,10 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
 
   Future<void> _navigateBasedOnFamilyStatus() async {
     try {
-      // First check if security (PIN/Face ID) is enabled - user must verify themselves
-      final isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      final settings = await _biometricService.getSecuritySettings();
+      final isSecurityEnabled = settings?.isSecurityEnabled ?? false;
       
       if (isSecurityEnabled) {
-        debugPrint('🔐 Security enabled after login - showing unlock screen');
         if (!mounted) return;
         
         // Get family info first to know where to go after unlock

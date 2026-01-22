@@ -200,6 +200,48 @@ class NotificationService {
     };
   }
 
+  /// Refresh access token using session token
+  Future<bool> _refreshToken() async {
+    try {
+      final sessionToken = await _tokenStorage.getSessionToken();
+      if (sessionToken == null) {
+        debugPrint('🔔 No session token available for refresh');
+        return false;
+      }
+
+      debugPrint('🔔 Refreshing token...');
+      final response = await http.post(
+        Uri.parse('$_baseUrl${ApiConfig.refreshPath}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'sessionToken': sessionToken}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        final newAccessToken = data['accessToken'];
+        final newSessionToken = data['sessionToken'];
+        
+        if (newAccessToken != null) {
+          await _tokenStorage.saveTokens(
+            accessToken: newAccessToken,
+            sessionToken: newSessionToken ?? sessionToken,
+            expiresIn: data['expiresIn']?.toString(),
+          );
+          // Update socket with new token
+          _currentToken = newAccessToken;
+          debugPrint('🔔 Token refreshed successfully');
+          return true;
+        }
+      }
+      
+      debugPrint('🔔 Token refresh failed: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      debugPrint('🔔 Token refresh error: $e');
+      return false;
+    }
+  }
+
   /// Connect to the WebSocket server for real-time updates
   void connect(String accessToken) {
     // Don't reconnect if already connected with same token
@@ -231,6 +273,16 @@ class NotificationService {
           .setReconnectionDelayMax(10000)
           .build(),
     );
+
+    // Update auth token BEFORE each reconnection attempt
+    _socket!.io.on('reconnect_attempt', (_) async {
+      debugPrint('🔔 NotificationSocket: Reconnection attempt - updating token');
+      final freshToken = await _tokenStorage.getAccessToken();
+      if (freshToken != null) {
+        _currentToken = freshToken;
+        _socket?.auth = {'token': freshToken};
+      }
+    });
 
     // Connection event handlers
     _socket!.onConnect((_) {
@@ -358,12 +410,26 @@ class NotificationService {
   /// Fetch all notifications from the API
   Future<List<NotificationItem>> fetchNotifications() async {
     try {
-      final headers = await _getHeaders();
+      var headers = await _getHeaders();
       
-      final response = await http.get(
+      var response = await http.get(
         Uri.parse('$_baseUrl/notifications'),
         headers: headers,
       );
+
+      // Handle 401 - try to refresh token once
+      if (response.statusCode == 401) {
+        debugPrint('🔔 401: Attempting token refresh for notifications');
+        final refreshed = await _refreshToken();
+        if (refreshed) {
+          // Retry with new token
+          headers = await _getHeaders();
+          response = await http.get(
+            Uri.parse('$_baseUrl/notifications'),
+            headers: headers,
+          );
+        }
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -394,12 +460,24 @@ class NotificationService {
   /// Get unread count from API
   Future<int> fetchUnreadCount() async {
     try {
-      final headers = await _getHeaders();
+      var headers = await _getHeaders();
       
-      final response = await http.get(
+      var response = await http.get(
         Uri.parse('$_baseUrl/notifications/unread-count'),
         headers: headers,
       );
+
+      // Handle 401 - try to refresh token once
+      if (response.statusCode == 401) {
+        final refreshed = await _refreshToken();
+        if (refreshed) {
+          headers = await _getHeaders();
+          response = await http.get(
+            Uri.parse('$_baseUrl/notifications/unread-count'),
+            headers: headers,
+          );
+        }
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

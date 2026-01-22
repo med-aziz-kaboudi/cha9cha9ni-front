@@ -21,6 +21,7 @@ import 'core/services/token_storage_service.dart';
 import 'core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
 import 'core/services/session_manager.dart';
 import 'core/services/biometric_service.dart';
+import 'core/theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -162,6 +163,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   bool _needsSecurityUnlock = false; // Whether app is locked and needs unlock
   bool _isCheckingSecurityStatus = false; // Prevent duplicate checks
   bool _isOffline = false; // Whether device has no internet connection
+  bool _initializationComplete = false; // Track if app initialization is done
   DateTime? _backgroundedAt; // Track when app went to background
   static const int _lockAfterSeconds = 30; // Only lock after 30 seconds in background
   String? _verificationEmail;
@@ -171,13 +173,126 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   final _familyApiService = FamilyApiService();
   final _biometricService = BiometricService();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<String>? _sessionExpiredSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeConnectivity();
+    _initializeSessionListener();
     _initializeApp();
+  }
+
+  void _initializeSessionListener() {
+    _sessionExpiredSubscription = SessionManager().onSessionExpired.listen((reason) {
+      if (mounted && !SessionManager().isHandlingExpiration) {
+        _showSessionExpiredDialog(reason);
+      }
+    });
+  }
+
+  Future<void> _showSessionExpiredDialog(String reason) async {
+    SessionManager().markHandling();
+    bool hasLoggedOut = false;
+    Timer? autoLogoutTimer;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) {
+        autoLogoutTimer = Timer(const Duration(seconds: 3), () {
+          if (!hasLoggedOut && Navigator.of(dialogContext).canPop()) {
+            hasLoggedOut = true;
+            Navigator.of(dialogContext).pop();
+            _performSessionLogout();
+          }
+        });
+
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          elevation: 16,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.phonelink_erase_rounded, size: 36, color: AppColors.primary),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  AppLocalizations.of(dialogContext)?.sessionExpiredTitle ?? 'Session Expired',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.dark),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  AppLocalizations.of(dialogContext)?.sessionExpiredMessage ?? 'Another device has logged into your account. You will be signed out for security.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!hasLoggedOut) {
+                        hasLoggedOut = true;
+                        autoLogoutTimer?.cancel();
+                        Navigator.of(dialogContext).pop();
+                        _performSessionLogout();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(dialogContext)?.ok ?? 'OK',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _performSessionLogout() async {
+    SessionManager().disconnectSocket();
+    await _tokenStorage.clearAll();
+    await Supabase.instance.client.auth.signOut();
+    SessionManager().resetHandlingFlag();
+    if (mounted) {
+      setState(() {
+        _isAuthenticated = false;
+        _needsVerification = false;
+        _needsSecurityUnlock = false;
+        _isProcessingOAuth = false;
+      });
+    }
   }
 
   /// Initialize connectivity monitoring
@@ -207,9 +322,18 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
 
   /// Initialize app by checking saved state
   Future<void> _initializeApp() async {
+    debugPrint('🚀 Starting app initialization...');
     await _loadPendingVerification();
     await _checkSavedTokens();
     _checkAuthState();
+    
+    // Mark initialization as complete
+    if (mounted) {
+      setState(() {
+        _initializationComplete = true;
+      });
+    }
+    debugPrint('🚀 App initialization complete: isAuth=$_isAuthenticated, needsUnlock=$_needsSecurityUnlock');
   }
 
   /// Check for saved JWT tokens on app startup
@@ -250,8 +374,20 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     _isCheckingSecurityStatus = true;
 
     try {
-      // Use local cache for quick check instead of API call
-      final isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      // First check local cache for quick response
+      var isSecurityEnabled = await _biometricService.isSecurityEnabledLocally();
+      
+      // Only fetch from API if cache has NEVER been set (first time user)
+      // This avoids unnecessary API calls on every app open
+      final hasCacheBeenSet = await _biometricService.hasSecurityCacheBeenSet();
+      if (!hasCacheBeenSet) {
+        debugPrint('🔐 Security cache never set, fetching from API...');
+        final settings = await _biometricService.getSecuritySettings();
+        if (settings != null) {
+          isSecurityEnabled = settings.isSecurityEnabled;
+          debugPrint('🔐 API security status: $isSecurityEnabled');
+        }
+      }
       
       if (isSecurityEnabled) {
         debugPrint('🔐 Security enabled - showing unlock screen');
@@ -302,34 +438,33 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription?.cancel();
+    _sessionExpiredSubscription?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      // App going to background - record the time
       _backgroundedAt = DateTime.now();
-      debugPrint('📱 App going to background at: $_backgroundedAt');
     } else if (state == AppLifecycleState.resumed) {
-      debugPrint('📱 App resumed');
-      
-      // Only check security lock if app was in background for more than the threshold
-      // Don't do session checks here - only security
+      if (_isAuthenticated) {
+        _ensureSocketConnected();
+      }
       if (_isAuthenticated && !_needsSecurityUnlock && !_showSplash) {
         final wasInBackgroundLongEnough = _backgroundedAt != null &&
             DateTime.now().difference(_backgroundedAt!).inSeconds >= _lockAfterSeconds;
-        
         if (wasInBackgroundLongEnough) {
-          debugPrint('📱 App was in background for ${DateTime.now().difference(_backgroundedAt!).inSeconds}s - checking security');
           _checkSecurityOnResume();
-        } else {
-          debugPrint('📱 App resumed quickly - skipping security check');
         }
       }
-      
-      // Clear the background timestamp
       _backgroundedAt = null;
+    }
+  }
+
+  Future<void> _ensureSocketConnected() async {
+    final accessToken = await _tokenStorage.getAccessToken();
+    if (accessToken != null) {
+      SessionManager().initializeSocket(accessToken);
     }
   }
 
@@ -528,10 +663,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           email: response.user?.email ?? user.email,
         );
         
-        // Check if security (PIN/Face ID) is enabled - user must verify themselves
-        await _checkSecurityStatus();
+        final settings = await _biometricService.getSecuritySettings();
+        final isSecurityEnabled = settings?.isSecurityEnabled ?? false;
         
-        // Check family status and determine which screen to show
         final homeScreen = await _determineHomeScreen();
         
         if (mounted) {
@@ -539,19 +673,36 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
             _isAuthenticated = true;
             _needsVerification = false;
             _verificationEmail = null;
+            _needsSecurityUnlock = isSecurityEnabled;
             _homeScreen = homeScreen;
           });
         }
         
-        // Only navigate programmatically if splash is already done
-        // If security is enabled, the build method will show AppUnlockScreen first
-        if (!_showSplash && !_needsSecurityUnlock) {
+        if (!_showSplash) {
           final navigator = navigatorKey.currentState;
           if (navigator != null) {
-            navigator.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => homeScreen),
-              (route) => false,
-            );
+            if (isSecurityEnabled) {
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => AppUnlockScreen(
+                    onUnlocked: () {
+                      _onAppUnlocked();
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => homeScreen),
+                        (route) => false,
+                      );
+                    },
+                    onLogout: _onLogoutFromUnlock,
+                  ),
+                ),
+                (route) => false,
+              );
+            } else {
+              navigator.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => homeScreen),
+                (route) => false,
+              );
+            }
           }
         }
       }
@@ -584,6 +735,22 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       debugPrint('👨‍👩‍👧‍👦 Family data: ${family != null ? "Found (isOwner: ${family.isOwner})" : "None"}');
       
       if (family != null) {
+        // Cache the family data so home screen doesn't need to fetch again
+        await _tokenStorage.saveFamilyInfo(
+          familyName: family.name,
+          ownerName: family.ownerName,
+          memberCount: family.memberCount,
+          isOwner: family.isOwner,
+          inviteCode: family.inviteCode,
+        );
+        
+        // Cache members as JSON
+        if (family.members != null) {
+          await _tokenStorage.saveFamilyMembers(
+            family.members!.map((m) => m.toJson()).toList(),
+          );
+        }
+        
         // User has a family
         if (family.isOwner == true) {
           debugPrint('✅ Navigating to Owner home');
@@ -635,9 +802,35 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   }
 
   void _onSplashFinished() {
-    setState(() {
-      _showSplash = false;
-    });
+    // Only hide splash if initialization is complete
+    // If not complete yet, we'll wait for it
+    if (_initializationComplete) {
+      debugPrint('✅ Splash finished, initialization already complete');
+      setState(() {
+        _showSplash = false;
+      });
+    } else {
+      debugPrint('⏳ Splash finished but waiting for initialization...');
+      // Wait for initialization to complete, then hide splash
+      _waitForInitialization();
+    }
+  }
+
+  /// Wait for initialization to complete before hiding splash
+  Future<void> _waitForInitialization() async {
+    // Poll until initialization is complete (max 5 seconds)
+    int attempts = 0;
+    while (!_initializationComplete && attempts < 50) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
+    
+    if (mounted) {
+      debugPrint('✅ Initialization complete after ${attempts * 100}ms, hiding splash');
+      setState(() {
+        _showSplash = false;
+      });
+    }
   }
 
   @override
@@ -719,7 +912,7 @@ class _OAuthLoadingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Signing you in...',
+              AppLocalizations.of(context)?.signingYouIn ?? 'Signing you in...',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

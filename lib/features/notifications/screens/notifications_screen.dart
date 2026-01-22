@@ -133,21 +133,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  String _formatTimeAgo(DateTime dateTime) {
+  String _formatTimeAgo(DateTime dateTime, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 30) {
       final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
+      return months == 1 ? l10n.monthAgo(months) : l10n.monthsAgo(months);
     } else if (difference.inDays > 0) {
-      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
+      return difference.inDays == 1 ? l10n.dayAgo(difference.inDays) : l10n.daysAgo(difference.inDays);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+      return difference.inHours == 1 ? l10n.hourAgo(difference.inHours) : l10n.hoursAgo(difference.inHours);
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'min' : 'mins'} ago';
+      return difference.inMinutes == 1 ? l10n.minAgo(difference.inMinutes) : l10n.minsAgo(difference.inMinutes);
     } else {
-      return 'Just now';
+      return l10n.justNow;
     }
   }
 
@@ -356,7 +356,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         Row(
                           children: [
                             Text(
-                              _formatTimeAgo(notification.createdAt),
+                              _formatTimeAgo(notification.createdAt, l10n),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.dark.withOpacity(0.5),

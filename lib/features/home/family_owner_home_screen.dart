@@ -404,8 +404,22 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       });
     }
 
-    // Then refresh from API in background (silently)
-    _refreshFamilyDataSilently();
+    // Only refresh from API if data is stale (>30 seconds old)
+    // This avoids duplicate requests when navigating from main.dart
+    final isFresh = await _tokenStorage.isFamilyDataFresh(thresholdSeconds: 30);
+    if (!isFresh) {
+      debugPrint('📦 Family data is stale, refreshing from API');
+      _refreshFamilyDataSilently();
+    } else {
+      debugPrint('📦 Family data is fresh (< 30s), skipping API refresh');
+      // Make sure we're not in loading state if we have cached data
+      if (mounted && _familyMembers.isNotEmpty) {
+        setState(() {
+          _isLoadingMembers = false;
+          _isLoadingCode = false;
+        });
+      }
+    }
   }
 
   /// Refresh family data silently without showing loading states
@@ -568,6 +582,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     // Connect WebSocket for real-time updates
     final token = await _tokenStorage.getAccessToken();
     if (token != null) {
+      // connect() will call fetchNotifications() internally after connecting
       _notificationService.connect(token);
     }
 
@@ -578,8 +593,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       }
     });
     
-    // Fetch initial notifications (this will update the stream)
-    await _notificationService.fetchNotifications();
+    // No need to call fetchNotifications() here - connect() handles it
   }
 
   // ignore: unused_element

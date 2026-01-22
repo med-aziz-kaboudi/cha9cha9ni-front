@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/services/token_storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
@@ -16,6 +17,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _profileApiService = ProfileApiService();
+  final _tokenStorage = TokenStorageService();
   final _fullNameController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -71,13 +73,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _loadProfile() async {
-    try {
+    // First, load from cache for instant display
+    final cachedProfile = await _tokenStorage.getCachedUserProfile();
+    final hasCachedData = cachedProfile['email'] != null;
+    
+    if (hasCachedData) {
+      // Show cached data immediately (no loading spinner)
       setState(() {
-        _isLoading = true;
-        _errorMessage = null;
+        _isLoading = false;
+        _fullNameController.text = cachedProfile['fullName'] ?? '';
+        _firstNameController.text = cachedProfile['firstName'] ?? '';
+        _lastNameController.text = cachedProfile['lastName'] ?? '';
+        _emailController.text = cachedProfile['email'] ?? '';
+        
+        // Handle phone - strip +216 prefix if present
+        String phone = cachedProfile['phone'] ?? '';
+        if (phone.startsWith('+216')) {
+          phone = phone.substring(4);
+        }
+        _phoneController.text = phone;
       });
+    }
+
+    // Check if data is fresh (fetched within last 60 seconds)
+    final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 60);
+    if (isFresh && hasCachedData) {
+      debugPrint('📦 Profile data is fresh, skipping API fetch');
+      return;
+    }
+
+    // Fetch fresh data from API in background
+    try {
+      if (!hasCachedData) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+        });
+      }
 
       final profile = await _profileApiService.getProfile();
+      
+      // Save to cache for next time
+      await _tokenStorage.saveUserProfile(
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        fullName: profile.fullName,
+        email: profile.email,
+        phone: profile.phone,
+      );
       
       setState(() {
         _profile = profile;
@@ -98,10 +141,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _phoneController.text = phone;
       });
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = e.toString().replaceAll('Exception: ', '');
-      });
+      // Only show error if we don't have cached data
+      if (!hasCachedData) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      } else {
+        debugPrint('⚠️ Failed to refresh profile, using cached data: $e');
+      }
     }
   }
 
@@ -129,6 +177,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         firstName: _firstNameController.text.trim().isEmpty ? null : _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim().isEmpty ? null : _lastNameController.text.trim(),
         phone: phone.isEmpty ? null : '+216$phone',
+      );
+
+      // Update cache with new profile data
+      await _tokenStorage.saveUserProfile(
+        firstName: updatedProfile.firstName,
+        lastName: updatedProfile.lastName,
+        fullName: updatedProfile.fullName,
+        email: updatedProfile.email,
+        phone: updatedProfile.phone,
       );
 
       setState(() {

@@ -178,10 +178,13 @@ class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
   final TokenStorageService _tokenStorage = TokenStorageService();
   
-  // Local cache key for quick check
+  // Local cache keys for quick check
   static const String _securityEnabledKey = 'security_enabled';
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _passkeyEnabledKey = 'passkey_enabled';
+  static const String _totpEnabledKey = 'totp_enabled';
+  static const String _hasPasswordKey = 'has_password';
+  static const String _securityLastFetchedKey = 'security_last_fetched';
 
   // API base URL - Use the same as the rest of the app
   String get _apiBaseUrl {
@@ -270,11 +273,14 @@ class BiometricService {
         final data = json.decode(response.body);
         final settings = SecuritySettings.fromJson(data);
         
-        // Cache locally for quick checks
+        // Cache all settings locally for quick checks
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_securityEnabledKey, settings.isSecurityEnabled);
         await prefs.setBool(_biometricEnabledKey, settings.biometricEnabled);
         await prefs.setBool(_passkeyEnabledKey, settings.passkeyEnabled);
+        await prefs.setBool(_totpEnabledKey, settings.totpEnabled);
+        await prefs.setBool(_hasPasswordKey, settings.hasPassword);
+        await prefs.setInt(_securityLastFetchedKey, DateTime.now().millisecondsSinceEpoch);
         
         return settings;
       }
@@ -283,6 +289,31 @@ class BiometricService {
       debugPrint('Error getting security settings: $e');
       return null;
     }
+  }
+
+  /// Check if security settings were fetched recently (within threshold seconds)
+  Future<bool> isSecurityDataFresh({int thresholdSeconds = 60}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastFetched = prefs.getInt(_securityLastFetchedKey);
+    
+    if (lastFetched == null) return false;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final ageSeconds = (now - lastFetched) / 1000;
+    
+    return ageSeconds < thresholdSeconds;
+  }
+
+  /// Get cached TOTP enabled status
+  Future<bool> isTotpEnabledLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_totpEnabledKey) ?? false;
+  }
+
+  /// Get cached hasPassword status
+  Future<bool> hasPasswordLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasPasswordKey) ?? false;
   }
 
   /// Get unlock status from backend
@@ -314,6 +345,12 @@ class BiometricService {
   Future<bool> isSecurityEnabledLocally() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_securityEnabledKey) ?? false;
+  }
+
+  /// Check if security cache has ever been set (vs just returning default false)
+  Future<bool> hasSecurityCacheBeenSet() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(_securityEnabledKey);
   }
 
   /// Quick check if biometric is enabled (from local cache)

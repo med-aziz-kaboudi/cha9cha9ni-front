@@ -1232,4 +1232,67 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get read => 'Lu';
+
+  @override
+  String get noRecentActivities => 'Aucune activité récente';
+
+  @override
+  String get wantsToRemoveYou => 'Veut vous retirer';
+
+  @override
+  String ownerRequestedRemoval(String ownerName) {
+    return '$ownerName a demandé à vous retirer de la famille';
+  }
+
+  @override
+  String get respond => 'Répondre';
+
+  @override
+  String get signingYouIn => 'Connexion en cours...';
+
+  @override
+  String get justNow => 'À l\'instant';
+
+  @override
+  String minAgo(int count) {
+    return 'Il y a $count min';
+  }
+
+  @override
+  String minsAgo(int count) {
+    return 'Il y a $count mins';
+  }
+
+  @override
+  String hourAgo(int count) {
+    return 'Il y a $count heure';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return 'Il y a $count heures';
+  }
+
+  @override
+  String dayAgo(int count) {
+    return 'Il y a $count jour';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return 'Il y a $count jours';
+  }
+
+  @override
+  String monthAgo(int count) {
+    return 'Il y a $count mois';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return 'Il y a $count mois';
+  }
+
+  @override
+  String get loading => 'Chargement...';
 }

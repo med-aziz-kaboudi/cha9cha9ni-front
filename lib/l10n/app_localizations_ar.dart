@@ -1209,4 +1209,67 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get read => 'مقروء';
+
+  @override
+  String get noRecentActivities => 'لا توجد أنشطة حديثة';
+
+  @override
+  String get wantsToRemoveYou => 'يريد إزالتك';
+
+  @override
+  String ownerRequestedRemoval(String ownerName) {
+    return '$ownerName طلب إزالتك من العائلة';
+  }
+
+  @override
+  String get respond => 'رد';
+
+  @override
+  String get signingYouIn => 'جاري تسجيل دخولك...';
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String minAgo(int count) {
+    return 'منذ دقيقة';
+  }
+
+  @override
+  String minsAgo(int count) {
+    return 'منذ $count دقائق';
+  }
+
+  @override
+  String hourAgo(int count) {
+    return 'منذ ساعة';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return 'منذ $count ساعات';
+  }
+
+  @override
+  String dayAgo(int count) {
+    return 'منذ يوم';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return 'منذ $count أيام';
+  }
+
+  @override
+  String monthAgo(int count) {
+    return 'منذ شهر';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return 'منذ $count أشهر';
+  }
+
+  @override
+  String get loading => 'جاري التحميل...';
 }

@@ -12,6 +12,8 @@ class TokenStorageService {
   static const String _lastNameKey = 'user_last_name';
   static const String _fullNameKey = 'user_full_name';
   static const String _userEmailKey = 'user_email';
+  static const String _userPhoneKey = 'user_phone';
+  static const String _profileLastFetchedKey = 'profile_last_fetched';
   
   // Family info cache keys
   static const String _familyNameKey = 'family_name';
@@ -20,6 +22,7 @@ class TokenStorageService {
   static const String _familyIsOwnerKey = 'family_is_owner';
   static const String _familyInviteCodeKey = 'family_invite_code';
   static const String _familyMembersKey = 'family_members_json';
+  static const String _familyLastFetchedKey = 'family_last_fetched';
   static const String _pendingRemovalsKey = 'pending_removals_json';
 
   /// Save authentication tokens
@@ -49,6 +52,7 @@ class TokenStorageService {
     String? lastName,
     String? fullName,
     String? email,
+    String? phone,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     
@@ -64,6 +68,36 @@ class TokenStorageService {
     if (email != null) {
       await prefs.setString(_userEmailKey, email);
     }
+    if (phone != null) {
+      await prefs.setString(_userPhoneKey, phone);
+    }
+    // Save timestamp of when profile was fetched/saved
+    await prefs.setInt(_profileLastFetchedKey, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// Get cached user profile data
+  Future<Map<String, String?>> getCachedUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'firstName': prefs.getString(_firstNameKey),
+      'lastName': prefs.getString(_lastNameKey),
+      'fullName': prefs.getString(_fullNameKey),
+      'email': prefs.getString(_userEmailKey),
+      'phone': prefs.getString(_userPhoneKey),
+    };
+  }
+
+  /// Check if profile data was fetched recently (within threshold seconds)
+  Future<bool> isProfileDataFresh({int thresholdSeconds = 60}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastFetched = prefs.getInt(_profileLastFetchedKey);
+    
+    if (lastFetched == null) return false;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final ageSeconds = (now - lastFetched) / 1000;
+    
+    return ageSeconds < thresholdSeconds;
   }
 
   /// Get user display name with priority: firstName+lastName > fullName > email
@@ -162,6 +196,21 @@ class TokenStorageService {
     if (inviteCode != null) {
       await prefs.setString(_familyInviteCodeKey, inviteCode);
     }
+    // Save timestamp of when data was fetched
+    await prefs.setInt(_familyLastFetchedKey, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  /// Check if family data was fetched recently (within threshold seconds)
+  Future<bool> isFamilyDataFresh({int thresholdSeconds = 10}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastFetched = prefs.getInt(_familyLastFetchedKey);
+    
+    if (lastFetched == null) return false;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final ageSeconds = (now - lastFetched) / 1000;
+    
+    return ageSeconds < thresholdSeconds;
   }
 
   /// Get cached family info
@@ -277,9 +326,30 @@ class TokenStorageService {
     await clearFamilyInfo();
   }
 
-  /// Clear all stored data
+  static const List<String> _persistentKeys = [
+    'tutorial_completed',
+    'language_code',
+  ];
+
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
+    final preservedValues = <String, dynamic>{};
+    for (final key in _persistentKeys) {
+      if (prefs.containsKey(key)) {
+        preservedValues[key] = prefs.get(key);
+      }
+    }
     await prefs.clear();
+    for (final entry in preservedValues.entries) {
+      if (entry.value is bool) {
+        await prefs.setBool(entry.key, entry.value);
+      } else if (entry.value is String) {
+        await prefs.setString(entry.key, entry.value);
+      } else if (entry.value is int) {
+        await prefs.setInt(entry.key, entry.value);
+      } else if (entry.value is double) {
+        await prefs.setDouble(entry.key, entry.value);
+      }
+    }
   }
 }

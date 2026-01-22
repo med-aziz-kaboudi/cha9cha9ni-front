@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/session_manager.dart';
@@ -80,6 +81,46 @@ class ProfileApiService {
     };
   }
 
+  /// Refresh access token using session token
+  Future<bool> _refreshToken() async {
+    try {
+      final sessionToken = await _tokenStorage.getSessionToken();
+      if (sessionToken == null) {
+        debugPrint('❌ No session token available for refresh');
+        return false;
+      }
+
+      debugPrint('🔄 ProfileAPI: Refreshing token...');
+      final response = await _client.post(
+        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.refreshPath}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'sessionToken': sessionToken}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final newAccessToken = data['accessToken'];
+        final newSessionToken = data['sessionToken'];
+        
+        if (newAccessToken != null) {
+          await _tokenStorage.saveTokens(
+            accessToken: newAccessToken,
+            sessionToken: newSessionToken ?? sessionToken,
+            expiresIn: data['expiresIn']?.toString(),
+          );
+          debugPrint('✅ ProfileAPI: Token refreshed successfully');
+          return true;
+        }
+      }
+      
+      debugPrint('❌ ProfileAPI: Token refresh failed: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      debugPrint('❌ ProfileAPI: Token refresh error: $e');
+      return false;
+    }
+  }
+
   /// Handle 401 errors by notifying session manager
   Never _handleSessionExpired() {
     _sessionManager.notifySessionExpired('Session expired');
@@ -88,12 +129,26 @@ class ProfileApiService {
 
   /// Get current user profile
   Future<UserProfile> getProfile() async {
-    final headers = await _getHeaders();
+    var headers = await _getHeaders();
     
-    final response = await _client.get(
+    var response = await _client.get(
       Uri.parse('${ApiConfig.baseUrl}/users/me'),
       headers: headers,
     );
+
+    // Handle 401 - try to refresh token once
+    if (response.statusCode == 401) {
+      debugPrint('🔄 ProfileAPI: 401 received, attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        // Retry with new token
+        headers = await _getHeaders();
+        response = await _client.get(
+          Uri.parse('${ApiConfig.baseUrl}/users/me'),
+          headers: headers,
+        );
+      }
+    }
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -113,7 +168,7 @@ class ProfileApiService {
     String? fullName,
     String? phone,
   }) async {
-    final headers = await _getHeaders();
+    var headers = await _getHeaders();
     
     final body = <String, dynamic>{};
     if (firstName != null) body['firstName'] = firstName;
@@ -121,11 +176,25 @@ class ProfileApiService {
     if (fullName != null) body['fullName'] = fullName;
     if (phone != null) body['phone'] = phone;
     
-    final response = await _client.put(
+    var response = await _client.put(
       Uri.parse('${ApiConfig.baseUrl}/users/me'),
       headers: headers,
       body: jsonEncode(body),
     );
+
+    // Handle 401 - try to refresh token once
+    if (response.statusCode == 401) {
+      debugPrint('🔄 ProfileAPI: 401 received on update, attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        headers = await _getHeaders();
+        response = await _client.put(
+          Uri.parse('${ApiConfig.baseUrl}/users/me'),
+          headers: headers,
+          body: jsonEncode(body),
+        );
+      }
+    }
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
