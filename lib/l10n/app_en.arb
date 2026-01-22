@@ -493,5 +493,21 @@
   "alternativeUnlock": "Alternative Unlock",
   "chooseSecureMethod": "Choose a secure method to unlock",
   "authenticatorCode": "Authenticator Code",
-  "enter6DigitCode": "Enter 6-digit code from your app"
+  "enter6DigitCode": "Enter 6-digit code from your app",
+  
+  "markAllRead": "Mark all read",
+  "noNotifications": "No notifications yet",
+  "noNotificationsDesc": "You'll see important updates here",
+  "allNotificationsRead": "All notifications marked as read",
+  "completeProfile": "Complete Profile",
+  "setupSecurity": "Setup Security",
+  "viewDetails": "View Details",
+  
+  "notificationWelcomeTitle": "Welcome to Cha9cha9ni",
+  "notificationWelcomeMessage": "We're excited to have you join our community! If you need any help, don't hesitate to contact our support team at support@cha9cha9ni.tn or use the Help option in the menu.",
+  "notificationProfileTitle": "Complete Your Profile",
+  "notificationProfileMessage": "To make withdrawals and access all our features, please complete your personal information in your profile settings. This helps us verify your identity and keep your account secure.",
+  "notificationSecurityTitle": "Secure Your Account",
+  "notificationSecurityMessage": "Protect your account by enabling two-factor authentication (2FA) and setting up a PIN code. This will help safeguard your data and transactions from unauthorized access.",
+  "read": "Read"
 }

@@ -478,5 +478,21 @@
   "codeRefreshesEvery30Seconds": "تتجدد الرموز كل 30 ثانية. تأكد من إدخال الرمز الحالي.",
   "activateTwoFactor": "تفعيل المصادقة الثنائية",
   "orText": "أو",
-  "disable": "تعطيل"
+  "disable": "تعطيل",
+  
+  "markAllRead": "قراءة الكل",
+  "noNotifications": "لا توجد إشعارات",
+  "noNotificationsDesc": "ستظهر التحديثات المهمة هنا",
+  "allNotificationsRead": "تم تحديد جميع الإشعارات كمقروءة",
+  "completeProfile": "أكمل الملف",
+  "setupSecurity": "إعداد الأمان",
+  "viewDetails": "عرض التفاصيل",
+  
+  "notificationWelcomeTitle": "مرحبًا بك في شقشقني",
+  "notificationWelcomeMessage": "يسعدنا انضمامك إلى مجتمعنا! إذا كنت بحاجة إلى أي مساعدة، لا تتردد في التواصل مع فريق الدعم على support@cha9cha9ni.tn أو استخدم خيار المساعدة في القائمة.",
+  "notificationProfileTitle": "أكمل ملفك الشخصي",
+  "notificationProfileMessage": "لإجراء عمليات السحب والوصول إلى جميع ميزاتنا، يرجى إكمال معلوماتك الشخصية في إعدادات ملفك الشخصي. هذا يساعدنا على التحقق من هويتك والحفاظ على أمان حسابك.",
+  "notificationSecurityTitle": "تأمين حسابك",
+  "notificationSecurityMessage": "احمِ حسابك من خلال تفعيل المصادقة الثنائية (2FA) وإعداد رمز PIN. سيساعدك هذا على حماية بياناتك ومعاملاتك من أي وصول غير مصرح به.",
+  "read": "مقروء"
 }

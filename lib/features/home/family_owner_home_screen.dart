@@ -8,6 +8,7 @@ import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/services/socket_service.dart' show FamilyMemberJoinedData;
+import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
@@ -19,6 +20,7 @@ import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
+import '../notifications/screens/notifications_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -63,13 +65,21 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   final GlobalKey _qrCodeKey = GlobalKey();
   final GlobalKey _rewardKey = GlobalKey();
 
+  // Notification service
+  final _notificationService = NotificationService();
+  late int _notificationCount;
+  StreamSubscription<int>? _unreadCountSubscription;
+
   @override
   void initState() {
     super.initState();
+    // Use cached notification count immediately
+    _notificationCount = _notificationService.cachedUnreadCount;
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
     _listenToSessionExpired();
     _listenToFamilyMemberJoined();
+    _initializeNotifications();
     // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
   }
@@ -92,6 +102,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _sessionExpiredSubscription?.cancel();
     _familyMemberJoinedSubscription?.cancel();
+    _unreadCountSubscription?.cancel();
     super.dispose();
   }
 
@@ -544,8 +555,31 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   void _handleNotificationTap(BuildContext context) {
-    // TODO: Navigate to notifications screen when implemented
-    AppToast.comingSoon(context, 'Notifications');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const NotificationsScreen(),
+      ),
+    );
+    // No need to fetch on return - stream subscription handles real-time updates
+  }
+
+  /// Initialize notification service and listen for updates
+  Future<void> _initializeNotifications() async {
+    // Connect WebSocket for real-time updates
+    final token = await _tokenStorage.getAccessToken();
+    if (token != null) {
+      _notificationService.connect(token);
+    }
+
+    // Listen for unread count changes (stream subscription)
+    _unreadCountSubscription = _notificationService.unreadCount.listen((count) {
+      if (mounted) {
+        setState(() => _notificationCount = count);
+      }
+    });
+    
+    // Fetch initial notifications (this will update the stream)
+    await _notificationService.fetchNotifications();
   }
 
   // ignore: unused_element
@@ -1274,6 +1308,13 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             },
             onNotifications: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              ).then((_) {
+                // Refresh notification count when returning
+                _notificationService.fetchUnreadCount();
+              });
             },
             onHelp: () {
               Navigator.pop(context);
@@ -1326,8 +1367,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                   onWithdraw: () {},
                   onStatement: () {},
                   onNotification: () => _handleNotificationTap(context),
-                  notificationCount:
-                      3, // TODO: Replace with actual notification count
+                  notificationCount: _notificationCount,
                   topUpKey: _topUpKey,
                   withdrawKey: _withdrawKey,
                   statementKey: _statementKey,

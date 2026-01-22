@@ -2253,6 +2253,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Authenticator Code'**
   String get authenticatorCode;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// No description provided for @noNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotifications;
+
+  /// No description provided for @noNotificationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll see important updates here'**
+  String get noNotificationsDesc;
+
+  /// No description provided for @allNotificationsRead.
+  ///
+  /// In en, this message translates to:
+  /// **'All notifications marked as read'**
+  String get allNotificationsRead;
+
+  /// No description provided for @completeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Profile'**
+  String get completeProfile;
+
+  /// No description provided for @setupSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Security'**
+  String get setupSecurity;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
+  /// No description provided for @notificationWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Cha9cha9ni'**
+  String get notificationWelcomeTitle;
+
+  /// No description provided for @notificationWelcomeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re excited to have you join our community! If you need any help, don\'t hesitate to contact our support team at support@cha9cha9ni.tn or use the Help option in the menu.'**
+  String get notificationWelcomeMessage;
+
+  /// No description provided for @notificationProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Your Profile'**
+  String get notificationProfileTitle;
+
+  /// No description provided for @notificationProfileMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'To make withdrawals and access all our features, please complete your personal information in your profile settings. This helps us verify your identity and keep your account secure.'**
+  String get notificationProfileMessage;
+
+  /// No description provided for @notificationSecurityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Your Account'**
+  String get notificationSecurityTitle;
+
+  /// No description provided for @notificationSecurityMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect your account by enabling two-factor authentication (2FA) and setting up a PIN code. This will help safeguard your data and transactions from unauthorized access.'**
+  String get notificationSecurityMessage;
+
+  /// No description provided for @read.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get read;
 }
 
 class _AppLocalizationsDelegate

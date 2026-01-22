@@ -1164,4 +1164,49 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get authenticatorCode => 'رمز المصادقة';
+
+  @override
+  String get markAllRead => 'قراءة الكل';
+
+  @override
+  String get noNotifications => 'لا توجد إشعارات';
+
+  @override
+  String get noNotificationsDesc => 'ستظهر التحديثات المهمة هنا';
+
+  @override
+  String get allNotificationsRead => 'تم تحديد جميع الإشعارات كمقروءة';
+
+  @override
+  String get completeProfile => 'أكمل الملف';
+
+  @override
+  String get setupSecurity => 'إعداد الأمان';
+
+  @override
+  String get viewDetails => 'عرض التفاصيل';
+
+  @override
+  String get notificationWelcomeTitle => 'مرحبًا بك في شقشقني';
+
+  @override
+  String get notificationWelcomeMessage =>
+      'يسعدنا انضمامك إلى مجتمعنا! إذا كنت بحاجة إلى أي مساعدة، لا تتردد في التواصل مع فريق الدعم على support@cha9cha9ni.tn أو استخدم خيار المساعدة في القائمة.';
+
+  @override
+  String get notificationProfileTitle => 'أكمل ملفك الشخصي';
+
+  @override
+  String get notificationProfileMessage =>
+      'لإجراء عمليات السحب والوصول إلى جميع ميزاتنا، يرجى إكمال معلوماتك الشخصية في إعدادات ملفك الشخصي. هذا يساعدنا على التحقق من هويتك والحفاظ على أمان حسابك.';
+
+  @override
+  String get notificationSecurityTitle => 'تأمين حسابك';
+
+  @override
+  String get notificationSecurityMessage =>
+      'احمِ حسابك من خلال تفعيل المصادقة الثنائية (2FA) وإعداد رمز PIN. سيساعدك هذا على حماية بياناتك ومعاملاتك من أي وصول غير مصرح به.';
+
+  @override
+  String get read => 'مقروء';
 }

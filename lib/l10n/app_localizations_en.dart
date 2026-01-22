@@ -1169,4 +1169,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authenticatorCode => 'Authenticator Code';
+
+  @override
+  String get markAllRead => 'Mark all read';
+
+  @override
+  String get noNotifications => 'No notifications yet';
+
+  @override
+  String get noNotificationsDesc => 'You\'ll see important updates here';
+
+  @override
+  String get allNotificationsRead => 'All notifications marked as read';
+
+  @override
+  String get completeProfile => 'Complete Profile';
+
+  @override
+  String get setupSecurity => 'Setup Security';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get notificationWelcomeTitle => 'Welcome to Cha9cha9ni';
+
+  @override
+  String get notificationWelcomeMessage =>
+      'We\'re excited to have you join our community! If you need any help, don\'t hesitate to contact our support team at support@cha9cha9ni.tn or use the Help option in the menu.';
+
+  @override
+  String get notificationProfileTitle => 'Complete Your Profile';
+
+  @override
+  String get notificationProfileMessage =>
+      'To make withdrawals and access all our features, please complete your personal information in your profile settings. This helps us verify your identity and keep your account secure.';
+
+  @override
+  String get notificationSecurityTitle => 'Secure Your Account';
+
+  @override
+  String get notificationSecurityMessage =>
+      'Protect your account by enabling two-factor authentication (2FA) and setting up a PIN code. This will help safeguard your data and transactions from unauthorized access.';
+
+  @override
+  String get read => 'Read';
 }

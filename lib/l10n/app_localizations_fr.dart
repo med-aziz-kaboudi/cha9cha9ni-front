@@ -1185,4 +1185,51 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get authenticatorCode => 'Code d\'authentification';
+
+  @override
+  String get markAllRead => 'Tout marquer lu';
+
+  @override
+  String get noNotifications => 'Aucune notification';
+
+  @override
+  String get noNotificationsDesc =>
+      'Les mises à jour importantes apparaîtront ici';
+
+  @override
+  String get allNotificationsRead =>
+      'Toutes les notifications marquées comme lues';
+
+  @override
+  String get completeProfile => 'Compléter le profil';
+
+  @override
+  String get setupSecurity => 'Configurer sécurité';
+
+  @override
+  String get viewDetails => 'Voir détails';
+
+  @override
+  String get notificationWelcomeTitle => 'Bienvenue sur Cha9cha9ni';
+
+  @override
+  String get notificationWelcomeMessage =>
+      'Nous sommes ravis de vous accueillir dans notre communauté ! Si vous avez besoin d\'aide, n\'hésitez pas à contacter notre équipe de support à support@cha9cha9ni.tn ou utilisez l\'option Aide dans le menu.';
+
+  @override
+  String get notificationProfileTitle => 'Complétez votre profil';
+
+  @override
+  String get notificationProfileMessage =>
+      'Pour effectuer des retraits et accéder à toutes nos fonctionnalités, veuillez compléter vos informations personnelles dans les paramètres de votre profil. Cela nous aide à vérifier votre identité et à sécuriser votre compte.';
+
+  @override
+  String get notificationSecurityTitle => 'Sécurisez votre compte';
+
+  @override
+  String get notificationSecurityMessage =>
+      'Protégez votre compte en activant l\'authentification à deux facteurs (2FA) et en configurant un code PIN. Cela vous aidera à protéger vos données et transactions contre tout accès non autorisé.';
+
+  @override
+  String get read => 'Lu';
 }

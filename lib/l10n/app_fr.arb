@@ -478,5 +478,21 @@
   "codeRefreshesEvery30Seconds": "Les codes se rafraîchissent toutes les 30 secondes. Assurez-vous d'entrer le code actuel.",
   "activateTwoFactor": "Activer 2FA",
   "orText": "ou",
-  "disable": "Désactiver"
+  "disable": "Désactiver",
+  
+  "markAllRead": "Tout marquer lu",
+  "noNotifications": "Aucune notification",
+  "noNotificationsDesc": "Les mises à jour importantes apparaîtront ici",
+  "allNotificationsRead": "Toutes les notifications marquées comme lues",
+  "completeProfile": "Compléter le profil",
+  "setupSecurity": "Configurer sécurité",
+  "viewDetails": "Voir détails",
+  
+  "notificationWelcomeTitle": "Bienvenue sur Cha9cha9ni",
+  "notificationWelcomeMessage": "Nous sommes ravis de vous accueillir dans notre communauté ! Si vous avez besoin d'aide, n'hésitez pas à contacter notre équipe de support à support@cha9cha9ni.tn ou utilisez l'option Aide dans le menu.",
+  "notificationProfileTitle": "Complétez votre profil",
+  "notificationProfileMessage": "Pour effectuer des retraits et accéder à toutes nos fonctionnalités, veuillez compléter vos informations personnelles dans les paramètres de votre profil. Cela nous aide à vérifier votre identité et à sécuriser votre compte.",
+  "notificationSecurityTitle": "Sécurisez votre compte",
+  "notificationSecurityMessage": "Protégez votre compte en activant l'authentification à deux facteurs (2FA) et en configurant un code PIN. Cela vous aidera à protéger vos données et transactions contre tout accès non autorisé.",
+  "read": "Lu"
 }

@@ -6,6 +6,7 @@ import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
+import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_toast.dart';
@@ -17,6 +18,7 @@ import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
+import '../notifications/screens/notifications_screen.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
   const FamilyMemberHomeScreen({super.key});
@@ -43,12 +45,20 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   List<RemovalRequest> _removalRequests = [];
   bool _isLoadingRemovalRequests = false;
 
+  // Notification service
+  final _notificationService = NotificationService();
+  late int _notificationCount;
+  StreamSubscription<int>? _unreadCountSubscription;
+
   @override
   void initState() {
     super.initState();
+    // Use cached notification count immediately
+    _notificationCount = _notificationService.cachedUnreadCount;
     WidgetsBinding.instance.addObserver(this);
     _loadCachedDataFirst();
     _listenToSessionExpired();
+    _initializeNotifications();
     // WebSocket handles real-time session invalidation via SessionManager
     _loadRemovalRequests();
   }
@@ -57,6 +67,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sessionExpiredSubscription?.cancel();
+    _unreadCountSubscription?.cancel();
     super.dispose();
   }
 
@@ -78,6 +89,25 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         _showSessionExpiredDialog();
       }
     });
+  }
+
+  /// Initialize notification service and listen for updates
+  Future<void> _initializeNotifications() async {
+    // Connect WebSocket for real-time updates
+    final token = await _tokenStorage.getAccessToken();
+    if (token != null) {
+      _notificationService.connect(token);
+    }
+
+    // Listen for unread count changes (stream subscription)
+    _unreadCountSubscription = _notificationService.unreadCount.listen((count) {
+      if (mounted) {
+        setState(() => _notificationCount = count);
+      }
+    });
+    
+    // Fetch initial notifications (this will update the stream)
+    await _notificationService.fetchNotifications();
   }
 
   /// Validate session once (called when app resumes from background)
@@ -1064,6 +1094,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         },
         onNotifications: () {
           Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+          );
+          // No need to fetch on return - stream subscription handles real-time updates
         },
         onHelp: () {
           Navigator.pop(context);
