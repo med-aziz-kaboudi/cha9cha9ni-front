@@ -574,5 +574,17 @@
       }
     }
   },
-  "loading": "Chargement..."
+  "loading": "Chargement...",
+  "scanCode": "Utiliser une carte cadeau",
+  "cameraPermissionRequired": "Autorisation de la caméra requise",
+  "cameraPermissionDescription": "Nous avons besoin d'accéder à la caméra pour scanner les codes de cartes cadeaux et les codes QR.",
+  "openSettings": "Ouvrir les paramètres",
+  "pointCameraAtCode": "Pointez la caméra vers le code de la carte cadeau",
+  "enterCodeManually": "Entrer le code manuellement",
+  "scanInstead": "Scanner à la place",
+  "enterInviteCode": "Entrer le code de remboursement",
+  "enterCodeDescription": "Entrez le code de la carte cadeau pour ajouter du solde à votre compte",
+  "invalidCodeFormat": "Veuillez entrer un code de remboursement valide",
+  "codeScanned": "Code scanné!",
+  "joinFamily": "Utiliser"
 }

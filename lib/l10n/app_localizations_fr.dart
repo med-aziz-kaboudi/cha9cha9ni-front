@@ -268,7 +268,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get joinAFamily => 'Rejoindre une Famille';
 
   @override
-  String get enterInviteCode => 'XXXX-XXXX';
+  String get enterInviteCode => 'Entrer le code de remboursement';
 
   @override
   String get pleaseEnterInviteCode => 'Veuillez entrer le code d\'invitation';
@@ -1295,4 +1295,41 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get loading => 'Chargement...';
+
+  @override
+  String get scanCode => 'Utiliser une carte cadeau';
+
+  @override
+  String get cameraPermissionRequired => 'Autorisation de la caméra requise';
+
+  @override
+  String get cameraPermissionDescription =>
+      'Nous avons besoin d\'accéder à la caméra pour scanner les codes de cartes cadeaux et les codes QR.';
+
+  @override
+  String get openSettings => 'Ouvrir les paramètres';
+
+  @override
+  String get pointCameraAtCode =>
+      'Pointez la caméra vers le code de la carte cadeau';
+
+  @override
+  String get enterCodeManually => 'Entrer le code manuellement';
+
+  @override
+  String get scanInstead => 'Scanner à la place';
+
+  @override
+  String get enterCodeDescription =>
+      'Entrez le code de la carte cadeau pour ajouter du solde à votre compte';
+
+  @override
+  String get invalidCodeFormat =>
+      'Veuillez entrer un code de remboursement valide';
+
+  @override
+  String get codeScanned => 'Code scanné!';
+
+  @override
+  String get joinFamily => 'Utiliser';
 }

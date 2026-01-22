@@ -21,6 +21,7 @@ import '../profile/screens/edit_profile_screen.dart';
 import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
+import '../scan/screens/scan_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -554,10 +555,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       case 0:
         break;
       case 1:
-        AppToast.comingSoon(
-          context,
-          AppLocalizations.of(context)!.scanButtonTapped,
-        );
+        _openScanScreen();
         break;
       case 2:
         AppToast.comingSoon(
@@ -565,6 +563,20 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           AppLocalizations.of(context)!.rewardScreenComingSoon,
         );
         break;
+    }
+  }
+
+  void _openScanScreen() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => const ScanScreen(),
+      ),
+    );
+    
+    if (result != null && mounted) {
+      // Handle the scanned code - could be an invite code to add member
+      debugPrint('📷 Scanned code: $result');
+      // TODO: Process the scanned code (e.g., validate invite code)
     }
   }
 
@@ -1288,6 +1300,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       children: [
         Scaffold(
           key: _scaffoldKey,
+          extendBody: true,
           backgroundColor: const Color(0xFFFAFAFA),
           drawer: CustomDrawer(
             onLogout: () {

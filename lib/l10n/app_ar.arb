@@ -574,5 +574,17 @@
       }
     }
   },
-  "loading": "جاري التحميل..."
+  "loading": "جار التحميل...",
+  "scanCode": "استبدال بطاقة الهدايا",
+  "cameraPermissionRequired": "إذن الكاميرا مطلوب",
+  "cameraPermissionDescription": "نحتاج إلى الوصول إلى الكاميرا لمسح رموز بطاقات الهدايا ورموز QR.",
+  "openSettings": "فتح الإعدادات",
+  "pointCameraAtCode": "وجّه الكاميرا نحو رمز بطاقة الهدايا",
+  "enterCodeManually": "أدخل الرمز يدوياً",
+  "scanInstead": "مسح بدلاً من ذلك",
+  "enterInviteCode": "أدخل رمز الاستبدال",
+  "enterCodeDescription": "أدخل رمز بطاقة الهدايا لإضافة رصيد إلى حسابك",
+  "invalidCodeFormat": "يرجى إدخال رمز استبدال صالح",
+  "codeScanned": "تم مسح الرمز!",
+  "joinFamily": "استبدال"
 }

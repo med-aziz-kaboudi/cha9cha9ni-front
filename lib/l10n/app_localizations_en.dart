@@ -263,7 +263,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinAFamily => 'Join a Family';
 
   @override
-  String get enterInviteCode => 'XXXX-XXXX';
+  String get enterInviteCode => 'Enter Redemption Code';
 
   @override
   String get pleaseEnterInviteCode => 'Please enter an invite code';
@@ -1277,4 +1277,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loading => 'Loading...';
+
+  @override
+  String get scanCode => 'Redeem Gift Card';
+
+  @override
+  String get cameraPermissionRequired => 'Camera Permission Required';
+
+  @override
+  String get cameraPermissionDescription =>
+      'We need camera access to scan gift card codes and QR codes.';
+
+  @override
+  String get openSettings => 'Open Settings';
+
+  @override
+  String get pointCameraAtCode => 'Point camera at gift card code';
+
+  @override
+  String get enterCodeManually => 'Enter Code Manually';
+
+  @override
+  String get scanInstead => 'Scan Instead';
+
+  @override
+  String get enterCodeDescription =>
+      'Enter the gift card code to add balance to your account';
+
+  @override
+  String get invalidCodeFormat => 'Please enter a valid redemption code';
+
+  @override
+  String get codeScanned => 'Code Scanned!';
+
+  @override
+  String get joinFamily => 'Redeem';
 }

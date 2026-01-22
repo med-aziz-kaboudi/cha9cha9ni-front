@@ -263,7 +263,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get joinAFamily => 'الانضمام لعائلة';
 
   @override
-  String get enterInviteCode => 'XXXX-XXXX';
+  String get enterInviteCode => 'أدخل رمز الاستبدال';
 
   @override
   String get pleaseEnterInviteCode => 'الرجاء إدخال رمز الدعوة';
@@ -1271,5 +1271,40 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get loading => 'جاري التحميل...';
+  String get loading => 'جار التحميل...';
+
+  @override
+  String get scanCode => 'استبدال بطاقة الهدايا';
+
+  @override
+  String get cameraPermissionRequired => 'إذن الكاميرا مطلوب';
+
+  @override
+  String get cameraPermissionDescription =>
+      'نحتاج إلى الوصول إلى الكاميرا لمسح رموز بطاقات الهدايا ورموز QR.';
+
+  @override
+  String get openSettings => 'فتح الإعدادات';
+
+  @override
+  String get pointCameraAtCode => 'وجّه الكاميرا نحو رمز بطاقة الهدايا';
+
+  @override
+  String get enterCodeManually => 'أدخل الرمز يدوياً';
+
+  @override
+  String get scanInstead => 'مسح بدلاً من ذلك';
+
+  @override
+  String get enterCodeDescription =>
+      'أدخل رمز بطاقة الهدايا لإضافة رصيد إلى حسابك';
+
+  @override
+  String get invalidCodeFormat => 'يرجى إدخال رمز استبدال صالح';
+
+  @override
+  String get codeScanned => 'تم مسح الرمز!';
+
+  @override
+  String get joinFamily => 'استبدال';
 }

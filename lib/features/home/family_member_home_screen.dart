@@ -19,6 +19,7 @@ import '../profile/screens/edit_profile_screen.dart';
 import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
+import '../scan/screens/scan_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
@@ -1053,10 +1054,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       case 0:
         break;
       case 1:
-        AppToast.comingSoon(
-          context,
-          AppLocalizations.of(context)!.scanButtonTapped,
-        );
+        _openScanScreen();
         break;
       case 2:
         AppToast.comingSoon(
@@ -1067,13 +1065,26 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     }
   }
 
+  void _openScanScreen() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => const ScanScreen(),
+      ),
+    );
+    
+    if (result != null && mounted) {
+      // Handle the scanned code
+      debugPrint('📷 Scanned code: $result');
+      // TODO: Process the scanned code
+    }
+  }
+
   void _handleNotificationTap(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const NotificationsScreen()),
-    ).then((_) {
-      _notificationService.fetchUnreadCount();
-    });
+    );
+    // No need to fetch on return - stream subscription handles real-time updates
   }
 
   List<TutorialStep> _buildTutorialSteps() {
@@ -1662,6 +1673,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       children: [
         Scaffold(
           key: _scaffoldKey,
+          extendBody: true,
           drawer: CustomDrawer(
             onLogout: () {
               Navigator.pop(context);
@@ -1699,9 +1711,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 context,
                 MaterialPageRoute(
                     builder: (context) => const NotificationsScreen()),
-              ).then((_) {
-                _notificationService.fetchUnreadCount();
-              });
+              );
+              // No need to fetch on return - stream subscription handles real-time updates
             },
             onHelp: () {
               Navigator.pop(context);

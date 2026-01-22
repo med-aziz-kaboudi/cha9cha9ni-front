@@ -12,6 +12,7 @@ import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
+import '../scan/screens/scan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -320,11 +321,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         // Home - already here
         break;
       case 1:
-        // Center button - Add your scan/action logic here
-        AppToast.comingSoon(
-          context,
-          AppLocalizations.of(context)!.scanButtonTapped,
-        );
+        // Center button - Open scan screen
+        _openScanScreen();
         break;
       case 2:
         // Reward - Navigate to rewards screen
@@ -336,9 +334,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  void _openScanScreen() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => const ScanScreen(),
+      ),
+    );
+    
+    if (result != null && mounted) {
+      debugPrint('📷 Scanned code: $result');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,

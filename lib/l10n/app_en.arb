@@ -589,5 +589,17 @@
       }
     }
   },
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "scanCode": "Redeem Gift Card",
+  "cameraPermissionRequired": "Camera Permission Required",
+  "cameraPermissionDescription": "We need camera access to scan gift card codes and QR codes.",
+  "openSettings": "Open Settings",
+  "pointCameraAtCode": "Point camera at gift card code",
+  "enterCodeManually": "Enter Code Manually",
+  "scanInstead": "Scan Instead",
+  "enterInviteCode": "Enter Redemption Code",
+  "enterCodeDescription": "Enter the gift card code to add balance to your account",
+  "invalidCodeFormat": "Please enter a valid redemption code",
+  "codeScanned": "Code Scanned!",
+  "joinFamily": "Redeem"
 }

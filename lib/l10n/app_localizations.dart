@@ -571,7 +571,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterInviteCode.
   ///
   /// In en, this message translates to:
-  /// **'XXXX-XXXX'**
+  /// **'Enter Redemption Code'**
   String get enterInviteCode;
 
   /// No description provided for @pleaseEnterInviteCode.
@@ -2427,6 +2427,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading...'**
   String get loading;
+
+  /// No description provided for @scanCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem Gift Card'**
+  String get scanCode;
+
+  /// No description provided for @cameraPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera Permission Required'**
+  String get cameraPermissionRequired;
+
+  /// No description provided for @cameraPermissionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'We need camera access to scan gift card codes and QR codes.'**
+  String get cameraPermissionDescription;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get openSettings;
+
+  /// No description provided for @pointCameraAtCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Point camera at gift card code'**
+  String get pointCameraAtCode;
+
+  /// No description provided for @enterCodeManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Code Manually'**
+  String get enterCodeManually;
+
+  /// No description provided for @scanInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Instead'**
+  String get scanInstead;
+
+  /// No description provided for @enterCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the gift card code to add balance to your account'**
+  String get enterCodeDescription;
+
+  /// No description provided for @invalidCodeFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid redemption code'**
+  String get invalidCodeFormat;
+
+  /// No description provided for @codeScanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Code Scanned!'**
+  String get codeScanned;
+
+  /// No description provided for @joinFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem'**
+  String get joinFamily;
 }
 
 class _AppLocalizationsDelegate

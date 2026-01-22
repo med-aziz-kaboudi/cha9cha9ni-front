@@ -27,74 +27,89 @@ class CustomBottomNavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomPadding),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.bottomCenter,
-        children: [
-          CustomPaint(
-            size: Size(MediaQuery.of(context).size.width, 80),
-            painter: _NavBarPainter(),
-          ),
-          // Force LTR to keep Home on left and Reward on right regardless of language
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: SizedBox(
-              height: 80,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: _NavBarItem(
-                      context: context,
-                      icon: Icons.home_outlined,
-                      label: AppLocalizations.of(context)!.home,
-                      isSelected: currentIndex == 0,
-                      onTap: () => onTap(0),
-                    ),
-                  ),
-                  const SizedBox(width: 100),
-                  Expanded(
-                    child: _NavBarItem(
-                      itemKey: rewardKey,
-                      context: context,
-                      icon: Icons.emoji_events_outlined,
-                      label: AppLocalizations.of(context)!.reward,
-                      isSelected: currentIndex == 2,
-                      onTap: () => onTap(2),
-                    ),
-                  ),
-                ],
+      child: SizedBox(
+        height: 120, // Tall enough to include floating button tap area
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            // Nav bar paint - positioned at bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: CustomPaint(
+                size: Size(MediaQuery.of(context).size.width, 80),
+                painter: _NavBarPainter(),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 60,
-            child: GestureDetector(
-              key: qrCodeKey,
-              onTap: () => onTap(1),
-              child: Container(
-                width: 65,
-                height: 65,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.secondary.withOpacity(0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.qr_code_scanner,
-                  color: Colors.white,
-                  size: 32,
+            // Force LTR to keep Home on left and Reward on right regardless of language
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: SizedBox(
+                  height: 80,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: _NavBarItem(
+                          context: context,
+                          icon: Icons.home_outlined,
+                          label: AppLocalizations.of(context)!.home,
+                          isSelected: currentIndex == 0,
+                          onTap: () => onTap(0),
+                        ),
+                      ),
+                      const SizedBox(width: 100),
+                      Expanded(
+                        child: _NavBarItem(
+                          itemKey: rewardKey,
+                          context: context,
+                          icon: Icons.emoji_events_outlined,
+                          label: AppLocalizations.of(context)!.reward,
+                          isSelected: currentIndex == 2,
+                          onTap: () => onTap(2),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            // Floating scan button - tappable icon
+            Positioned(
+              bottom: 55,
+              child: GestureDetector(
+                key: qrCodeKey,
+                onTap: () => onTap(1),
+                child: Container(
+                  width: 65,
+                  height: 65,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.secondary.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_scanner,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -143,7 +158,7 @@ class _NavBarPainter extends CustomPainter {
     
     // Add subtle shadow/depth
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.1)
+      ..color = Colors.black.withValues(alpha: 0.1)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
     canvas.drawPath(path, shadowPaint);
   }
