@@ -1,4 +1,4 @@
-package com.cha9cha9ni.app
+package tn.cha9cha9ni.app
 
 import android.os.Bundle
 import android.view.WindowManager
