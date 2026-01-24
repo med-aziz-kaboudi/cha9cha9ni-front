@@ -1312,4 +1312,100 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get joinFamily => 'Redeem';
+
+  @override
+  String get rewardsPoints => 'points';
+
+  @override
+  String get rewardsStreak => 'Streak';
+
+  @override
+  String get rewardsAds => 'Ads';
+
+  @override
+  String get rewardsDailyCheckIn => 'Daily Check-in';
+
+  @override
+  String rewardsDayStreak(int count) {
+    return '$count day streak!';
+  }
+
+  @override
+  String rewardsClaimPoints(int points) {
+    return 'Claim +$points pts';
+  }
+
+  @override
+  String get rewardsClaimed => 'Claimed';
+
+  @override
+  String get rewardsNextIn => 'Next in';
+
+  @override
+  String get rewardsWatchAndEarn => 'Watch & Earn';
+
+  @override
+  String rewardsWatchAdToEarn(int points) {
+    return 'Watch ad to earn +$points pts';
+  }
+
+  @override
+  String get rewardsAllAdsWatched => 'All ads watched today!';
+
+  @override
+  String get rewardsRedeemRewards => 'Redeem Rewards';
+
+  @override
+  String get rewardsConvertPoints => 'Convert points to TND';
+
+  @override
+  String get rewardsRedeem => 'Redeem';
+
+  @override
+  String get rewardsComingSoon => 'Coming Soon!';
+
+  @override
+  String rewardsRedeemingFor(String name, String points) {
+    return 'Redeeming $name for $points points will be available soon!';
+  }
+
+  @override
+  String get rewardsGotIt => 'Got it!';
+
+  @override
+  String get rewardsSimulatedAd => 'Simulated Ad';
+
+  @override
+  String get rewardsSimulatedAdDesc =>
+      'In production, a real rewarded ad would play here.';
+
+  @override
+  String get rewardsSkipAd => 'Skip Ad';
+
+  @override
+  String get rewardsWatchComplete => 'Watch Complete';
+
+  @override
+  String get rewardsPointsEarned => 'Points earned!';
+
+  @override
+  String get rewardsAdReward => 'Ad Reward';
+
+  @override
+  String get rewardsDailyReward => 'Daily Reward';
+
+  @override
+  String get rewardsLoadingAd => 'Loading ad...';
+
+  @override
+  String get rewardsCheckInSuccess => 'Check-in successful!';
+
+  @override
+  String get rewardsCheckInFailed => 'Check-in failed. Please try again.';
+
+  @override
+  String get rewardsClaimFailed => 'Failed to claim reward. Please try again.';
+
+  @override
+  String get rewardsAdFailed => 'Ad failed to show. Please try again.';
 }

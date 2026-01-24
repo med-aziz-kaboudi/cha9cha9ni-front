@@ -10,6 +10,7 @@ enum SocketEvent {
   disconnected,
   forceLogout,
   familyMemberJoined,
+  pointsEarned,
   error,
 }
 
@@ -65,6 +66,41 @@ class FamilyMemberJoinedData {
   }
 }
 
+/// Data class for points earned event (family rewards)
+class PointsEarnedData {
+  final String earnerId;
+  final String memberName;
+  final int pointsEarned;
+  final int slotIndex;
+  final int newTotalPoints;
+  final double newTndValue;
+  final DateTime timestamp;
+
+  PointsEarnedData({
+    required this.earnerId,
+    required this.memberName,
+    required this.pointsEarned,
+    required this.slotIndex,
+    required this.newTotalPoints,
+    required this.newTndValue,
+    required this.timestamp,
+  });
+
+  factory PointsEarnedData.fromJson(Map<String, dynamic> json) {
+    return PointsEarnedData(
+      earnerId: json['earnerId'] ?? '',
+      memberName: json['memberName'] ?? '',
+      pointsEarned: json['pointsEarned'] ?? 0,
+      slotIndex: json['slotIndex'] ?? 0,
+      newTotalPoints: json['newTotalPoints'] ?? 0,
+      newTndValue: (json['newTndValue'] ?? 0).toDouble(),
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -81,6 +117,7 @@ class SocketService {
   final _eventController = StreamController<SocketEvent>.broadcast();
   final _forceLogoutController = StreamController<ForceLogoutData>.broadcast();
   final _familyMemberJoinedController = StreamController<FamilyMemberJoinedData>.broadcast();
+  final _pointsEarnedController = StreamController<PointsEarnedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -90,6 +127,9 @@ class SocketService {
 
   /// Stream of family member joined events - listen to this to update UI
   Stream<FamilyMemberJoinedData> get onFamilyMemberJoined => _familyMemberJoinedController.stream;
+
+  /// Stream of points earned events - listen to this to update rewards UI
+  Stream<PointsEarnedData> get onPointsEarned => _pointsEarnedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -187,6 +227,16 @@ class SocketService {
       }
     });
 
+    // Listen for points earned event (family rewards)
+    _socket!.on('points_earned', (data) {
+      debugPrint('🎁 Socket: Received points_earned event');
+      if (data is Map<String, dynamic>) {
+        final pointsData = PointsEarnedData.fromJson(data);
+        _pointsEarnedController.add(pointsData);
+        _eventController.add(SocketEvent.pointsEarned);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -234,5 +284,6 @@ class SocketService {
     _eventController.close();
     _forceLogoutController.close();
     _familyMemberJoinedController.close();
+    _pointsEarnedController.close();
   }
 }

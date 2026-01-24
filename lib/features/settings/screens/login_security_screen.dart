@@ -300,7 +300,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     return showDialog<String>(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
           final currentController = isConfirmStep
@@ -333,8 +333,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.secondary.withOpacity(0.1),
-                            AppColors.secondary.withOpacity(0.05),
+                            AppColors.secondary.withValues(alpha: 0.1),
+                            AppColors.secondary.withValues(alpha: 0.05),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -382,7 +382,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                         border: Border.all(
                           color: errorMessage != null
                               ? AppColors.primary
-                              : Colors.grey.withOpacity(0.2),
+                              : Colors.grey.withValues(alpha: 0.2),
                           width: errorMessage != null ? 2 : 1,
                         ),
                       ),
@@ -637,7 +637,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   color: AppColors.gray,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF683BFC).withOpacity(0.05),
+                      color: const Color(0xFF683BFC).withValues(alpha: 0.05),
                       blurRadius: 12,
                       offset: const Offset(0, 8),
                     ),
@@ -659,7 +659,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -765,7 +765,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -781,8 +781,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                 height: 48,
                 decoration: BoxDecoration(
                   color: isEnabled
-                      ? AppColors.secondary.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.1),
+                      ? AppColors.secondary.withValues(alpha: 0.1)
+                      : Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -868,7 +868,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -880,7 +880,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.key, color: Colors.grey, size: 24),
@@ -909,7 +909,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
+              color: AppColors.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -941,7 +941,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -957,8 +957,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   height: 48,
                   decoration: BoxDecoration(
                     color: isEnabled
-                        ? AppColors.secondary.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                        ? AppColors.secondary.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -1006,7 +1006,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -1112,7 +1112,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1124,7 +1124,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.secondary.withOpacity(0.1),
+                color: AppColors.secondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -1180,7 +1180,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1196,8 +1196,8 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   height: 48,
                   decoration: BoxDecoration(
                     color: isEnabled
-                        ? AppColors.secondary.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.1),
+                        ? AppColors.secondary.withValues(alpha: 0.1)
+                        : Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -1245,7 +1245,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -1272,7 +1272,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
                   Switch(
                     value: isEnabled,
                     onChanged: _isSaving ? null : _toggleBiometric,
-                    activeColor: AppColors.secondary,
+                    activeTrackColor: AppColors.secondary,
                   ),
               ],
             ),
@@ -1292,7 +1292,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1304,7 +1304,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
+              color: AppColors.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -1355,7 +1355,7 @@ class _LoginSecurityScreenState extends State<LoginSecurityScreen>
     final Color textColor;
 
     if (isDestructive) {
-      bgColor = AppColors.primary.withOpacity(0.1);
+      bgColor = AppColors.primary.withValues(alpha: 0.1);
       textColor = AppColors.primary;
     } else if (isPrimary) {
       bgColor = AppColors.secondary;
@@ -1464,7 +1464,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -1493,7 +1493,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -1520,7 +1520,7 @@ class _RemovePinDialogState extends State<_RemovePinDialog> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ),
@@ -1733,7 +1733,7 @@ class _Disable2FADialogState extends State<_Disable2FADialog> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -1762,7 +1762,7 @@ class _Disable2FADialogState extends State<_Disable2FADialog> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -1789,7 +1789,7 @@ class _Disable2FADialogState extends State<_Disable2FADialog> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ),

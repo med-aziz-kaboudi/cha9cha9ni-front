@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 
+/// Format points with K/M suffix
+String _formatPoints(int points) {
+  if (points >= 1000000) {
+    final value = points / 1000000;
+    return value == value.truncate() ? '${value.truncate()}M' : '${value.toStringAsFixed(1)}M';
+  } else if (points >= 1000) {
+    final value = points / 1000;
+    return value == value.truncate() ? '${value.truncate()}K' : '${value.toStringAsFixed(1)}K';
+  }
+  return points.toString();
+}
+
 class HomeHeaderWidget extends StatelessWidget {
   final String balance;
   final int points;
@@ -207,7 +219,7 @@ class HomeHeaderWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(badgeRadius),
                   ),
                   child: Text(
-                    '🎁 $points ${l10n.pts}',
+                    '🎁 ${_formatPoints(points)} ${l10n.pts}',
                     style: TextStyle(
                       color: const Color(0xFF141936),
                       fontSize: badgeFontSize,
@@ -230,7 +242,7 @@ class HomeHeaderWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(badgeRadius),
                     ),
                     child: Text(
-                      '🎁 $points ${l10n.pts}',
+                      '🎁 ${_formatPoints(points)} ${l10n.pts}',
                       style: TextStyle(
                         color: const Color(0xFF141936),
                         fontSize: badgeFontSize,
@@ -317,7 +329,7 @@ class HomeHeaderWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3D566E).withOpacity(0.1),
+              color: const Color(0xFF3D566E).withValues(alpha: 0.1),
               blurRadius: 12,
               offset: const Offset(0, 3),
             ),

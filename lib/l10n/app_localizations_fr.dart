@@ -1332,4 +1332,103 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get joinFamily => 'Utiliser';
+
+  @override
+  String get rewardsPoints => 'points';
+
+  @override
+  String get rewardsStreak => 'Série';
+
+  @override
+  String get rewardsAds => 'Pubs';
+
+  @override
+  String get rewardsDailyCheckIn => 'Connexion quotidienne';
+
+  @override
+  String rewardsDayStreak(int count) {
+    return 'Série de $count jours!';
+  }
+
+  @override
+  String rewardsClaimPoints(int points) {
+    return 'Réclamer +$points pts';
+  }
+
+  @override
+  String get rewardsClaimed => 'Réclamé';
+
+  @override
+  String get rewardsNextIn => 'Prochain dans';
+
+  @override
+  String get rewardsWatchAndEarn => 'Regarder et Gagner';
+
+  @override
+  String rewardsWatchAdToEarn(int points) {
+    return 'Regardez une pub pour gagner +$points pts';
+  }
+
+  @override
+  String get rewardsAllAdsWatched => 'Toutes les pubs vues aujourd\'hui!';
+
+  @override
+  String get rewardsRedeemRewards => 'Échanger les récompenses';
+
+  @override
+  String get rewardsConvertPoints => 'Convertir les points en TND';
+
+  @override
+  String get rewardsRedeem => 'Échanger';
+
+  @override
+  String get rewardsComingSoon => 'Bientôt disponible!';
+
+  @override
+  String rewardsRedeemingFor(String name, String points) {
+    return 'L\'échange de $name pour $points points sera bientôt disponible!';
+  }
+
+  @override
+  String get rewardsGotIt => 'Compris!';
+
+  @override
+  String get rewardsSimulatedAd => 'Pub simulée';
+
+  @override
+  String get rewardsSimulatedAdDesc =>
+      'En production, une vraie pub avec récompense serait diffusée ici.';
+
+  @override
+  String get rewardsSkipAd => 'Passer la pub';
+
+  @override
+  String get rewardsWatchComplete => 'Visionnage terminé';
+
+  @override
+  String get rewardsPointsEarned => 'Points gagnés!';
+
+  @override
+  String get rewardsAdReward => 'Récompense pub';
+
+  @override
+  String get rewardsDailyReward => 'Récompense quotidienne';
+
+  @override
+  String get rewardsLoadingAd => 'Chargement de la pub...';
+
+  @override
+  String get rewardsCheckInSuccess => 'Connexion réussie!';
+
+  @override
+  String get rewardsCheckInFailed =>
+      'Échec de la connexion. Veuillez réessayer.';
+
+  @override
+  String get rewardsClaimFailed =>
+      'Échec de la réclamation. Veuillez réessayer.';
+
+  @override
+  String get rewardsAdFailed =>
+      'La pub n\'a pas pu s\'afficher. Veuillez réessayer.';
 }

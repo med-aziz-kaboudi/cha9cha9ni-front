@@ -1,8 +1,11 @@
 import 'package:cha9cha9ni/l10n/app_localizations.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -36,6 +39,11 @@ void main() async {
     systemNavigationBarDividerColor: Colors.transparent,
   ));
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // Initialize Mobile Ads SDK (only on mobile platforms)
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    await MobileAds.instance.initialize();
+  }
   
   // Initialize Supabase
   await Supabase.initialize(
@@ -200,7 +208,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) {
         autoLogoutTimer = Timer(const Duration(seconds: 3), () {
           if (!hasLoggedOut && Navigator.of(dialogContext).canPop()) {
@@ -227,7 +235,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
                   height: 72,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.1)],
+                      colors: [AppColors.primary.withValues(alpha: 0.1), AppColors.secondary.withValues(alpha: 0.1)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -283,6 +291,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   Future<void> _performSessionLogout() async {
     SessionManager().disconnectSocket();
     await _tokenStorage.clearAll();
+    await _biometricService.clearSecurityCache();
     await Supabase.instance.client.auth.signOut();
     SessionManager().resetHandlingFlag();
     if (mounted) {
@@ -708,14 +717,32 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
       }
     } catch (e) {
       debugPrint('❌ Backend call failed: $e');
-      // Don't sign out - just let user stay on current screen
-      // They can try again or use email/password login
+      // Sign out from Supabase to allow retry
+      await Supabase.instance.client.auth.signOut();
+      
       if (mounted) {
         setState(() {
           _isAuthenticated = false;
           _needsVerification = false;
           _isProcessingOAuth = false;
         });
+        
+        // Show error message to user
+        final navigator = navigatorKey.currentState;
+        if (navigator != null) {
+          ScaffoldMessenger.of(navigator.context).showSnackBar(
+            SnackBar(
+              content: const Text('Sign in failed. Please try again.'),
+              backgroundColor: AppColors.primary,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+            ),
+          );
+        }
       }
     } finally {
       _isHandlingSession = false;

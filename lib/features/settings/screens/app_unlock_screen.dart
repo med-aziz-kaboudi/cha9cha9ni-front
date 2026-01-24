@@ -252,7 +252,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -282,8 +282,8 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.secondary.withOpacity(0.15),
-                        AppColors.secondary.withOpacity(0.05),
+                        AppColors.secondary.withValues(alpha: 0.15),
+                        AppColors.secondary.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -381,12 +381,12 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.grey.withOpacity(0.15),
+            color: Colors.grey.withValues(alpha: 0.15),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: gradientColors[0].withOpacity(0.08),
+              color: gradientColors[0].withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -407,7 +407,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: gradientColors[0].withOpacity(0.3),
+                    color: gradientColors[0].withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -451,7 +451,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.08),
+                color: Colors.grey.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -487,7 +487,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondary.withOpacity(0.15),
+                    color: AppColors.secondary.withValues(alpha: 0.15),
                     blurRadius: 30,
                     offset: const Offset(0, 10),
                   ),
@@ -506,7 +506,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                         gradient: LinearGradient(
                           colors: [
                             AppColors.secondary,
-                            AppColors.secondary.withOpacity(0.7),
+                            AppColors.secondary.withValues(alpha: 0.7),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -514,7 +514,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.secondary.withOpacity(0.3),
+                            color: AppColors.secondary.withValues(alpha: 0.3),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
@@ -558,14 +558,14 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                         border: Border.all(
                           color: errorText != null
                               ? AppColors.primary
-                              : AppColors.secondary.withOpacity(0.3),
+                              : AppColors.secondary.withValues(alpha: 0.3),
                           width: errorText != null ? 2 : 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: (errorText != null 
                                 ? AppColors.primary 
-                                : AppColors.secondary).withOpacity(0.08),
+                                : AppColors.secondary).withValues(alpha: 0.08),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -614,7 +614,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(
@@ -705,7 +705,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.secondary.withOpacity(0.6),
+                          disabledBackgroundColor: AppColors.secondary.withValues(alpha: 0.6),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -839,11 +839,11 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -876,7 +876,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -967,11 +967,11 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: Colors.orange.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.2),
+                    color: Colors.orange.withValues(alpha: 0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -1004,7 +1004,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.15),
+                    color: Colors.orange.withValues(alpha: 0.15),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -1038,10 +1038,10 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.05),
+                color: Colors.orange.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.orange.withOpacity(0.2),
+                  color: Colors.orange.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
@@ -1126,13 +1126,13 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                   end: Alignment.bottomRight,
                   colors: [
                     AppColors.secondary,
-                    AppColors.secondary.withOpacity(0.7),
+                    AppColors.secondary.withValues(alpha: 0.7),
                   ],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.secondary.withOpacity(0.3),
+                    color: AppColors.secondary.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -1175,7 +1175,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -1251,7 +1251,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -1317,7 +1317,7 @@ class _AppUnlockScreenState extends State<AppUnlockScreen>
               const SizedBox(height: 24),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextButton.icon(

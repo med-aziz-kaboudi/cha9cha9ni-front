@@ -169,8 +169,8 @@ class NotificationDetailScreen extends StatelessWidget {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              color.withOpacity(0.2),
-                              color.withOpacity(0.1),
+                              color.withValues(alpha: 0.2),
+                              color.withValues(alpha: 0.1),
                             ],
                           ),
                           shape: BoxShape.circle,
@@ -202,7 +202,7 @@ class NotificationDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -213,7 +213,7 @@ class NotificationDetailScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             height: 1.6,
-                            color: AppColors.dark.withOpacity(0.8),
+                            color: AppColors.dark.withValues(alpha: 0.8),
                           ),
                           textAlign: TextAlign.center,
                         ),

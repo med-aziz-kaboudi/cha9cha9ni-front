@@ -601,5 +601,66 @@
   "enterCodeDescription": "Enter the gift card code to add balance to your account",
   "invalidCodeFormat": "Please enter a valid redemption code",
   "codeScanned": "Code Scanned!",
-  "joinFamily": "Redeem"
+  "joinFamily": "Redeem",
+  
+  "rewardsPoints": "points",
+  "rewardsStreak": "Streak",
+  "rewardsAds": "Ads",
+  "rewardsDailyCheckIn": "Daily Check-in",
+  "rewardsDayStreak": "{count} day streak!",
+  "@rewardsDayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimPoints": "Claim +{points} pts",
+  "@rewardsClaimPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimed": "Claimed",
+  "rewardsNextIn": "Next in",
+  "rewardsWatchAndEarn": "Watch & Earn",
+  "rewardsWatchAdToEarn": "Watch ad to earn +{points} pts",
+  "@rewardsWatchAdToEarn": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsAllAdsWatched": "All ads watched today!",
+  "rewardsRedeemRewards": "Redeem Rewards",
+  "rewardsConvertPoints": "Convert points to TND",
+  "rewardsRedeem": "Redeem",
+  "rewardsComingSoon": "Coming Soon!",
+  "rewardsRedeemingFor": "Redeeming {name} for {points} points will be available soon!",
+  "@rewardsRedeemingFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsGotIt": "Got it!",
+  "rewardsSimulatedAd": "Simulated Ad",
+  "rewardsSimulatedAdDesc": "In production, a real rewarded ad would play here.",
+  "rewardsSkipAd": "Skip Ad",
+  "rewardsWatchComplete": "Watch Complete",
+  "rewardsPointsEarned": "Points earned!",
+  "rewardsAdReward": "Ad Reward",
+  "rewardsDailyReward": "Daily Reward",
+  "rewardsLoadingAd": "Loading ad...",
+  "rewardsCheckInSuccess": "Check-in successful!",
+  "rewardsCheckInFailed": "Check-in failed. Please try again.",
+  "rewardsClaimFailed": "Failed to claim reward. Please try again.",
+  "rewardsAdFailed": "Ad failed to show. Please try again."
 }

@@ -2493,6 +2493,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Redeem'**
   String get joinFamily;
+
+  /// No description provided for @rewardsPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'points'**
+  String get rewardsPoints;
+
+  /// No description provided for @rewardsStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get rewardsStreak;
+
+  /// No description provided for @rewardsAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads'**
+  String get rewardsAds;
+
+  /// No description provided for @rewardsDailyCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Check-in'**
+  String get rewardsDailyCheckIn;
+
+  /// No description provided for @rewardsDayStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day streak!'**
+  String rewardsDayStreak(int count);
+
+  /// No description provided for @rewardsClaimPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Claim +{points} pts'**
+  String rewardsClaimPoints(int points);
+
+  /// No description provided for @rewardsClaimed.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed'**
+  String get rewardsClaimed;
+
+  /// No description provided for @rewardsNextIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next in'**
+  String get rewardsNextIn;
+
+  /// No description provided for @rewardsWatchAndEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch & Earn'**
+  String get rewardsWatchAndEarn;
+
+  /// No description provided for @rewardsWatchAdToEarn.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad to earn +{points} pts'**
+  String rewardsWatchAdToEarn(int points);
+
+  /// No description provided for @rewardsAllAdsWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'All ads watched today!'**
+  String get rewardsAllAdsWatched;
+
+  /// No description provided for @rewardsRedeemRewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem Rewards'**
+  String get rewardsRedeemRewards;
+
+  /// No description provided for @rewardsConvertPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert points to TND'**
+  String get rewardsConvertPoints;
+
+  /// No description provided for @rewardsRedeem.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem'**
+  String get rewardsRedeem;
+
+  /// No description provided for @rewardsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon!'**
+  String get rewardsComingSoon;
+
+  /// No description provided for @rewardsRedeemingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeeming {name} for {points} points will be available soon!'**
+  String rewardsRedeemingFor(String name, String points);
+
+  /// No description provided for @rewardsGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get rewardsGotIt;
+
+  /// No description provided for @rewardsSimulatedAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Simulated Ad'**
+  String get rewardsSimulatedAd;
+
+  /// No description provided for @rewardsSimulatedAdDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'In production, a real rewarded ad would play here.'**
+  String get rewardsSimulatedAdDesc;
+
+  /// No description provided for @rewardsSkipAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Ad'**
+  String get rewardsSkipAd;
+
+  /// No description provided for @rewardsWatchComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Complete'**
+  String get rewardsWatchComplete;
+
+  /// No description provided for @rewardsPointsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Points earned!'**
+  String get rewardsPointsEarned;
+
+  /// No description provided for @rewardsAdReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad Reward'**
+  String get rewardsAdReward;
+
+  /// No description provided for @rewardsDailyReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Reward'**
+  String get rewardsDailyReward;
+
+  /// No description provided for @rewardsLoadingAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading ad...'**
+  String get rewardsLoadingAd;
+
+  /// No description provided for @rewardsCheckInSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in successful!'**
+  String get rewardsCheckInSuccess;
+
+  /// No description provided for @rewardsCheckInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in failed. Please try again.'**
+  String get rewardsCheckInFailed;
+
+  /// No description provided for @rewardsClaimFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to claim reward. Please try again.'**
+  String get rewardsClaimFailed;
+
+  /// No description provided for @rewardsAdFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad failed to show. Please try again.'**
+  String get rewardsAdFailed;
 }
 
 class _AppLocalizationsDelegate

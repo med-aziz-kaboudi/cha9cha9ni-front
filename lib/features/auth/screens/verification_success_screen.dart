@@ -86,7 +86,7 @@ class VerificationSuccessScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CC3C7),
+                      backgroundColor: const Color(0xFFEE3764),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

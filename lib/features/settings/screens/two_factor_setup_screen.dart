@@ -148,7 +148,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -205,7 +205,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -262,7 +262,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -275,8 +275,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.secondary.withOpacity(0.1),
-                            AppColors.secondary.withOpacity(0.05),
+                            AppColors.secondary.withValues(alpha: 0.1),
+                            AppColors.secondary.withValues(alpha: 0.05),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -323,7 +323,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
@@ -386,7 +386,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
                         decoration: BoxDecoration(
                           color: AppColors.gray,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [
@@ -447,7 +447,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
+                  color: AppColors.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(

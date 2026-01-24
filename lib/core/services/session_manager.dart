@@ -28,6 +28,9 @@ class SessionManager {
   /// Stream that emits when a new family member joins (for owners)
   Stream<FamilyMemberJoinedData> get onFamilyMemberJoined => SocketService().onFamilyMemberJoined;
 
+  /// Get the socket service instance for direct access to streams
+  SocketService get socketService => SocketService();
+
   /// Check if currently handling an expiration (to prevent duplicate dialogs)
   bool get isHandlingExpiration => _isHandlingExpiration;
 

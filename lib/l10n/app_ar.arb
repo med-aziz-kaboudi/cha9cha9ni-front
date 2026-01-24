@@ -586,5 +586,66 @@
   "enterCodeDescription": "أدخل رمز بطاقة الهدايا لإضافة رصيد إلى حسابك",
   "invalidCodeFormat": "يرجى إدخال رمز استبدال صالح",
   "codeScanned": "تم مسح الرمز!",
-  "joinFamily": "استبدال"
+  "joinFamily": "استبدال",
+  
+  "rewardsPoints": "نقاط",
+  "rewardsStreak": "سلسلة",
+  "rewardsAds": "إعلانات",
+  "rewardsDailyCheckIn": "تسجيل الدخول اليومي",
+  "rewardsDayStreak": "سلسلة {count} يوم!",
+  "@rewardsDayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimPoints": "احصل على +{points} نقطة",
+  "@rewardsClaimPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimed": "تم الحصول",
+  "rewardsNextIn": "التالي في",
+  "rewardsWatchAndEarn": "شاهد واكسب",
+  "rewardsWatchAdToEarn": "شاهد إعلان لكسب +{points} نقطة",
+  "@rewardsWatchAdToEarn": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsAllAdsWatched": "شاهدت جميع الإعلانات اليوم!",
+  "rewardsRedeemRewards": "استبدال المكافآت",
+  "rewardsConvertPoints": "تحويل النقاط إلى دينار",
+  "rewardsRedeem": "استبدال",
+  "rewardsComingSoon": "قريباً!",
+  "rewardsRedeemingFor": "استبدال {name} مقابل {points} نقطة سيكون متاحاً قريباً!",
+  "@rewardsRedeemingFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsGotIt": "فهمت!",
+  "rewardsSimulatedAd": "إعلان تجريبي",
+  "rewardsSimulatedAdDesc": "في الإنتاج، سيتم عرض إعلان حقيقي مع مكافأة هنا.",
+  "rewardsSkipAd": "تخطي الإعلان",
+  "rewardsWatchComplete": "اكتمل المشاهدة",
+  "rewardsPointsEarned": "تم كسب النقاط!",
+  "rewardsAdReward": "مكافأة الإعلان",
+  "rewardsDailyReward": "المكافأة اليومية",
+  "rewardsLoadingAd": "جاري تحميل الإعلان...",
+  "rewardsCheckInSuccess": "تم تسجيل الدخول بنجاح!",
+  "rewardsCheckInFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+  "rewardsClaimFailed": "فشل في الحصول على المكافأة. يرجى المحاولة مرة أخرى.",
+  "rewardsAdFailed": "فشل في عرض الإعلان. يرجى المحاولة مرة أخرى."
 }

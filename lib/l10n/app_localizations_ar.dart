@@ -1307,4 +1307,102 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get joinFamily => 'استبدال';
+
+  @override
+  String get rewardsPoints => 'نقاط';
+
+  @override
+  String get rewardsStreak => 'سلسلة';
+
+  @override
+  String get rewardsAds => 'إعلانات';
+
+  @override
+  String get rewardsDailyCheckIn => 'تسجيل الدخول اليومي';
+
+  @override
+  String rewardsDayStreak(int count) {
+    return 'سلسلة $count يوم!';
+  }
+
+  @override
+  String rewardsClaimPoints(int points) {
+    return 'احصل على +$points نقطة';
+  }
+
+  @override
+  String get rewardsClaimed => 'تم الحصول';
+
+  @override
+  String get rewardsNextIn => 'التالي في';
+
+  @override
+  String get rewardsWatchAndEarn => 'شاهد واكسب';
+
+  @override
+  String rewardsWatchAdToEarn(int points) {
+    return 'شاهد إعلان لكسب +$points نقطة';
+  }
+
+  @override
+  String get rewardsAllAdsWatched => 'شاهدت جميع الإعلانات اليوم!';
+
+  @override
+  String get rewardsRedeemRewards => 'استبدال المكافآت';
+
+  @override
+  String get rewardsConvertPoints => 'تحويل النقاط إلى دينار';
+
+  @override
+  String get rewardsRedeem => 'استبدال';
+
+  @override
+  String get rewardsComingSoon => 'قريباً!';
+
+  @override
+  String rewardsRedeemingFor(String name, String points) {
+    return 'استبدال $name مقابل $points نقطة سيكون متاحاً قريباً!';
+  }
+
+  @override
+  String get rewardsGotIt => 'فهمت!';
+
+  @override
+  String get rewardsSimulatedAd => 'إعلان تجريبي';
+
+  @override
+  String get rewardsSimulatedAdDesc =>
+      'في الإنتاج، سيتم عرض إعلان حقيقي مع مكافأة هنا.';
+
+  @override
+  String get rewardsSkipAd => 'تخطي الإعلان';
+
+  @override
+  String get rewardsWatchComplete => 'اكتمل المشاهدة';
+
+  @override
+  String get rewardsPointsEarned => 'تم كسب النقاط!';
+
+  @override
+  String get rewardsAdReward => 'مكافأة الإعلان';
+
+  @override
+  String get rewardsDailyReward => 'المكافأة اليومية';
+
+  @override
+  String get rewardsLoadingAd => 'جاري تحميل الإعلان...';
+
+  @override
+  String get rewardsCheckInSuccess => 'تم تسجيل الدخول بنجاح!';
+
+  @override
+  String get rewardsCheckInFailed =>
+      'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get rewardsClaimFailed =>
+      'فشل في الحصول على المكافأة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get rewardsAdFailed => 'فشل في عرض الإعلان. يرجى المحاولة مرة أخرى.';
 }

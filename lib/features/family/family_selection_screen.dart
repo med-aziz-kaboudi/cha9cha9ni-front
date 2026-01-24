@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/family_model.dart';
 import '../../core/services/family_api_service.dart';
 import '../../core/services/token_storage_service.dart';
+import '../../core/services/biometric_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';import '../../l10n/app_localizations.dart';import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
@@ -65,6 +66,9 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       
       // Clear any pending verification
       await PendingVerificationHelper.clear();
+      
+      // Clear security cache so unlock screen doesn't show on next login
+      await BiometricService().clearSecurityCache();
       
       // Sign out from Supabase (if there's a session)
       final session = Supabase.instance.client.auth.currentSession;
@@ -289,7 +293,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withOpacity(0.1),
+                          color: AppColors.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
@@ -410,7 +414,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                       ),
                       shadows: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -476,7 +480,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                         ),
                         shadows: [
                           BoxShadow(
-                            color: AppColors.secondary.withOpacity(0.15),
+                            color: AppColors.secondary.withValues(alpha: 0.15),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -502,7 +506,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.secondary.withOpacity(0.1),
+                              color: AppColors.secondary.withValues(alpha: 0.1),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -571,7 +575,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
                             ),
                             shadows: [
                               BoxShadow(
-                                color: AppColors.secondary.withOpacity(0.3),
+                                color: AppColors.secondary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),

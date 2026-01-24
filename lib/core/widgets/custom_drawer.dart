@@ -392,7 +392,7 @@ class _DrawerHeaderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.secondary.withOpacity(0.27)
+      ..color = AppColors.secondary.withValues(alpha: 0.27)
       ..style = PaintingStyle.fill;
 
     final path = Path();

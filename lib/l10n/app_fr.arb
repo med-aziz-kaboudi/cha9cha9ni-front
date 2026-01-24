@@ -586,5 +586,66 @@
   "enterCodeDescription": "Entrez le code de la carte cadeau pour ajouter du solde à votre compte",
   "invalidCodeFormat": "Veuillez entrer un code de remboursement valide",
   "codeScanned": "Code scanné!",
-  "joinFamily": "Utiliser"
+  "joinFamily": "Utiliser",
+  
+  "rewardsPoints": "points",
+  "rewardsStreak": "Série",
+  "rewardsAds": "Pubs",
+  "rewardsDailyCheckIn": "Connexion quotidienne",
+  "rewardsDayStreak": "Série de {count} jours!",
+  "@rewardsDayStreak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimPoints": "Réclamer +{points} pts",
+  "@rewardsClaimPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsClaimed": "Réclamé",
+  "rewardsNextIn": "Prochain dans",
+  "rewardsWatchAndEarn": "Regarder et Gagner",
+  "rewardsWatchAdToEarn": "Regardez une pub pour gagner +{points} pts",
+  "@rewardsWatchAdToEarn": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardsAllAdsWatched": "Toutes les pubs vues aujourd'hui!",
+  "rewardsRedeemRewards": "Échanger les récompenses",
+  "rewardsConvertPoints": "Convertir les points en TND",
+  "rewardsRedeem": "Échanger",
+  "rewardsComingSoon": "Bientôt disponible!",
+  "rewardsRedeemingFor": "L'échange de {name} pour {points} points sera bientôt disponible!",
+  "@rewardsRedeemingFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsGotIt": "Compris!",
+  "rewardsSimulatedAd": "Pub simulée",
+  "rewardsSimulatedAdDesc": "En production, une vraie pub avec récompense serait diffusée ici.",
+  "rewardsSkipAd": "Passer la pub",
+  "rewardsWatchComplete": "Visionnage terminé",
+  "rewardsPointsEarned": "Points gagnés!",
+  "rewardsAdReward": "Récompense pub",
+  "rewardsDailyReward": "Récompense quotidienne",
+  "rewardsLoadingAd": "Chargement de la pub...",
+  "rewardsCheckInSuccess": "Connexion réussie!",
+  "rewardsCheckInFailed": "Échec de la connexion. Veuillez réessayer.",
+  "rewardsClaimFailed": "Échec de la réclamation. Veuillez réessayer.",
+  "rewardsAdFailed": "La pub n'a pas pu s'afficher. Veuillez réessayer."
 }

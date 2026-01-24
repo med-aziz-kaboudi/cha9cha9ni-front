@@ -59,7 +59,7 @@ class _PageIndicatorState extends State<PageIndicator> {
                     : null,
                 color: isActive
                     ? null
-                    : AppColors.primary.withOpacity(0.2),
+                    : AppColors.primary.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(360),
               ),
             ),

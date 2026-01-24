@@ -243,13 +243,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
+              color: AppColors.secondary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_off_outlined,
               size: 48,
-              color: AppColors.secondary.withOpacity(0.5),
+              color: AppColors.secondary.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 20),
@@ -266,7 +266,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             l10n.noNotificationsDesc,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.dark.withOpacity(0.6),
+              color: AppColors.dark.withValues(alpha: 0.6),
             ),
             textAlign: TextAlign.center,
           ),
@@ -291,15 +291,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: notification.isRead
-                ? Colors.grey.withOpacity(0.15)
-                : AppColors.secondary.withOpacity(0.2),
+                ? Colors.grey.withValues(alpha: 0.15)
+                : AppColors.secondary.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: notification.isRead 
               ? [] 
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -324,8 +324,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          iconColor.withOpacity(0.15),
-                          iconColor.withOpacity(0.05),
+                          iconColor.withValues(alpha: 0.15),
+                          iconColor.withValues(alpha: 0.05),
                         ],
                       ),
                       shape: BoxShape.circle,
@@ -359,7 +359,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               _formatTimeAgo(notification.createdAt, l10n),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.dark.withOpacity(0.5),
+                                color: AppColors.dark.withValues(alpha: 0.5),
                               ),
                             ),
                             if (notification.isRead) ...[

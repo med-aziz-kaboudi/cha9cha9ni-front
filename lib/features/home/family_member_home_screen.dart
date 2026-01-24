@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/family_model.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
+import '../../core/services/biometric_service.dart';
+import '../../core/services/socket_service.dart' show PointsEarnedData;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
@@ -16,6 +19,8 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
+import '../rewards/rewards_service.dart';
+import '../rewards/screens/rewards_screen.dart';
 import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
@@ -71,6 +76,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   late int _notificationCount;
   StreamSubscription<int>? _unreadCountSubscription;
 
+  // Rewards/Points
+  final _rewardsService = RewardsService();
+  int _familyPoints = 0;
+  StreamSubscription? _rewardsSubscription;
+  StreamSubscription<PointsEarnedData>? _pointsEarnedSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +92,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _listenToSessionExpired();
     _initializeNotifications();
     _checkTutorialStatus();
+    _loadFamilyPoints();
+    _listenToPointsUpdates();
     // Delay loading removal requests to avoid too many simultaneous API calls
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _loadRemovalRequests();
@@ -105,7 +118,61 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _sessionExpiredSubscription?.cancel();
     _unreadCountSubscription?.cancel();
+    _rewardsSubscription?.cancel();
+    _pointsEarnedSubscription?.cancel();
     super.dispose();
+  }
+
+  /// Load family points from rewards service
+  Future<void> _loadFamilyPoints() async {
+    // Load cached points first for instant display
+    final prefs = await SharedPreferences.getInstance();
+    final cachedPoints = prefs.getInt('rewards_total_points');
+    if (cachedPoints != null && mounted) {
+      setState(() {
+        _familyPoints = cachedPoints;
+      });
+    }
+    
+    // Then fetch fresh data
+    try {
+      final data = await _rewardsService.fetchRewardsData();
+      if (mounted) {
+        setState(() {
+          _familyPoints = data.totalPoints;
+        });
+        // Update cache
+        await prefs.setInt('rewards_total_points', data.totalPoints);
+      }
+    } catch (e) {
+      debugPrint('Failed to load family points: $e');
+    }
+  }
+
+  /// Listen to realtime points updates
+  void _listenToPointsUpdates() {
+    _rewardsSubscription = _rewardsService.dataStream.listen((data) async {
+      if (mounted) {
+        setState(() {
+          _familyPoints = data.totalPoints;
+        });
+        // Update cache for instant display next time
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('rewards_total_points', data.totalPoints);
+      }
+    });
+    
+    // Also listen to socket for realtime updates
+    _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned.listen((data) async {
+      if (mounted) {
+        setState(() {
+          _familyPoints = data.newTotalPoints;
+        });
+        // Update cache for instant display next time
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('rewards_total_points', data.newTotalPoints);
+      }
+    });
   }
 
   @override
@@ -181,7 +248,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     await showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) {
         // Start auto-logout timer
         autoLogoutTimer = Timer(const Duration(seconds: 3), () {
@@ -213,8 +280,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.1),
-                        AppColors.secondary.withOpacity(0.1),
+                        AppColors.primary.withValues(alpha: 0.1),
+                        AppColors.secondary.withValues(alpha: 0.1),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -304,6 +371,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
+      
+      // Clear security cache so unlock screen doesn't show on next login
+      await BiometricService().clearSecurityCache();
+      debugPrint('✅ Security cache cleared');
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -466,6 +537,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     try {
       await _tokenStorage.clearTokens();
       await PendingVerificationHelper.clear();
+      await BiometricService().clearSecurityCache();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -520,7 +592,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     final ownerName = request.ownerName;
     final confirmed = await showDialog<bool>(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         elevation: 16,
@@ -541,8 +613,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFFFEBC11).withOpacity(0.2),
-                      const Color(0xFFFF9500).withOpacity(0.2),
+                      const Color(0xFFFEBC11).withValues(alpha: 0.2),
+                      const Color(0xFFFF9500).withValues(alpha: 0.2),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -588,8 +660,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.secondary.withOpacity(0.2),
-                            AppColors.primary.withOpacity(0.2),
+                            AppColors.secondary.withValues(alpha: 0.2),
+                            AppColors.primary.withValues(alpha: 0.2),
                           ],
                         ),
                         shape: BoxShape.circle,
@@ -737,7 +809,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
           shape: RoundedRectangleBorder(
@@ -761,8 +833,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.15),
-                        AppColors.secondary.withOpacity(0.15),
+                        AppColors.primary.withValues(alpha: 0.15),
+                        AppColors.secondary.withValues(alpha: 0.15),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -890,21 +962,19 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                                       codeController.text,
                                     );
 
-                                    if (mounted) {
-                                      Navigator.pop(dialogContext);
-                                      _showRemovedFromFamilyDialog();
-                                    }
+                                    if (!dialogContext.mounted) return;
+                                    Navigator.pop(dialogContext);
+                                    _showRemovedFromFamilyDialog();
                                   } catch (e) {
                                     setDialogState(() => isVerifying = false);
-                                    if (mounted) {
-                                      AppToast.error(
-                                        dialogContext,
-                                        e.toString().replaceAll(
-                                              'Exception: ',
-                                              '',
-                                            ),
-                                      );
-                                    }
+                                    if (!dialogContext.mounted) return;
+                                    AppToast.error(
+                                      dialogContext,
+                                      e.toString().replaceAll(
+                                            'Exception: ',
+                                            '',
+                                          ),
+                                    );
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
@@ -950,7 +1020,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         elevation: 16,
@@ -971,8 +1041,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.green.withOpacity(0.15),
-                      Colors.teal.withOpacity(0.15),
+                      Colors.green.withValues(alpha: 0.15),
+                      Colors.teal.withValues(alpha: 0.15),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1046,23 +1116,16 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   void _onNavBarTap(int index) {
+    if (index == 1) {
+      // Scan screen - navigate to it
+      _openScanScreen();
+      return;
+    }
+    
+    // For home (0) and rewards (2), just switch the view
     setState(() {
       _currentNavIndex = index;
     });
-
-    switch (index) {
-      case 0:
-        break;
-      case 1:
-        _openScanScreen();
-        break;
-      case 2:
-        AppToast.comingSoon(
-          context,
-          AppLocalizations.of(context)!.rewardScreenComingSoon,
-        );
-        break;
-    }
   }
 
   void _openScanScreen() async {
@@ -1135,6 +1198,118 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     ];
   }
 
+  Widget _buildHomeContent() {
+    return Stack(
+      children: [
+        // Scrollable content - behind everything
+        Positioned.fill(
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Space for the fixed header
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.32,
+                ),
+
+                // Pending removal banner (if any)
+                if (_hasPendingRemovalFromOwner) ...[
+                  _buildPendingRemovalBanner(context),
+                  const SizedBox(height: 16),
+                ],
+
+                // Next Withdrawal Card
+                _buildNextWithdrawalCard(context),
+
+                const SizedBox(height: 24),
+
+                // Family Members Section (view only)
+                _buildFamilyMembersSection(context),
+
+                const SizedBox(height: 24),
+
+                // Recent Activities Section
+                _buildRecentActivitiesSection(context),
+
+                // Bottom padding for nav bar
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+        ),
+
+        // Fixed Header on top - doesn't move
+        // Member only sees TopUp and Statement (no Withdraw)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: HomeHeaderWidget(
+            points: _familyPoints,
+            onTopUp: () {},
+            onStatement: () {},
+            showWithdraw: false, // Hide withdraw for members
+            onNotification: () => _handleNotificationTap(context),
+            notificationCount: _notificationCount,
+            topUpKey: _topUpKey,
+            statementKey: _statementKey,
+            pointsKey: _pointsKey,
+            notificationKey: _notificationKey,
+          ),
+        ),
+
+        // Drawer handle - positioned at top (RTL aware)
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 60,
+          left: Directionality.of(context) == TextDirection.rtl ? null : 0,
+          right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
+          child: GestureDetector(
+            key: _sidebarKey,
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: Container(
+              width: 24,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.only(
+                  topRight: Directionality.of(context) == TextDirection.rtl
+                      ? Radius.zero
+                      : const Radius.circular(24),
+                  bottomRight: Directionality.of(context) == TextDirection.rtl
+                      ? Radius.zero
+                      : const Radius.circular(24),
+                  topLeft: Directionality.of(context) == TextDirection.rtl
+                      ? const Radius.circular(24)
+                      : Radius.zero,
+                  bottomLeft: Directionality.of(context) == TextDirection.rtl
+                      ? const Radius.circular(24)
+                      : Radius.zero,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: Directionality.of(context) == TextDirection.rtl
+                        ? const Offset(-2, 0)
+                        : const Offset(2, 0),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.chevron_left
+                    : Icons.chevron_right,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildNextWithdrawalCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1142,7 +1317,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFEE3764).withOpacity(0.05),
+          color: const Color(0xFFEE3764).withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(
@@ -1151,7 +1326,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFEE3764).withOpacity(0.1),
+                color: const Color(0xFFEE3764).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Center(
@@ -1243,7 +1418,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.1),
+                    color: AppColors.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1286,7 +1461,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1321,7 +1496,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1329,14 +1504,20 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ..._familyMembers.take(5).map(
-                        (member) => Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: _buildFamilyMemberAvatar(member),
-                        ),
-                      ),
-                ],
+                children: () {
+                  // Sort members: owner first, then others
+                  final sortedMembers = [..._familyMembers]..sort((a, b) {
+                    if (a.isOwner && !b.isOwner) return -1;
+                    if (!a.isOwner && b.isOwner) return 1;
+                    return 0;
+                  });
+                  return sortedMembers.take(5).map(
+                    (member) => Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: _buildFamilyMemberAvatar(member),
+                    ),
+                  ).toList();
+                }(),
               ),
             ),
         ],
@@ -1367,17 +1548,17 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   gradient: LinearGradient(
                     colors: hasPendingRemoval
                         ? [
-                            AppColors.primary.withOpacity(0.2),
-                            AppColors.primary.withOpacity(0.3),
+                            AppColors.primary.withValues(alpha: 0.2),
+                            AppColors.primary.withValues(alpha: 0.3),
                           ]
                         : isOwner
                             ? [
-                                const Color(0xFFFEBC11).withOpacity(0.2),
-                                const Color(0xFFFF9500).withOpacity(0.2),
+                                AppColors.secondary.withValues(alpha: 0.15),
+                                AppColors.secondary.withValues(alpha: 0.25),
                               ]
                             : [
-                                AppColors.secondary.withOpacity(0.1),
-                                AppColors.primary.withOpacity(0.1),
+                                AppColors.secondary.withValues(alpha: 0.1),
+                                AppColors.primary.withValues(alpha: 0.1),
                               ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1386,8 +1567,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     color: hasPendingRemoval
                         ? AppColors.primary
                         : isOwner
-                            ? const Color(0xFFFEBC11)
-                            : AppColors.secondary.withOpacity(0.3),
+                            ? AppColors.secondary
+                            : AppColors.secondary.withValues(alpha: 0.3),
                     width: hasPendingRemoval || isOwner ? 3 : 2,
                   ),
                 ),
@@ -1398,7 +1579,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                       color: hasPendingRemoval
                           ? AppColors.primary
                           : isOwner
-                              ? const Color(0xFFFF9500)
+                              ? AppColors.secondary
                               : AppColors.secondary,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -1406,7 +1587,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   ),
                 ),
               ),
-              // Crown badge for owner or warning for pending removal
+              // Star badge for owner or warning for pending removal
               Positioned(
                 right: 0,
                 top: 0,
@@ -1417,7 +1598,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     color: hasPendingRemoval
                         ? AppColors.primary
                         : isOwner
-                            ? const Color(0xFFFEBC11)
+                            ? AppColors.secondary
                             : Colors.transparent,
                     shape: BoxShape.circle,
                     border: (hasPendingRemoval || isOwner)
@@ -1426,7 +1607,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     boxShadow: (hasPendingRemoval || isOwner)
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
+                              color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -1441,9 +1622,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                             size: 14,
                           )
                         : isOwner
-                            ? const Text(
-                                '👑',
-                                style: TextStyle(fontSize: 10),
+                            ? const Icon(
+                                Icons.star_rounded,
+                                color: Colors.white,
+                                size: 14,
                               )
                             : null,
                   ),
@@ -1518,15 +1700,15 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.primary.withOpacity(0.1),
-                AppColors.primary.withOpacity(0.05),
+                AppColors.primary.withValues(alpha: 0.1),
+                AppColors.primary.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -1540,8 +1722,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primary.withOpacity(0.2),
-                      AppColors.primary.withOpacity(0.3),
+                      AppColors.primary.withValues(alpha: 0.2),
+                      AppColors.primary.withValues(alpha: 0.3),
                     ],
                   ),
                   border: Border.all(
@@ -1636,7 +1818,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -1721,121 +1903,13 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               Navigator.pop(context);
             },
           ),
-          body: Stack(
+          body: IndexedStack(
+            index: _currentNavIndex == 2 ? 1 : 0,
             children: [
-              // Scrollable content - behind everything
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Space for the fixed header
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.32,
-                      ),
-
-                      // Pending removal banner (if any)
-                      if (_hasPendingRemovalFromOwner) ...[
-                        _buildPendingRemovalBanner(context),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Next Withdrawal Card
-                      _buildNextWithdrawalCard(context),
-
-                      const SizedBox(height: 24),
-
-                      // Family Members Section (view only)
-                      _buildFamilyMembersSection(context),
-
-                      const SizedBox(height: 24),
-
-                      // Recent Activities Section
-                      _buildRecentActivitiesSection(context),
-
-                      // Bottom padding for nav bar
-                      const SizedBox(height: 100),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Fixed Header on top - doesn't move
-              // Member only sees TopUp and Statement (no Withdraw)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: HomeHeaderWidget(
-                  onTopUp: () {},
-                  onStatement: () {},
-                  showWithdraw: false, // Hide withdraw for members
-                  onNotification: () => _handleNotificationTap(context),
-                  notificationCount: _notificationCount,
-                  topUpKey: _topUpKey,
-                  statementKey: _statementKey,
-                  pointsKey: _pointsKey,
-                  notificationKey: _notificationKey,
-                ),
-              ),
-
-              // Drawer handle - positioned at top (RTL aware)
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 60,
-                left: Directionality.of(context) == TextDirection.rtl
-                    ? null
-                    : 0,
-                right: Directionality.of(context) == TextDirection.rtl
-                    ? 0
-                    : null,
-                child: GestureDetector(
-                  key: _sidebarKey,
-                  onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                  child: Container(
-                    width: 24,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.only(
-                        topRight:
-                            Directionality.of(context) == TextDirection.rtl
-                                ? Radius.zero
-                                : const Radius.circular(24),
-                        bottomRight:
-                            Directionality.of(context) == TextDirection.rtl
-                                ? Radius.zero
-                                : const Radius.circular(24),
-                        topLeft:
-                            Directionality.of(context) == TextDirection.rtl
-                                ? const Radius.circular(24)
-                                : Radius.zero,
-                        bottomLeft:
-                            Directionality.of(context) == TextDirection.rtl
-                                ? const Radius.circular(24)
-                                : Radius.zero,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.secondary.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset:
-                              Directionality.of(context) == TextDirection.rtl
-                                  ? const Offset(-2, 0)
-                                  : const Offset(2, 0),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Directionality.of(context) == TextDirection.rtl
-                          ? Icons.chevron_left
-                          : Icons.chevron_right,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ),
-              ),
+              // Home content (index 0)
+              _buildHomeContent(),
+              // Rewards content (index 2 maps to 1 here)
+              const RewardsContent(),
             ],
           ),
           bottomNavigationBar: CustomBottomNavBar(

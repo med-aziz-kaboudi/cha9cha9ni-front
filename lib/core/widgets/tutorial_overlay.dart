@@ -168,7 +168,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                 child: CustomPaint(
                   painter: _OverlayPainter(
                     targetRect: _targetRect,
-                    overlayColor: Colors.black.withOpacity(0.8),
+                    overlayColor: Colors.black.withValues(alpha: 0.8),
                   ),
                 ),
               ),
@@ -192,7 +192,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.secondary.withOpacity(0.4),
+                          color: AppColors.secondary.withValues(alpha: 0.4),
                           blurRadius: 15,
                           spreadRadius: 3,
                         ),
@@ -219,10 +219,10 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
@@ -271,8 +271,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                         color: index == _currentStep
                             ? AppColors.secondary
                             : index < _currentStep
-                                ? AppColors.secondary.withOpacity(0.6)
-                                : Colors.white.withOpacity(0.35),
+                                ? AppColors.secondary.withValues(alpha: 0.6)
+                                : Colors.white.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
@@ -333,13 +333,13 @@ class _TutorialOverlayState extends State<TutorialOverlay>
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.secondary.withOpacity(0.15),
+                  color: AppColors.secondary.withValues(alpha: 0.15),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                   spreadRadius: 0,
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 ),
@@ -408,7 +408,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                                 width: 44,
                                 height: 44,
                                 decoration: BoxDecoration(
-                                  color: AppColors.secondary.withOpacity(0.12),
+                                  color: AppColors.secondary.withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -427,7 +427,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.secondary.withOpacity(0.1),
+                              color: AppColors.secondary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
@@ -454,7 +454,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withOpacity(0.3),
+                                    color: AppColors.primary.withValues(alpha: 0.3),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),

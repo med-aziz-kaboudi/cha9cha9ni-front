@@ -132,7 +132,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -173,8 +173,8 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.secondary.withOpacity(0.1),
-                              AppColors.secondary.withOpacity(0.05),
+                              AppColors.secondary.withValues(alpha: 0.1),
+                              AppColors.secondary.withValues(alpha: 0.05),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -225,7 +225,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 20,
                               offset: const Offset(0, 4),
                             ),
@@ -252,7 +252,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                                   border: Border.all(
                                     color: _error != null
                                         ? AppColors.primary
-                                        : Colors.grey.withOpacity(0.2),
+                                        : Colors.grey.withValues(alpha: 0.2),
                                     width: _error != null ? 2 : 1,
                                   ),
                                 ),
@@ -331,7 +331,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary.withOpacity(0.1),
+                          color: AppColors.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -369,7 +369,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen>
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),

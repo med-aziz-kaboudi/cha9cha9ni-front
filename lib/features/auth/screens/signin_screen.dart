@@ -702,7 +702,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
                           TextSpan(
                             text: AppLocalizations.of(context)!.termOfUse,
                             style: AppTextStyles.bodyBold.copyWith(
-                              color: AppColors.secondary.withOpacity(0.7),
+                              color: AppColors.secondary.withValues(alpha: 0.7),
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(
@@ -719,7 +719,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
                           TextSpan(
                             text: AppLocalizations.of(context)!.privacyPolicy,
                             style: AppTextStyles.bodyBold.copyWith(
-                              color: AppColors.secondary.withOpacity(0.7),
+                              color: AppColors.secondary.withValues(alpha: 0.7),
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(

@@ -383,7 +383,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         color: AppColors.gray,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF683BFC).withOpacity(0.05),
+            color: const Color(0xFF683BFC).withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 8),
           ),
@@ -401,7 +401,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -439,7 +439,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Icon(
               Icons.error_outline_rounded,
               size: 64,
-              color: AppColors.primary.withOpacity(0.5),
+              color: AppColors.primary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -526,7 +526,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.gray.withOpacity(0),
+                    AppColors.gray.withValues(alpha: 0),
                     AppColors.gray,
                   ],
                 ),
@@ -556,7 +556,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               borderRadius: BorderRadius.circular(50),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.secondary.withOpacity(0.3),
+                  color: AppColors.secondary.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -588,7 +588,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 borderRadius: BorderRadius.circular(17),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -704,7 +704,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -766,10 +766,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.05),
+            color: AppColors.primary.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -883,7 +883,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
@@ -944,7 +944,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.05),
+                  color: AppColors.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -1042,7 +1042,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Container(
         height: 46,
         decoration: BoxDecoration(
-          color: isLoading ? AppColors.primary.withOpacity(0.6) : AppColors.primary,
+          color: isLoading ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
@@ -1077,7 +1077,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         height: 46,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: canResend ? AppColors.secondary.withOpacity(0.1) : Colors.grey[100],
+          color: canResend ? AppColors.secondary.withValues(alpha: 0.1) : Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: canResend ? AppColors.secondary : Colors.grey[300]!,
@@ -1195,7 +1195,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         borderRadius: BorderRadius.circular(3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -1222,13 +1222,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             begin: Alignment.centerRight,
             end: Alignment.centerLeft,
             colors: _isSaving 
-                ? [AppColors.primary.withOpacity(0.6), AppColors.primary.withOpacity(0.6)]
+                ? [AppColors.primary.withValues(alpha: 0.6), AppColors.primary.withValues(alpha: 0.6)]
                 : [AppColors.primary, AppColors.primary],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),

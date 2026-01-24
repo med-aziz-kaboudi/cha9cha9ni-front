@@ -5,6 +5,7 @@ import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
+import '../../core/services/biometric_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_toast.dart';
@@ -12,6 +13,7 @@ import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
+import '../rewards/screens/rewards_screen.dart';
 import '../scan/screens/scan_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -102,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (dialogContext) {
         // Start auto-logout timer
         autoLogoutTimer = Timer(const Duration(seconds: 3), () {
@@ -134,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.1),
-                        AppColors.secondary.withOpacity(0.1),
+                        AppColors.primary.withValues(alpha: 0.1),
+                        AppColors.secondary.withValues(alpha: 0.1),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -225,6 +227,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
+      
+      // Clear security cache so unlock screen doesn't show on next login
+      await BiometricService().clearSecurityCache();
+      debugPrint('✅ Security cache cleared');
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -289,6 +295,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // Clear any pending verification
       await PendingVerificationHelper.clear();
+      
+      // Clear security cache so unlock screen doesn't show on next login
+      await BiometricService().clearSecurityCache();
 
       // Sign out from Supabase (if there's a session)
       final session = Supabase.instance.client.auth.currentSession;
@@ -326,12 +335,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         break;
       case 2:
         // Reward - Navigate to rewards screen
-        AppToast.comingSoon(
-          context,
-          AppLocalizations.of(context)!.rewardScreenComingSoon,
-        );
+        _openRewardsScreen();
         break;
     }
+  }
+
+  void _openRewardsScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const RewardsScreen(),
+      ),
+    );
   }
 
   void _openScanScreen() async {

@@ -571,7 +571,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFEE3764),
                         disabledBackgroundColor:
-                            const Color(0xFFEE3764).withOpacity(0.5),
+                            const Color(0xFFEE3764).withValues(alpha: 0.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
