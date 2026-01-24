@@ -46,13 +46,14 @@ class RewardsService {
     // Listen for points_earned events from the socket
     _socketSubscription?.cancel();
     _socketSubscription = _socketService.onPointsEarned.listen((data) {
-      debugPrint('🎁 RewardsService: Points earned - ${data.pointsEarned} pts from ${data.memberName}');
+      debugPrint('🎁 RewardsService: Points earned - ${data.pointsEarned} pts from ${data.memberName} (source: ${data.source})');
       _handlePointsEarned({
         'earnerId': data.earnerId,
         'memberName': data.memberName,
         'pointsEarned': data.pointsEarned,
         'slotIndex': data.slotIndex,
         'newTotalPoints': data.newTotalPoints,
+        'source': data.source,
       });
     });
   }
@@ -116,8 +117,6 @@ class RewardsService {
 
   /// Handle realtime points update from socket
   void _handlePointsEarned(Map<String, dynamic> data) {
-    if (_currentData == null) return;
-
     final newTotalPoints = data['newTotalPoints'] as int?;
     final memberName = data['memberName'] as String?;
     final pointsEarned = data['pointsEarned'] as int?;
@@ -135,19 +134,39 @@ class RewardsService {
         createdAt: DateTime.now(),
       );
 
-      // Update data
-      final updatedActivities = [newActivity, ..._currentData!.recentActivity];
-      if (updatedActivities.length > 10) {
-        updatedActivities.removeLast();
+      // If we don't have current data, create a minimal version
+      if (_currentData == null) {
+        _currentData = RewardsData(
+          familyId: '',
+          familyName: 'My Family',
+          totalPoints: newTotalPoints,
+          tndValue: newTotalPoints / 10000,
+          memberCount: 1,
+          user: UserRewardsProgress(
+            id: '',
+            adsWatchedToday: 0,
+            remainingAds: 5,
+            claimedSlots: [],
+          ),
+          slots: [],
+          recentActivity: [newActivity],
+        );
+      } else {
+        // Update existing data
+        final updatedActivities = [newActivity, ..._currentData!.recentActivity];
+        if (updatedActivities.length > 10) {
+          updatedActivities.removeLast();
+        }
+
+        _currentData = _currentData!.copyWith(
+          totalPoints: newTotalPoints,
+          tndValue: newTotalPoints / 10000,
+          recentActivity: updatedActivities,
+        );
       }
 
-      _currentData = _currentData!.copyWith(
-        totalPoints: newTotalPoints,
-        tndValue: newTotalPoints / 10000,
-        recentActivity: updatedActivities,
-      );
-
       _dataController.add(_currentData!);
+      debugPrint('📊 RewardsService: Emitted updated data with totalPoints=$newTotalPoints');
     }
   }
 

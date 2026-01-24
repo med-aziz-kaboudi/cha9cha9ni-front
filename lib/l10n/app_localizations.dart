@@ -2746,17 +2746,23 @@ abstract class AppLocalizations {
   /// **'All'**
   String get filterAll;
 
-  /// No description provided for @filterThisWeek.
+  /// No description provided for @filterLast7Days.
   ///
   /// In en, this message translates to:
-  /// **'This Week'**
-  String get filterThisWeek;
+  /// **'Last 7 days'**
+  String get filterLast7Days;
 
-  /// No description provided for @filterThisMonth.
+  /// No description provided for @filterLast30Days.
   ///
   /// In en, this message translates to:
-  /// **'This Month'**
-  String get filterThisMonth;
+  /// **'Last 30 days'**
+  String get filterLast30Days;
+
+  /// No description provided for @filterLast3Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 months'**
+  String get filterLast3Months;
 
   /// No description provided for @filterAllTypes.
   ///

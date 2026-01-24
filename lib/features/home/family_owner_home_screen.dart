@@ -18,6 +18,7 @@ import '../../core/widgets/custom_drawer.dart';
 import '../../core/widgets/tutorial_overlay.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
+import '../activity/activity_service.dart';
 import '../activity/widgets/recent_activities_widget.dart';
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
@@ -404,6 +405,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       await BiometricService().clearSecurityCache();
       debugPrint('✅ Security cache cleared');
 
+      // Clear activity cache
+      await ActivityService().clearCache();
+      debugPrint('✅ Activity cache cleared');
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
@@ -599,6 +604,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       await _tokenStorage.clearTokens();
       await PendingVerificationHelper.clear();
       await BiometricService().clearSecurityCache();
+      await ActivityService().clearCache();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {

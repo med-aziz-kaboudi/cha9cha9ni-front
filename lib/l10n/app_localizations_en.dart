@@ -1460,10 +1460,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAll => 'All';
 
   @override
-  String get filterThisWeek => 'This Week';
+  String get filterLast7Days => 'Last 7 days';
 
   @override
-  String get filterThisMonth => 'This Month';
+  String get filterLast30Days => 'Last 30 days';
+
+  @override
+  String get filterLast3Months => 'Last 3 months';
 
   @override
   String get filterAllTypes => 'All Types';

@@ -19,8 +19,20 @@ class ApiException implements Exception {
     String message = 'An error occurred';
 
     if (data is Map<String, dynamic>) {
-      message =
-          data['message'] as String? ?? data['error'] as String? ?? message;
+      // Handle message field - can be String or List<dynamic> (validation errors)
+      final messageField = data['message'];
+      if (messageField is String) {
+        message = messageField;
+      } else if (messageField is List) {
+        // Join validation errors into a single message
+        message = messageField.map((e) => e.toString()).join('. ');
+      } else {
+        // Fallback to error field
+        final errorField = data['error'];
+        if (errorField is String) {
+          message = errorField;
+        }
+      }
     } else if (data is String) {
       message = data;
     }

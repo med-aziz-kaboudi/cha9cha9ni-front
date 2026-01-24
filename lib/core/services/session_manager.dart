@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'socket_service.dart';
+import '../../features/rewards/rewards_service.dart';
+import '../../features/activity/activity_service.dart';
 
 /// Singleton service to manage session state and notify when session expires
 /// This is triggered by:
@@ -39,6 +41,12 @@ class SessionManager {
   void initializeSocket(String accessToken) {
     final socketService = SocketService();
     socketService.connect(accessToken);
+
+    // Initialize RewardsService to listen for points_earned events
+    RewardsService().initialize();
+
+    // Initialize ActivityService to receive real-time activity updates
+    ActivityService().initialize();
 
     // Listen for force logout events from WebSocket
     _forceLogoutSubscription?.cancel();

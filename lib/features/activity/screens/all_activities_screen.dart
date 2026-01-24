@@ -8,7 +8,7 @@ import '../../rewards/rewards_model.dart';
 import '../activity_service.dart';
 
 /// Filter options for activities
-enum ActivityTimeFilter { all, today, thisWeek, thisMonth }
+enum ActivityTimeFilter { all, today, yesterday, last7Days, last30Days, last3Months }
 
 /// Screen that displays all family activities with filters
 class AllActivitiesScreen extends StatefulWidget {
@@ -85,18 +85,36 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
           return activityDate == today;
         }).toList();
         break;
-      case ActivityTimeFilter.thisWeek:
-        final weekStart = today.subtract(Duration(days: today.weekday - 1));
+      case ActivityTimeFilter.yesterday:
+        final yesterday = today.subtract(const Duration(days: 1));
         result = result.where((a) {
-          return a.createdAt.isAfter(weekStart) ||
-              a.createdAt.isAtSameMomentAs(weekStart);
+          final activityDate = DateTime(
+            a.createdAt.year,
+            a.createdAt.month,
+            a.createdAt.day,
+          );
+          return activityDate == yesterday;
         }).toList();
         break;
-      case ActivityTimeFilter.thisMonth:
-        final monthStart = DateTime(now.year, now.month, 1);
+      case ActivityTimeFilter.last7Days:
+        final weekAgo = today.subtract(const Duration(days: 7));
         result = result.where((a) {
-          return a.createdAt.isAfter(monthStart) ||
-              a.createdAt.isAtSameMomentAs(monthStart);
+          return a.createdAt.isAfter(weekAgo) ||
+              a.createdAt.isAtSameMomentAs(weekAgo);
+        }).toList();
+        break;
+      case ActivityTimeFilter.last30Days:
+        final monthAgo = today.subtract(const Duration(days: 30));
+        result = result.where((a) {
+          return a.createdAt.isAfter(monthAgo) ||
+              a.createdAt.isAtSameMomentAs(monthAgo);
+        }).toList();
+        break;
+      case ActivityTimeFilter.last3Months:
+        final threeMonthsAgo = today.subtract(const Duration(days: 90));
+        result = result.where((a) {
+          return a.createdAt.isAfter(threeMonthsAgo) ||
+              a.createdAt.isAtSameMomentAs(threeMonthsAgo);
         }).toList();
         break;
       case ActivityTimeFilter.all:
@@ -117,10 +135,14 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         return l10n.filterAll;
       case ActivityTimeFilter.today:
         return l10n.today;
-      case ActivityTimeFilter.thisWeek:
-        return l10n.filterThisWeek;
-      case ActivityTimeFilter.thisMonth:
-        return l10n.filterThisMonth;
+      case ActivityTimeFilter.yesterday:
+        return l10n.yesterday;
+      case ActivityTimeFilter.last7Days:
+        return l10n.filterLast7Days;
+      case ActivityTimeFilter.last30Days:
+        return l10n.filterLast30Days;
+      case ActivityTimeFilter.last3Months:
+        return l10n.filterLast3Months;
     }
   }
 
@@ -345,11 +367,9 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                   runSpacing: 8,
                   children: [
                     _buildTypeChip(null, l10n, setModalState),
-                    ...ActivityType.values
-                        .where((t) => t != ActivityType.unknown)
-                        .map(
-                          (type) => _buildTypeChip(type, l10n, setModalState),
-                        ),
+                    _buildTypeChip(ActivityType.adWatched, l10n, setModalState),
+                    _buildTypeChip(ActivityType.dailyCheckIn, l10n, setModalState),
+                    _buildTypeChip(ActivityType.topUp, l10n, setModalState),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -551,7 +571,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
             child: IconButton(
               icon: Icon(
                 isRTL ? Icons.arrow_forward_ios : Icons.arrow_back_ios_new,
-                color: AppColors.dark,
+                color: AppColors.secondary,
                 size: 20,
               ),
               onPressed: () => Navigator.of(context).pop(),
@@ -588,7 +608,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
             child: IconButton(
               icon: Icon(
                 Icons.tune_rounded,
-                color: hasActiveFilters ? Colors.white : AppColors.dark,
+                color: hasActiveFilters ? Colors.white : AppColors.secondary,
                 size: 22,
               ),
               onPressed: _showFilterBottomSheet,

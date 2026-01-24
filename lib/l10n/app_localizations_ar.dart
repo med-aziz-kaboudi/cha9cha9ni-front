@@ -1457,10 +1457,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get filterAll => 'الكل';
 
   @override
-  String get filterThisWeek => 'هذا الأسبوع';
+  String get filterLast7Days => 'آخر 7 أيام';
 
   @override
-  String get filterThisMonth => 'هذا الشهر';
+  String get filterLast30Days => 'آخر 30 يوم';
+
+  @override
+  String get filterLast3Months => 'آخر 3 أشهر';
 
   @override
   String get filterAllTypes => 'جميع الأنواع';

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/services/socket_service.dart';
 import '../rewards/rewards_model.dart';
 import '../rewards/rewards_service.dart';
 
@@ -13,12 +12,10 @@ class ActivityService {
   ActivityService._internal();
 
   final _rewardsService = RewardsService();
-  final _socketService = SocketService();
 
   List<RewardActivity> _activities = [];
   final _activitiesController =
       StreamController<List<RewardActivity>>.broadcast();
-  StreamSubscription<PointsEarnedData>? _socketSubscription;
   StreamSubscription<RewardsData>? _rewardsSubscription;
   bool _initialized = false;
   bool _isLoading = false;
@@ -44,16 +41,11 @@ class ActivityService {
     // Load cached data first for instant display
     await _loadFromCache();
 
-    // Listen to rewards service for updates
+    // Listen to rewards service for updates (it handles socket events internally)
     _rewardsSubscription = _rewardsService.dataStream.listen((data) {
       if (data.recentActivity.isNotEmpty) {
         _mergeActivities(data.recentActivity);
       }
-    });
-
-    // Listen directly to socket for immediate real-time updates
-    _socketSubscription = _socketService.onPointsEarned.listen((data) {
-      _handlePointsEarned(data);
     });
 
     // Load initial data if rewards service has it
@@ -144,31 +136,6 @@ class ActivityService {
     _saveToCache();
   }
 
-  /// Handle real-time points earned event
-  void _handlePointsEarned(PointsEarnedData data) {
-    debugPrint('📊 ActivityService: New activity from ${data.memberName}');
-
-    final newActivity = RewardActivity(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      memberName: data.memberName,
-      pointsEarned: data.pointsEarned,
-      slotIndex: data.slotIndex,
-      activityType: ActivityType.fromString(data.source),
-      createdAt: data.timestamp,
-    );
-
-    // Add to the beginning of the list
-    _activities.insert(0, newActivity);
-
-    // Keep only the last 100 activities
-    if (_activities.length > 100) {
-      _activities = _activities.sublist(0, 100);
-    }
-
-    _activitiesController.add(_activities);
-    _saveToCache();
-  }
-
   /// Get the last N activities (for home screen)
   List<RewardActivity> getRecentActivities({int count = 7}) {
     return _activities.take(count).toList();
@@ -213,9 +180,22 @@ class ActivityService {
 
   /// Dispose resources
   void dispose() {
-    _socketSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _activitiesController.close();
     _initialized = false;
+  }
+
+  /// Clear all cached activities (call on logout)
+  Future<void> clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKey);
+      await prefs.remove(_cacheTimestampKey);
+      _activities.clear();
+      _initialized = false;
+      debugPrint('📊 ActivityService: Cache cleared');
+    } catch (e) {
+      debugPrint('📊 ActivityService: Failed to clear cache - $e');
+    }
   }
 }

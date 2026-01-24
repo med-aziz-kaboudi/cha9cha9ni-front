@@ -1483,10 +1483,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAll => 'Tout';
 
   @override
-  String get filterThisWeek => 'Cette semaine';
+  String get filterLast7Days => '7 derniers jours';
 
   @override
-  String get filterThisMonth => 'Ce mois';
+  String get filterLast30Days => '30 derniers jours';
+
+  @override
+  String get filterLast3Months => '3 derniers mois';
 
   @override
   String get filterAllTypes => 'Tous les types';

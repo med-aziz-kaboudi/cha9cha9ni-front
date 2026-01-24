@@ -12,6 +12,7 @@ import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
+import '../activity/activity_service.dart';
 import '../auth/screens/signin_screen.dart';
 import '../rewards/screens/rewards_screen.dart';
 import '../scan/screens/scan_screen.dart';
@@ -232,6 +233,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await BiometricService().clearSecurityCache();
       debugPrint('✅ Security cache cleared');
 
+      // Clear activity cache
+      await ActivityService().clearCache();
+      debugPrint('✅ Activity cache cleared');
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
@@ -298,6 +303,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       
       // Clear security cache so unlock screen doesn't show on next login
       await BiometricService().clearSecurityCache();
+
+      // Clear activity cache
+      await ActivityService().clearCache();
 
       // Sign out from Supabase (if there's a session)
       final session = Supabase.instance.client.auth.currentSession;
