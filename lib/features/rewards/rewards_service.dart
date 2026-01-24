@@ -122,6 +122,7 @@ class RewardsService {
     final memberName = data['memberName'] as String?;
     final pointsEarned = data['pointsEarned'] as int?;
     final slotIndex = data['slotIndex'] as int?;
+    final source = data['source'] as String?;
 
     if (newTotalPoints != null) {
       // Create new activity entry
@@ -130,6 +131,7 @@ class RewardsService {
         memberName: memberName ?? 'Unknown',
         pointsEarned: pointsEarned ?? 0,
         slotIndex: slotIndex ?? 0,
+        activityType: ActivityType.fromString(source),
         createdAt: DateTime.now(),
       );
 

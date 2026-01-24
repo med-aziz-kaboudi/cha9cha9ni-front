@@ -17,6 +17,7 @@ import '../../core/widgets/custom_drawer.dart';
 import '../../core/widgets/tutorial_overlay.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
+import '../activity/widgets/recent_activities_widget.dart';
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../rewards/rewards_service.dart';
@@ -1795,58 +1796,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   Widget _buildRecentActivitiesSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context)?.recentActivities ?? 'Recent Activities',
-            style: const TextStyle(
-              color: Color(0xFF23233F),
-              fontSize: 18,
-              fontFamily: 'DM Sans',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.history_rounded,
-                  color: Colors.grey[300],
-                  size: 48,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  AppLocalizations.of(context)?.noRecentActivities ??
-                      'No recent activities',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 14,
-                    fontFamily: 'DM Sans',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return const RecentActivitiesWidget();
   }
 
   @override

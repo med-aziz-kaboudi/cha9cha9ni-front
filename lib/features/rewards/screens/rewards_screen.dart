@@ -1362,20 +1362,25 @@ class _RewardsContentState extends State<RewardsContent>
   }
 
   String _getRewardImage(int tndValue) {
-    // Free images from Unsplash for each tier
+    // Gift/reward themed images for each tier
     switch (tndValue) {
       case 1:
-        return 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=100&h=100&fit=crop';
+        // Bronze gift box
+        return 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=100&h=100&fit=crop';
       case 5:
-        return 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=100&h=100&fit=crop';
+        // Silver gift with ribbon
+        return 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=100&h=100&fit=crop';
       case 10:
-        return 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=100&h=100&fit=crop';
+        // Gold wrapped gift
+        return 'https://images.unsplash.com/photo-1512909006721-3d6018887383?w=100&h=100&fit=crop';
       case 50:
-        return 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop';
+        // Premium golden gift
+        return 'https://images.unsplash.com/photo-1577998474517-7eeeed4e448a?w=100&h=100&fit=crop';
       case 100:
-        return 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=100&h=100&fit=crop';
+        // Golden trophy cup
+        return 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop';
       default:
-        return 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=100&h=100&fit=crop';
+        return 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=100&h=100&fit=crop';
     }
   }
 

@@ -399,7 +399,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get recentActivities => 'Activités récentes :';
 
   @override
-  String get viewAll => 'Voir tout  >';
+  String get viewAll => 'Voir tout';
 
   @override
   String get googleSignInCancelled => 'Connexion Annulée';
@@ -1431,4 +1431,88 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get rewardsAdFailed =>
       'La pub n\'a pas pu s\'afficher. Veuillez réessayer.';
+
+  @override
+  String get allActivities => 'Toutes les activités';
+
+  @override
+  String get activitiesWillAppearHere =>
+      'Les activités familiales apparaîtront ici quand les membres gagnent des points';
+
+  @override
+  String get today => 'Aujourd\'hui';
+
+  @override
+  String get yesterday => 'Hier';
+
+  @override
+  String activityWatchedAd(String name) {
+    return '$name a regardé une pub';
+  }
+
+  @override
+  String activityDailyCheckIn(String name) {
+    return '$name a réclamé la connexion quotidienne';
+  }
+
+  @override
+  String activityTopUp(String name) {
+    return '$name a rechargé';
+  }
+
+  @override
+  String activityReferral(String name) {
+    return 'Bonus de parrainage de $name';
+  }
+
+  @override
+  String activityEarnedPoints(String name) {
+    return '$name a gagné des points';
+  }
+
+  @override
+  String get filterActivities => 'Filtrer les activités';
+
+  @override
+  String get filterByTime => 'Par période';
+
+  @override
+  String get filterByType => 'Par type d\'activité';
+
+  @override
+  String get filterAll => 'Tout';
+
+  @override
+  String get filterThisWeek => 'Cette semaine';
+
+  @override
+  String get filterThisMonth => 'Ce mois';
+
+  @override
+  String get filterAllTypes => 'Tous les types';
+
+  @override
+  String get filterAds => 'Publicités';
+
+  @override
+  String get filterCheckIn => 'Check-in';
+
+  @override
+  String get filterTopUp => 'Recharge';
+
+  @override
+  String get filterReferral => 'Parrainage';
+
+  @override
+  String get filterOther => 'Autre';
+
+  @override
+  String get applyFilters => 'Appliquer';
+
+  @override
+  String get clearFilters => 'Effacer les filtres';
+
+  @override
+  String get noActivitiesForFilter =>
+      'Aucune activité ne correspond à vos filtres';
 }

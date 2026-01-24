@@ -116,12 +116,70 @@ class RewardSlot {
   }
 }
 
+/// Activity type enum for rewards
+enum ActivityType {
+  adWatched,
+  dailyCheckIn,
+  topUp,
+  referral,
+  unknown;
+
+  static ActivityType fromString(String? source) {
+    switch (source) {
+      case 'ad_watch':
+      case 'ad_watched':
+        return ActivityType.adWatched;
+      case 'daily_checkin':
+      case 'daily_check_in':
+        return ActivityType.dailyCheckIn;
+      case 'topup':
+      case 'top_up':
+        return ActivityType.topUp;
+      case 'referral':
+        return ActivityType.referral;
+      default:
+        return ActivityType.unknown;
+    }
+  }
+
+  String get displayKey {
+    switch (this) {
+      case ActivityType.adWatched:
+        return 'activityWatchedAd';
+      case ActivityType.dailyCheckIn:
+        return 'activityDailyCheckIn';
+      case ActivityType.topUp:
+        return 'activityTopUp';
+      case ActivityType.referral:
+        return 'activityReferral';
+      case ActivityType.unknown:
+        return 'activityEarnedPoints';
+    }
+  }
+
+  String get emoji {
+    switch (this) {
+      case ActivityType.adWatched:
+        return '📺';
+      case ActivityType.dailyCheckIn:
+        return '☀️';
+      case ActivityType.topUp:
+        return '💰';
+      case ActivityType.referral:
+        return '🎁';
+      case ActivityType.unknown:
+        return '⭐';
+    }
+  }
+}
+
 /// Recent reward activity entry
 class RewardActivity {
   final String id;
   final String memberName;
   final int pointsEarned;
   final int slotIndex;
+  final ActivityType activityType;
   final DateTime createdAt;
 
   RewardActivity({
@@ -129,6 +187,7 @@ class RewardActivity {
     required this.memberName,
     required this.pointsEarned,
     required this.slotIndex,
+    required this.activityType,
     required this.createdAt,
   });
 
@@ -138,6 +197,7 @@ class RewardActivity {
       memberName: json['memberName'] ?? 'Unknown',
       pointsEarned: json['pointsEarned'] ?? 0,
       slotIndex: json['slotIndex'] ?? 0,
+      activityType: ActivityType.fromString(json['source'] ?? json['activityType']),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),

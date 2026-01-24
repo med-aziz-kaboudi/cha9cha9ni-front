@@ -162,7 +162,7 @@
   "familyMembers": "Family Members",
   "manage": "Manage >",
   "recentActivities": "Recent activities :",
-  "viewAll": "View all  >",
+  "viewAll": "View all",
   "googleSignInCancelled": "Sign In Cancelled",
   "googleSignInCancelledMessage": "You cancelled the Google sign in. Please try again to continue.",
   "tryAgain": "Try Again",
@@ -662,5 +662,66 @@
   "rewardsCheckInSuccess": "Check-in successful!",
   "rewardsCheckInFailed": "Check-in failed. Please try again.",
   "rewardsClaimFailed": "Failed to claim reward. Please try again.",
-  "rewardsAdFailed": "Ad failed to show. Please try again."
+  "rewardsAdFailed": "Ad failed to show. Please try again.",
+
+  "allActivities": "All Activities",
+  "activitiesWillAppearHere": "Family activities will appear here when members earn points",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "activityWatchedAd": "{name} watched an ad",
+  "@activityWatchedAd": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDailyCheckIn": "{name} claimed daily check-in",
+  "@activityDailyCheckIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTopUp": "{name} topped up",
+  "@activityTopUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityReferral": "{name} referral bonus",
+  "@activityReferral": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityEarnedPoints": "{name} earned points",
+  "@activityEarnedPoints": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "filterActivities": "Filter Activities",
+  "filterByTime": "By Time Period",
+  "filterByType": "By Activity Type",
+  "filterAll": "All",
+  "filterThisWeek": "This Week",
+  "filterThisMonth": "This Month",
+  "filterAllTypes": "All Types",
+  "filterAds": "Ads",
+  "filterCheckIn": "Check-in",
+  "filterTopUp": "Top Up",
+  "filterReferral": "Referral",
+  "filterOther": "Other",
+  "applyFilters": "Apply Filters",
+  "clearFilters": "Clear Filters",
+  "noActivitiesForFilter": "No activities match your filters"
 }

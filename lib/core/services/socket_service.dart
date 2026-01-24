@@ -74,6 +74,8 @@ class PointsEarnedData {
   final int slotIndex;
   final int newTotalPoints;
   final double newTndValue;
+  final String? source; // 'ad_watch' or 'daily_checkin'
+  final int? streakDay; // For daily check-in
   final DateTime timestamp;
 
   PointsEarnedData({
@@ -83,17 +85,21 @@ class PointsEarnedData {
     required this.slotIndex,
     required this.newTotalPoints,
     required this.newTndValue,
+    this.source,
+    this.streakDay,
     required this.timestamp,
   });
 
   factory PointsEarnedData.fromJson(Map<String, dynamic> json) {
     return PointsEarnedData(
-      earnerId: json['earnerId'] ?? '',
+      earnerId: json['earnerId'] ?? json['memberId'] ?? '',
       memberName: json['memberName'] ?? '',
       pointsEarned: json['pointsEarned'] ?? 0,
       slotIndex: json['slotIndex'] ?? 0,
       newTotalPoints: json['newTotalPoints'] ?? 0,
       newTndValue: (json['newTndValue'] ?? 0).toDouble(),
+      source: json['source'],
+      streakDay: json['streakDay'],
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),

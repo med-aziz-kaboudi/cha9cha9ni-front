@@ -148,7 +148,7 @@
   "familyMembers": "Membres de la famille",
   "manage": "Gérer >",
   "recentActivities": "Activités récentes :",
-  "viewAll": "Voir tout  >",
+  "viewAll": "Voir tout",
   "googleSignInCancelled": "Connexion Annulée",
   "googleSignInCancelledMessage": "Vous avez annulé la connexion Google. Veuillez réessayer pour continuer.",
   "tryAgain": "Réessayer",
@@ -647,5 +647,66 @@
   "rewardsCheckInSuccess": "Connexion réussie!",
   "rewardsCheckInFailed": "Échec de la connexion. Veuillez réessayer.",
   "rewardsClaimFailed": "Échec de la réclamation. Veuillez réessayer.",
-  "rewardsAdFailed": "La pub n'a pas pu s'afficher. Veuillez réessayer."
+  "rewardsAdFailed": "La pub n'a pas pu s'afficher. Veuillez réessayer.",
+
+  "allActivities": "Toutes les activités",
+  "activitiesWillAppearHere": "Les activités familiales apparaîtront ici quand les membres gagnent des points",
+  "today": "Aujourd'hui",
+  "yesterday": "Hier",
+  "activityWatchedAd": "{name} a regardé une pub",
+  "@activityWatchedAd": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDailyCheckIn": "{name} a réclamé la connexion quotidienne",
+  "@activityDailyCheckIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTopUp": "{name} a rechargé",
+  "@activityTopUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityReferral": "Bonus de parrainage de {name}",
+  "@activityReferral": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityEarnedPoints": "{name} a gagné des points",
+  "@activityEarnedPoints": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "filterActivities": "Filtrer les activités",
+  "filterByTime": "Par période",
+  "filterByType": "Par type d'activité",
+  "filterAll": "Tout",
+  "filterThisWeek": "Cette semaine",
+  "filterThisMonth": "Ce mois",
+  "filterAllTypes": "Tous les types",
+  "filterAds": "Publicités",
+  "filterCheckIn": "Check-in",
+  "filterTopUp": "Recharge",
+  "filterReferral": "Parrainage",
+  "filterOther": "Autre",
+  "applyFilters": "Appliquer",
+  "clearFilters": "Effacer les filtres",
+  "noActivitiesForFilter": "Aucune activité ne correspond à vos filtres"
 }

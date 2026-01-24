@@ -148,7 +148,7 @@
   "familyMembers": "أفراد العائلة",
   "manage": "إدارة >",
   "recentActivities": "الأنشطة الأخيرة :",
-  "viewAll": "عرض الكل  >",
+  "viewAll": "عرض الكل",
   "googleSignInCancelled": "تم إلغاء تسجيل الدخول",
   "googleSignInCancelledMessage": "لقد ألغيت تسجيل الدخول باستخدام Google. يرجى المحاولة مرة أخرى للمتابعة.",
   "tryAgain": "حاول مرة أخرى",
@@ -647,5 +647,66 @@
   "rewardsCheckInSuccess": "تم تسجيل الدخول بنجاح!",
   "rewardsCheckInFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
   "rewardsClaimFailed": "فشل في الحصول على المكافأة. يرجى المحاولة مرة أخرى.",
-  "rewardsAdFailed": "فشل في عرض الإعلان. يرجى المحاولة مرة أخرى."
+  "rewardsAdFailed": "فشل في عرض الإعلان. يرجى المحاولة مرة أخرى.",
+
+  "allActivities": "جميع الأنشطة",
+  "activitiesWillAppearHere": "ستظهر أنشطة العائلة هنا عندما يكسب الأعضاء نقاط",
+  "today": "اليوم",
+  "yesterday": "أمس",
+  "activityWatchedAd": "{name} شاهد إعلان",
+  "@activityWatchedAd": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityDailyCheckIn": "{name} حصل على مكافأة الدخول اليومي",
+  "@activityDailyCheckIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityTopUp": "{name} قام بالشحن",
+  "@activityTopUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityReferral": "مكافأة إحالة {name}",
+  "@activityReferral": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityEarnedPoints": "{name} كسب نقاط",
+  "@activityEarnedPoints": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "filterActivities": "تصفية الأنشطة",
+  "filterByTime": "حسب الفترة الزمنية",
+  "filterByType": "حسب نوع النشاط",
+  "filterAll": "الكل",
+  "filterThisWeek": "هذا الأسبوع",
+  "filterThisMonth": "هذا الشهر",
+  "filterAllTypes": "جميع الأنواع",
+  "filterAds": "الإعلانات",
+  "filterCheckIn": "تسجيل الدخول اليومي",
+  "filterTopUp": "الشحن",
+  "filterReferral": "الإحالة",
+  "filterOther": "أخرى",
+  "applyFilters": "تطبيق الفلاتر",
+  "clearFilters": "مسح الفلاتر",
+  "noActivitiesForFilter": "لا توجد أنشطة تطابق الفلاتر المحددة"
 }

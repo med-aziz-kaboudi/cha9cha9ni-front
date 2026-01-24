@@ -823,7 +823,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewAll.
   ///
   /// In en, this message translates to:
-  /// **'View all  >'**
+  /// **'View all'**
   String get viewAll;
 
   /// No description provided for @googleSignInCancelled.
@@ -2667,6 +2667,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ad failed to show. Please try again.'**
   String get rewardsAdFailed;
+
+  /// No description provided for @allActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'All Activities'**
+  String get allActivities;
+
+  /// No description provided for @activitiesWillAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Family activities will appear here when members earn points'**
+  String get activitiesWillAppearHere;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @activityWatchedAd.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} watched an ad'**
+  String activityWatchedAd(String name);
+
+  /// No description provided for @activityDailyCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} claimed daily check-in'**
+  String activityDailyCheckIn(String name);
+
+  /// No description provided for @activityTopUp.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} topped up'**
+  String activityTopUp(String name);
+
+  /// No description provided for @activityReferral.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} referral bonus'**
+  String activityReferral(String name);
+
+  /// No description provided for @activityEarnedPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} earned points'**
+  String activityEarnedPoints(String name);
+
+  /// No description provided for @filterActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter Activities'**
+  String get filterActivities;
+
+  /// No description provided for @filterByTime.
+  ///
+  /// In en, this message translates to:
+  /// **'By Time Period'**
+  String get filterByTime;
+
+  /// No description provided for @filterByType.
+  ///
+  /// In en, this message translates to:
+  /// **'By Activity Type'**
+  String get filterByType;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @filterThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get filterThisWeek;
+
+  /// No description provided for @filterThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This Month'**
+  String get filterThisMonth;
+
+  /// No description provided for @filterAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All Types'**
+  String get filterAllTypes;
+
+  /// No description provided for @filterAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads'**
+  String get filterAds;
+
+  /// No description provided for @filterCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in'**
+  String get filterCheckIn;
+
+  /// No description provided for @filterTopUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up'**
+  String get filterTopUp;
+
+  /// No description provided for @filterReferral.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral'**
+  String get filterReferral;
+
+  /// No description provided for @filterOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get filterOther;
+
+  /// No description provided for @applyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Filters'**
+  String get applyFilters;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get clearFilters;
+
+  /// No description provided for @noActivitiesForFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities match your filters'**
+  String get noActivitiesForFilter;
 }
 
 class _AppLocalizationsDelegate

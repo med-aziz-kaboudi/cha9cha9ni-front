@@ -393,7 +393,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recentActivities => 'الأنشطة الأخيرة :';
 
   @override
-  String get viewAll => 'عرض الكل  >';
+  String get viewAll => 'عرض الكل';
 
   @override
   String get googleSignInCancelled => 'تم إلغاء تسجيل الدخول';
@@ -1405,4 +1405,87 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rewardsAdFailed => 'فشل في عرض الإعلان. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get allActivities => 'جميع الأنشطة';
+
+  @override
+  String get activitiesWillAppearHere =>
+      'ستظهر أنشطة العائلة هنا عندما يكسب الأعضاء نقاط';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get yesterday => 'أمس';
+
+  @override
+  String activityWatchedAd(String name) {
+    return '$name شاهد إعلان';
+  }
+
+  @override
+  String activityDailyCheckIn(String name) {
+    return '$name حصل على مكافأة الدخول اليومي';
+  }
+
+  @override
+  String activityTopUp(String name) {
+    return '$name قام بالشحن';
+  }
+
+  @override
+  String activityReferral(String name) {
+    return 'مكافأة إحالة $name';
+  }
+
+  @override
+  String activityEarnedPoints(String name) {
+    return '$name كسب نقاط';
+  }
+
+  @override
+  String get filterActivities => 'تصفية الأنشطة';
+
+  @override
+  String get filterByTime => 'حسب الفترة الزمنية';
+
+  @override
+  String get filterByType => 'حسب نوع النشاط';
+
+  @override
+  String get filterAll => 'الكل';
+
+  @override
+  String get filterThisWeek => 'هذا الأسبوع';
+
+  @override
+  String get filterThisMonth => 'هذا الشهر';
+
+  @override
+  String get filterAllTypes => 'جميع الأنواع';
+
+  @override
+  String get filterAds => 'الإعلانات';
+
+  @override
+  String get filterCheckIn => 'تسجيل الدخول اليومي';
+
+  @override
+  String get filterTopUp => 'الشحن';
+
+  @override
+  String get filterReferral => 'الإحالة';
+
+  @override
+  String get filterOther => 'أخرى';
+
+  @override
+  String get applyFilters => 'تطبيق الفلاتر';
+
+  @override
+  String get clearFilters => 'مسح الفلاتر';
+
+  @override
+  String get noActivitiesForFilter => 'لا توجد أنشطة تطابق الفلاتر المحددة';
 }
