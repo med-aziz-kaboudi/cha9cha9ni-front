@@ -11,6 +11,8 @@ enum SocketEvent {
   forceLogout,
   familyMemberJoined,
   pointsEarned,
+  adsStatsUpdated,
+  aidSelected,
   error,
 }
 
@@ -107,6 +109,73 @@ class PointsEarnedData {
   }
 }
 
+/// Data class for aid selected event (pack/aid selection)
+class AidSelectedData {
+  final String aidId;
+  final String aidName;
+  final String aidDisplayName;
+  final int maxWithdrawal;
+  final String? windowStart;
+  final String? windowEnd;
+  final DateTime timestamp;
+
+  AidSelectedData({
+    required this.aidId,
+    required this.aidName,
+    required this.aidDisplayName,
+    required this.maxWithdrawal,
+    this.windowStart,
+    this.windowEnd,
+    required this.timestamp,
+  });
+
+  factory AidSelectedData.fromJson(Map<String, dynamic> json) {
+    return AidSelectedData(
+      aidId: json['aidId'] ?? '',
+      aidName: json['aidName'] ?? '',
+      aidDisplayName: json['aidDisplayName'] ?? '',
+      maxWithdrawal: json['maxWithdrawal'] ?? 0,
+      windowStart: json['windowStart'],
+      windowEnd: json['windowEnd'],
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
+/// Data class for ads stats update event
+class AdsStatsUpdatedData {
+  final int familyTotalAdsToday;
+  final int familyMaxAdsToday;
+  final int memberCount;
+  final String? userId; // The user who triggered the update
+  final int? userAdsToday; // That user's personal ads count
+  final DateTime timestamp;
+
+  AdsStatsUpdatedData({
+    required this.familyTotalAdsToday,
+    required this.familyMaxAdsToday,
+    required this.memberCount,
+    this.userId,
+    this.userAdsToday,
+    required this.timestamp,
+  });
+
+  factory AdsStatsUpdatedData.fromJson(Map<String, dynamic> json) {
+    return AdsStatsUpdatedData(
+      familyTotalAdsToday: json['familyTotalAdsToday'] ?? 0,
+      familyMaxAdsToday: json['familyMaxAdsToday'] ?? 25,
+      memberCount: json['memberCount'] ?? 1,
+      userId: json['userId'],
+      userAdsToday: json['userAdsToday'],
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -124,6 +193,8 @@ class SocketService {
   final _forceLogoutController = StreamController<ForceLogoutData>.broadcast();
   final _familyMemberJoinedController = StreamController<FamilyMemberJoinedData>.broadcast();
   final _pointsEarnedController = StreamController<PointsEarnedData>.broadcast();
+  final _adsStatsUpdatedController = StreamController<AdsStatsUpdatedData>.broadcast();
+  final _aidSelectedController = StreamController<AidSelectedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -136,6 +207,12 @@ class SocketService {
 
   /// Stream of points earned events - listen to this to update rewards UI
   Stream<PointsEarnedData> get onPointsEarned => _pointsEarnedController.stream;
+
+  /// Stream of ads stats updated events - listen to this to update pack UI
+  Stream<AdsStatsUpdatedData> get onAdsStatsUpdated => _adsStatsUpdatedController.stream;
+
+  /// Stream of aid selected events - listen to this to update home screen
+  Stream<AidSelectedData> get onAidSelected => _aidSelectedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -243,6 +320,26 @@ class SocketService {
       }
     });
 
+    // Listen for ads stats updated event (pack/ads tracking)
+    _socket!.on('ads_stats_updated', (data) {
+      debugPrint('📊 Socket: Received ads_stats_updated event');
+      if (data is Map<String, dynamic>) {
+        final statsData = AdsStatsUpdatedData.fromJson(data);
+        _adsStatsUpdatedController.add(statsData);
+        _eventController.add(SocketEvent.adsStatsUpdated);
+      }
+    });
+
+    // Listen for aid selected event (real-time aid selection)
+    _socket!.on('aid_selected', (data) {
+      debugPrint('🎊 Socket: Received aid_selected event');
+      if (data is Map<String, dynamic>) {
+        final aidData = AidSelectedData.fromJson(data);
+        _aidSelectedController.add(aidData);
+        _eventController.add(SocketEvent.aidSelected);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -291,5 +388,7 @@ class SocketService {
     _forceLogoutController.close();
     _familyMemberJoinedController.close();
     _pointsEarnedController.close();
+    _adsStatsUpdatedController.close();
+    _aidSelectedController.close();
   }
 }

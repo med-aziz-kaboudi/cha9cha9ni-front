@@ -19,6 +19,7 @@ import 'features/auth/services/auth_api_service.dart';
 import 'features/auth/models/auth_request_models.dart';
 import 'features/settings/screens/app_unlock_screen.dart';
 import 'features/activity/activity_service.dart';
+import 'features/pack/pack_service.dart';
 import 'core/screens/offline_screen.dart';
 import 'core/services/language_service.dart';
 import 'core/services/token_storage_service.dart';
@@ -294,6 +295,8 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     await _tokenStorage.clearAll();
     await _biometricService.clearSecurityCache();
     await ActivityService().clearCache();
+    await PackService().clearCache();
+    PackService().reset();
     await Supabase.instance.client.auth.signOut();
     SessionManager().resetHandlingFlag();
     if (mounted) {
@@ -659,6 +662,7 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
         await _tokenStorage.saveTokens(
           accessToken: response.accessToken!,
           sessionToken: response.sessionToken!,
+          userId: response.user?.id,
         );
         
         // Initialize WebSocket for real-time session monitoring

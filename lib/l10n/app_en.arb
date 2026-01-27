@@ -724,5 +724,197 @@
   "filterOther": "Other",
   "applyFilters": "Apply Filters",
   "clearFilters": "Clear Filters",
-  "noActivitiesForFilter": "No activities match your filters"
+  "noActivitiesForFilter": "No activities match your filters",
+
+  "yourCurrentPack": "Your Current Pack",
+  "usageAndLimits": "Usage and Limits",
+  "familyMembers": "Family Members",
+  "ownerPlusMembers": "Owner + {count} members",
+  "@ownerPlusMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawAccess": "Withdraw Access",
+  "ownerOnlyCanWithdraw": "Owner only can withdraw",
+  "youAreOwner": "You are the family owner",
+  "onlyOwnerCanWithdrawDescription": "Only the family owner can withdraw funds",
+  "kycVerified": "Identity verified",
+  "kycRequired": "KYC verification required to withdraw",
+  "verifyIdentity": "Verify Identity",
+  "selectedAid": "Selected Aid",
+  "selectAnAid": "Tap to select an aid",
+  "maxDT": "Max {amount} DT",
+  "@maxDT": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "adsToday": "Ads Today",
+  "adsPerMember": "{count} ads / member",
+  "@adsPerMember": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "watched": "watched",
+  "adsDescription": "Watch ads to earn points for your family savings",
+  "unlockMoreBenefits": "Upgrade your pack to unlock more benefits, higher withdrawals and more aids",
+  "changeMyPack": "Change my pack",
+  "free": "Free",
+  "month": "month",
+  "year": "year",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "upToAmount": "Up to {amount} DT total",
+  "@upToAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawalsPerYear": "{count} withdrawals / year",
+  "@withdrawalsPerYear": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allPacks": "All Packs",
+  "choosePack": "Choose Your Pack",
+  "choosePackDescription": "Select the pack that best fits your family's needs",
+  "minimumWithdrawal": "Minimum withdrawal amount is {amount} DT",
+  "@minimumWithdrawal": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "familyMembersCount": "{count} family members",
+  "@familyMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aidsSelectable": "{count} aids selectable",
+  "@aidsSelectable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "currentPack": "Current Pack",
+  "selectPack": "Select Pack",
+  "upgradeTo": "Upgrade to {name}",
+  "@upgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeTo": "Downgrade to {name}",
+  "@downgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeConfirmation": "Are you sure you want to switch to the Free pack? You may lose access to some features.",
+  "upgradeConfirmation": "Upgrade to {name} for {price} DT/month?",
+  "@upgradeConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "subscriptionComingSoon": "Subscription management coming soon!",
+  "selectAid": "Select Aid",
+  "tunisianAids": "Tunisian Aids",
+  "selectionsRemaining": "{remaining} of {total} selections available",
+  "@selectionsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aidSelectionDescription": "Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.",
+  "yourSelectedAids": "Your Selected Aids",
+  "availableAids": "Available Aids",
+  "selected": "Selected",
+  "maxWithdrawal": "Max withdrawal",
+  "window": "Window",
+  "select": "Select",
+  "aidAlreadySelected": "This aid is already selected",
+  "maxAidsReached": "You can only select {count} aid(s) with your current pack",
+  "@maxAidsReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAidConfirmTitle": "Confirm Aid Selection",
+  "selectAidConfirmMessage": "Are you sure you want to select {name}?",
+  "@selectAidConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aidSelectionWarning": "You cannot change your selected aid without contacting support",
+  "aidSelectedSuccess": "{name} has been selected successfully",
+  "@aidSelectedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewOnlyPackInfo": "Only the family owner can manage pack and aids",
+  "noAidSelected": "No aid selected yet",
+  "daysUntilAid": "{days} days until {aidName}",
+  "@daysUntilAid": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "aidName": {
+        "type": "String"
+      }
+    }
+  },
+  "aidWindowOpen": "Withdrawal window is open!",
+  "aidWindowClosed": "Window opens in {days} days",
+  "@aidWindowClosed": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

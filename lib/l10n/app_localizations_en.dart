@@ -343,7 +343,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalInformation => 'Personal information';
 
   @override
-  String get yourCurrentPack => 'Your current pack';
+  String get yourCurrentPack => 'Your Current Pack';
 
   @override
   String get loginAndSecurity => 'Log in & security';
@@ -1494,4 +1494,223 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noActivitiesForFilter => 'No activities match your filters';
+
+  @override
+  String get usageAndLimits => 'Usage and Limits';
+
+  @override
+  String ownerPlusMembers(int count) {
+    return 'Owner + $count members';
+  }
+
+  @override
+  String get withdrawAccess => 'Withdraw Access';
+
+  @override
+  String get ownerOnlyCanWithdraw => 'Owner only can withdraw';
+
+  @override
+  String get youAreOwner => 'You are the family owner';
+
+  @override
+  String get onlyOwnerCanWithdrawDescription =>
+      'Only the family owner can withdraw funds';
+
+  @override
+  String get kycVerified => 'Identity verified';
+
+  @override
+  String get kycRequired => 'KYC verification required to withdraw';
+
+  @override
+  String get verifyIdentity => 'Verify Identity';
+
+  @override
+  String get selectedAid => 'Selected Aid';
+
+  @override
+  String get selectAnAid => 'Tap to select an aid';
+
+  @override
+  String maxDT(int amount) {
+    return 'Max $amount DT';
+  }
+
+  @override
+  String get adsToday => 'Ads Today';
+
+  @override
+  String adsPerMember(int count) {
+    return '$count ads / member';
+  }
+
+  @override
+  String get watched => 'watched';
+
+  @override
+  String get adsDescription =>
+      'Watch ads to earn points for your family savings';
+
+  @override
+  String get unlockMoreBenefits =>
+      'Upgrade your pack to unlock more benefits, higher withdrawals and more aids';
+
+  @override
+  String get changeMyPack => 'Change my pack';
+
+  @override
+  String get free => 'Free';
+
+  @override
+  String get month => 'month';
+
+  @override
+  String get year => 'year';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get yearly => 'Yearly';
+
+  @override
+  String upToAmount(int amount) {
+    return 'Up to $amount DT total';
+  }
+
+  @override
+  String withdrawalsPerYear(int count) {
+    return '$count withdrawals / year';
+  }
+
+  @override
+  String get allPacks => 'All Packs';
+
+  @override
+  String get choosePack => 'Choose Your Pack';
+
+  @override
+  String get choosePackDescription =>
+      'Select the pack that best fits your family\'s needs';
+
+  @override
+  String minimumWithdrawal(int amount) {
+    return 'Minimum withdrawal amount is $amount DT';
+  }
+
+  @override
+  String familyMembersCount(int count) {
+    return '$count family members';
+  }
+
+  @override
+  String aidsSelectable(int count) {
+    return '$count aids selectable';
+  }
+
+  @override
+  String get currentPack => 'Current Pack';
+
+  @override
+  String get selectPack => 'Select Pack';
+
+  @override
+  String upgradeTo(String name) {
+    return 'Upgrade to $name';
+  }
+
+  @override
+  String downgradeTo(String name) {
+    return 'Downgrade to $name';
+  }
+
+  @override
+  String get downgradeConfirmation =>
+      'Are you sure you want to switch to the Free pack? You may lose access to some features.';
+
+  @override
+  String upgradeConfirmation(String name, int price) {
+    return 'Upgrade to $name for $price DT/month?';
+  }
+
+  @override
+  String get subscriptionComingSoon => 'Subscription management coming soon!';
+
+  @override
+  String get selectAid => 'Select Aid';
+
+  @override
+  String get tunisianAids => 'Tunisian Aids';
+
+  @override
+  String selectionsRemaining(int remaining, int total) {
+    return '$remaining of $total selections available';
+  }
+
+  @override
+  String get aidSelectionDescription =>
+      'Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.';
+
+  @override
+  String get yourSelectedAids => 'Your Selected Aids';
+
+  @override
+  String get availableAids => 'Available Aids';
+
+  @override
+  String get selected => 'Selected';
+
+  @override
+  String get maxWithdrawal => 'Max withdrawal';
+
+  @override
+  String get window => 'Window';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String get aidAlreadySelected => 'This aid is already selected';
+
+  @override
+  String maxAidsReached(int count) {
+    return 'You can only select $count aid(s) with your current pack';
+  }
+
+  @override
+  String get selectAidConfirmTitle => 'Confirm Aid Selection';
+
+  @override
+  String selectAidConfirmMessage(String name) {
+    return 'Are you sure you want to select $name?';
+  }
+
+  @override
+  String get aidSelectionWarning =>
+      'You cannot change your selected aid without contacting support';
+
+  @override
+  String aidSelectedSuccess(String name) {
+    return '$name has been selected successfully';
+  }
+
+  @override
+  String get viewOnlyPackInfo =>
+      'Only the family owner can manage pack and aids';
+
+  @override
+  String get noAidSelected => 'No aid selected yet';
+
+  @override
+  String daysUntilAid(int days, String aidName) {
+    return '$days days until $aidName';
+  }
+
+  @override
+  String get aidWindowOpen => 'Withdrawal window is open!';
+
+  @override
+  String aidWindowClosed(int days) {
+    return 'Window opens in $days days';
+  }
 }

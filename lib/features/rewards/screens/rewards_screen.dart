@@ -36,6 +36,13 @@ class _RewardsContentState extends State<RewardsContent>
   Timer? _countdownTimer;
   Duration _timeUntilNextCheckIn = Duration.zero;
 
+  // Rate limiting: 4 refreshes, then 10 min cooldown
+  static const int _maxRefreshes = 4;
+  static const int _rateLimitMinutes = 10;
+  int _refreshCount = 0;
+  DateTime? _rateLimitEndTime;
+  Timer? _rateLimitTimer;
+
   late AnimationController _coinAnimController;
 
   // Updated redeemable rewards with correct TND to points conversion
@@ -194,7 +201,64 @@ class _RewardsContentState extends State<RewardsContent>
     });
   }
 
+  bool get _isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  String get _rateLimitRemainingTime {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return '${mins}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _startRateLimitTimer() {
+    _rateLimitTimer?.cancel();
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (!_isRateLimited) {
+          _rateLimitTimer?.cancel();
+          setState(() {
+            _rateLimitEndTime = null;
+            _refreshCount = 0;
+          });
+        } else {
+          setState(() {}); // Update UI
+        }
+      }
+    });
+  }
+
   Future<void> _fetchFreshData() async {
+    // Check rate limit
+    if (_isRateLimited) {
+      if (mounted) {
+        AppToast.warning(
+          context,
+          'Rate limited. Please wait $_rateLimitRemainingTime',
+        );
+      }
+      return;
+    }
+
+    // Increment refresh count
+    _refreshCount++;
+    if (_refreshCount >= _maxRefreshes) {
+      _rateLimitEndTime = DateTime.now().add(
+        const Duration(minutes: _rateLimitMinutes),
+      );
+      _startRateLimitTimer();
+      if (mounted) {
+        AppToast.warning(
+          context,
+          'Too many refreshes. Please wait $_rateLimitMinutes minutes.',
+        );
+      }
+    }
+
     try {
       final results = await Future.wait([
         _rewardsService.fetchRewardsData(),
@@ -532,6 +596,7 @@ class _RewardsContentState extends State<RewardsContent>
     _dataSubscription?.cancel();
     _rewardedAd?.dispose();
     _countdownTimer?.cancel();
+    _rateLimitTimer?.cancel();
     super.dispose();
   }
 

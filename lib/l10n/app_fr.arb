@@ -709,5 +709,197 @@
   "filterOther": "Autre",
   "applyFilters": "Appliquer",
   "clearFilters": "Effacer les filtres",
-  "noActivitiesForFilter": "Aucune activité ne correspond à vos filtres"
+  "noActivitiesForFilter": "Aucune activité ne correspond à vos filtres",
+
+  "yourCurrentPack": "Votre Pack Actuel",
+  "usageAndLimits": "Utilisation et Limites",
+  "familyMembers": "Membres de la Famille",
+  "ownerPlusMembers": "Propriétaire + {count} membres",
+  "@ownerPlusMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawAccess": "Accès au Retrait",
+  "ownerOnlyCanWithdraw": "Seul le propriétaire peut retirer",
+  "youAreOwner": "Vous êtes le propriétaire de la famille",
+  "onlyOwnerCanWithdrawDescription": "Seul le propriétaire de la famille peut retirer des fonds",
+  "kycVerified": "Identité vérifiée",
+  "kycRequired": "Vérification KYC requise pour retirer",
+  "verifyIdentity": "Vérifier l'identité",
+  "selectedAid": "Aide Sélectionnée",
+  "selectAnAid": "Appuyez pour sélectionner une aide",
+  "maxDT": "Max {amount} DT",
+  "@maxDT": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "adsToday": "Publicités Aujourd'hui",
+  "adsPerMember": "{count} pubs / membre",
+  "@adsPerMember": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "watched": "vues",
+  "adsDescription": "Regardez des publicités pour gagner des points pour votre épargne familiale",
+  "unlockMoreBenefits": "Passez à un pack supérieur pour débloquer plus d'avantages, de retraits et d'aides",
+  "changeMyPack": "Changer mon pack",
+  "free": "Gratuit",
+  "month": "mois",
+  "year": "an",
+  "monthly": "Mensuel",
+  "yearly": "Annuel",
+  "upToAmount": "Jusqu'à {amount} DT au total",
+  "@upToAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawalsPerYear": "{count} retraits / an",
+  "@withdrawalsPerYear": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allPacks": "Tous les Packs",
+  "choosePack": "Choisissez Votre Pack",
+  "choosePackDescription": "Sélectionnez le pack qui correspond le mieux aux besoins de votre famille",
+  "minimumWithdrawal": "Le montant minimum de retrait est de {amount} DT",
+  "@minimumWithdrawal": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "familyMembersCount": "{count} membres de famille",
+  "@familyMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aidsSelectable": "{count} aides sélectionnables",
+  "@aidsSelectable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "currentPack": "Pack Actuel",
+  "selectPack": "Sélectionner le Pack",
+  "upgradeTo": "Passer à {name}",
+  "@upgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeTo": "Rétrograder vers {name}",
+  "@downgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeConfirmation": "Êtes-vous sûr de vouloir passer au pack Gratuit ? Vous pourriez perdre l'accès à certaines fonctionnalités.",
+  "upgradeConfirmation": "Passer à {name} pour {price} DT/mois ?",
+  "@upgradeConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "subscriptionComingSoon": "Gestion des abonnements bientôt disponible !",
+  "selectAid": "Sélectionner une Aide",
+  "tunisianAids": "Aides Tunisiennes",
+  "selectionsRemaining": "{remaining} sur {total} sélections disponibles",
+  "@selectionsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aidSelectionDescription": "Sélectionnez votre aide préférée pour le retrait. Chaque aide a des fenêtres de retrait et des montants maximum spécifiques.",
+  "yourSelectedAids": "Vos Aides Sélectionnées",
+  "availableAids": "Aides Disponibles",
+  "selected": "Sélectionné",
+  "maxWithdrawal": "Retrait max",
+  "window": "Période",
+  "select": "Sélectionner",
+  "aidAlreadySelected": "Cette aide est déjà sélectionnée",
+  "maxAidsReached": "Vous ne pouvez sélectionner que {count} aide(s) avec votre pack actuel",
+  "@maxAidsReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAidConfirmTitle": "Confirmer la Sélection",
+  "selectAidConfirmMessage": "Êtes-vous sûr de vouloir sélectionner {name} ?",
+  "@selectAidConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aidSelectionWarning": "Vous ne pouvez pas changer votre aide sélectionnée sans contacter le support",
+  "aidSelectedSuccess": "{name} a été sélectionnée avec succès",
+  "@aidSelectedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewOnlyPackInfo": "Seul le propriétaire de la famille peut gérer le pack et les aides",
+  "noAidSelected": "Aucune aide sélectionnée",
+  "daysUntilAid": "{days} jours avant {aidName}",
+  "@daysUntilAid": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "aidName": {
+        "type": "String"
+      }
+    }
+  },
+  "aidWindowOpen": "La fenêtre de retrait est ouverte !",
+  "aidWindowClosed": "Fenêtre ouvre dans {days} jours",
+  "@aidWindowClosed": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

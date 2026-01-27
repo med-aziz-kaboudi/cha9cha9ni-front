@@ -349,7 +349,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get personalInformation => 'Informations personnelles';
 
   @override
-  String get yourCurrentPack => 'Votre pack actuel';
+  String get yourCurrentPack => 'Votre Pack Actuel';
 
   @override
   String get loginAndSecurity => 'Connexion et sécurité';
@@ -390,7 +390,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get familyMembers => 'Membres de la famille';
+  String get familyMembers => 'Membres de la Famille';
 
   @override
   String get manage => 'Gérer >';
@@ -1518,4 +1518,224 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get noActivitiesForFilter =>
       'Aucune activité ne correspond à vos filtres';
+
+  @override
+  String get usageAndLimits => 'Utilisation et Limites';
+
+  @override
+  String ownerPlusMembers(int count) {
+    return 'Propriétaire + $count membres';
+  }
+
+  @override
+  String get withdrawAccess => 'Accès au Retrait';
+
+  @override
+  String get ownerOnlyCanWithdraw => 'Seul le propriétaire peut retirer';
+
+  @override
+  String get youAreOwner => 'Vous êtes le propriétaire de la famille';
+
+  @override
+  String get onlyOwnerCanWithdrawDescription =>
+      'Seul le propriétaire de la famille peut retirer des fonds';
+
+  @override
+  String get kycVerified => 'Identité vérifiée';
+
+  @override
+  String get kycRequired => 'Vérification KYC requise pour retirer';
+
+  @override
+  String get verifyIdentity => 'Vérifier l\'identité';
+
+  @override
+  String get selectedAid => 'Aide Sélectionnée';
+
+  @override
+  String get selectAnAid => 'Appuyez pour sélectionner une aide';
+
+  @override
+  String maxDT(int amount) {
+    return 'Max $amount DT';
+  }
+
+  @override
+  String get adsToday => 'Publicités Aujourd\'hui';
+
+  @override
+  String adsPerMember(int count) {
+    return '$count pubs / membre';
+  }
+
+  @override
+  String get watched => 'vues';
+
+  @override
+  String get adsDescription =>
+      'Regardez des publicités pour gagner des points pour votre épargne familiale';
+
+  @override
+  String get unlockMoreBenefits =>
+      'Passez à un pack supérieur pour débloquer plus d\'avantages, de retraits et d\'aides';
+
+  @override
+  String get changeMyPack => 'Changer mon pack';
+
+  @override
+  String get free => 'Gratuit';
+
+  @override
+  String get month => 'mois';
+
+  @override
+  String get year => 'an';
+
+  @override
+  String get monthly => 'Mensuel';
+
+  @override
+  String get yearly => 'Annuel';
+
+  @override
+  String upToAmount(int amount) {
+    return 'Jusqu\'à $amount DT au total';
+  }
+
+  @override
+  String withdrawalsPerYear(int count) {
+    return '$count retraits / an';
+  }
+
+  @override
+  String get allPacks => 'Tous les Packs';
+
+  @override
+  String get choosePack => 'Choisissez Votre Pack';
+
+  @override
+  String get choosePackDescription =>
+      'Sélectionnez le pack qui correspond le mieux aux besoins de votre famille';
+
+  @override
+  String minimumWithdrawal(int amount) {
+    return 'Le montant minimum de retrait est de $amount DT';
+  }
+
+  @override
+  String familyMembersCount(int count) {
+    return '$count membres de famille';
+  }
+
+  @override
+  String aidsSelectable(int count) {
+    return '$count aides sélectionnables';
+  }
+
+  @override
+  String get currentPack => 'Pack Actuel';
+
+  @override
+  String get selectPack => 'Sélectionner le Pack';
+
+  @override
+  String upgradeTo(String name) {
+    return 'Passer à $name';
+  }
+
+  @override
+  String downgradeTo(String name) {
+    return 'Rétrograder vers $name';
+  }
+
+  @override
+  String get downgradeConfirmation =>
+      'Êtes-vous sûr de vouloir passer au pack Gratuit ? Vous pourriez perdre l\'accès à certaines fonctionnalités.';
+
+  @override
+  String upgradeConfirmation(String name, int price) {
+    return 'Passer à $name pour $price DT/mois ?';
+  }
+
+  @override
+  String get subscriptionComingSoon =>
+      'Gestion des abonnements bientôt disponible !';
+
+  @override
+  String get selectAid => 'Sélectionner une Aide';
+
+  @override
+  String get tunisianAids => 'Aides Tunisiennes';
+
+  @override
+  String selectionsRemaining(int remaining, int total) {
+    return '$remaining sur $total sélections disponibles';
+  }
+
+  @override
+  String get aidSelectionDescription =>
+      'Sélectionnez votre aide préférée pour le retrait. Chaque aide a des fenêtres de retrait et des montants maximum spécifiques.';
+
+  @override
+  String get yourSelectedAids => 'Vos Aides Sélectionnées';
+
+  @override
+  String get availableAids => 'Aides Disponibles';
+
+  @override
+  String get selected => 'Sélectionné';
+
+  @override
+  String get maxWithdrawal => 'Retrait max';
+
+  @override
+  String get window => 'Période';
+
+  @override
+  String get select => 'Sélectionner';
+
+  @override
+  String get aidAlreadySelected => 'Cette aide est déjà sélectionnée';
+
+  @override
+  String maxAidsReached(int count) {
+    return 'Vous ne pouvez sélectionner que $count aide(s) avec votre pack actuel';
+  }
+
+  @override
+  String get selectAidConfirmTitle => 'Confirmer la Sélection';
+
+  @override
+  String selectAidConfirmMessage(String name) {
+    return 'Êtes-vous sûr de vouloir sélectionner $name ?';
+  }
+
+  @override
+  String get aidSelectionWarning =>
+      'Vous ne pouvez pas changer votre aide sélectionnée sans contacter le support';
+
+  @override
+  String aidSelectedSuccess(String name) {
+    return '$name a été sélectionnée avec succès';
+  }
+
+  @override
+  String get viewOnlyPackInfo =>
+      'Seul le propriétaire de la famille peut gérer le pack et les aides';
+
+  @override
+  String get noAidSelected => 'Aucune aide sélectionnée';
+
+  @override
+  String daysUntilAid(int days, String aidName) {
+    return '$days jours avant $aidName';
+  }
+
+  @override
+  String get aidWindowOpen => 'La fenêtre de retrait est ouverte !';
+
+  @override
+  String aidWindowClosed(int days) {
+    return 'Fenêtre ouvre dans $days jours';
+  }
 }

@@ -709,5 +709,197 @@
   "filterOther": "أخرى",
   "applyFilters": "تطبيق الفلاتر",
   "clearFilters": "مسح الفلاتر",
-  "noActivitiesForFilter": "لا توجد أنشطة تطابق الفلاتر المحددة"
+  "noActivitiesForFilter": "لا توجد أنشطة تطابق الفلاتر المحددة",
+
+  "yourCurrentPack": "باقتك الحالية",
+  "usageAndLimits": "الاستخدام والحدود",
+  "familyMembers": "أفراد العائلة",
+  "ownerPlusMembers": "المالك + {count} أعضاء",
+  "@ownerPlusMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawAccess": "صلاحية السحب",
+  "ownerOnlyCanWithdraw": "المالك فقط يمكنه السحب",
+  "youAreOwner": "أنت مالك العائلة",
+  "onlyOwnerCanWithdrawDescription": "فقط مالك العائلة يمكنه سحب الأموال",
+  "kycVerified": "تم التحقق من الهوية",
+  "kycRequired": "مطلوب التحقق من الهوية للسحب",
+  "verifyIdentity": "التحقق من الهوية",
+  "selectedAid": "العيد المختار",
+  "selectAnAid": "اضغط لاختيار عيد",
+  "maxDT": "الحد الأقصى {amount} دينار",
+  "@maxDT": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "adsToday": "إعلانات اليوم",
+  "adsPerMember": "{count} إعلانات / عضو",
+  "@adsPerMember": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "watched": "تمت المشاهدة",
+  "adsDescription": "شاهد الإعلانات لكسب نقاط لمدخرات عائلتك",
+  "unlockMoreBenefits": "قم بترقية باقتك للحصول على المزيد من المزايا والسحوبات والأعياد",
+  "changeMyPack": "تغيير باقتي",
+  "free": "مجاني",
+  "month": "شهر",
+  "year": "سنة",
+  "monthly": "شهري",
+  "yearly": "سنوي",
+  "upToAmount": "حتى {amount} دينار إجمالي",
+  "@upToAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "withdrawalsPerYear": "{count} سحوبات / سنة",
+  "@withdrawalsPerYear": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allPacks": "جميع الباقات",
+  "choosePack": "اختر باقتك",
+  "choosePackDescription": "اختر الباقة التي تناسب احتياجات عائلتك",
+  "minimumWithdrawal": "الحد الأدنى للسحب هو {amount} دينار",
+  "@minimumWithdrawal": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "familyMembersCount": "{count} أفراد العائلة",
+  "@familyMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aidsSelectable": "{count} أعياد قابلة للاختيار",
+  "@aidsSelectable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "currentPack": "الباقة الحالية",
+  "selectPack": "اختيار الباقة",
+  "upgradeTo": "الترقية إلى {name}",
+  "@upgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeTo": "التخفيض إلى {name}",
+  "@downgradeTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downgradeConfirmation": "هل أنت متأكد من أنك تريد التبديل إلى الباقة المجانية؟ قد تفقد الوصول إلى بعض الميزات.",
+  "upgradeConfirmation": "الترقية إلى {name} مقابل {price} دينار/شهر؟",
+  "@upgradeConfirmation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "int"
+      }
+    }
+  },
+  "cancel": "إلغاء",
+  "confirm": "تأكيد",
+  "subscriptionComingSoon": "إدارة الاشتراكات قريباً!",
+  "selectAid": "اختيار العيد",
+  "tunisianAids": "الأعياد التونسية",
+  "selectionsRemaining": "{remaining} من {total} اختيارات متاحة",
+  "@selectionsRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "aidSelectionDescription": "اختر عيدك المفضل للسحب. كل عيد له فترات سحب ومبالغ قصوى محددة.",
+  "yourSelectedAids": "أعيادك المختارة",
+  "availableAids": "الأعياد المتاحة",
+  "selected": "مختار",
+  "maxWithdrawal": "الحد الأقصى للسحب",
+  "window": "الفترة",
+  "select": "اختيار",
+  "aidAlreadySelected": "هذا العيد مختار بالفعل",
+  "maxAidsReached": "يمكنك اختيار {count} عيد(أعياد) فقط مع باقتك الحالية",
+  "@maxAidsReached": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAidConfirmTitle": "تأكيد اختيار العيد",
+  "selectAidConfirmMessage": "هل أنت متأكد من أنك تريد اختيار {name}؟",
+  "@selectAidConfirmMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "aidSelectionWarning": "لا يمكنك تغيير عيدك المختار دون الاتصال بالدعم",
+  "aidSelectedSuccess": "تم اختيار {name} بنجاح",
+  "@aidSelectedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewOnlyPackInfo": "فقط مالك العائلة يمكنه إدارة الباقة والأعياد",
+  "noAidSelected": "لم يتم اختيار عيد بعد",
+  "daysUntilAid": "{days} يوم حتى {aidName}",
+  "@daysUntilAid": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "aidName": {
+        "type": "String"
+      }
+    }
+  },
+  "aidWindowOpen": "نافذة السحب مفتوحة!",
+  "aidWindowClosed": "النافذة تفتح بعد {days} أيام",
+  "@aidWindowClosed": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  }
 }

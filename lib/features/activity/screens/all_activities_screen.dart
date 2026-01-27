@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../rewards/rewards_model.dart';
 import '../activity_service.dart';
@@ -25,6 +26,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   List<RewardActivity> _filteredActivities = [];
   StreamSubscription<List<RewardActivity>>? _subscription;
   bool _isLoading = true;
+
+  // Rate limiting: 3 refreshes, then 15 min cooldown
+  static const int _maxRefreshes = 3;
+  static const int _rateLimitMinutes = 15;
+  int _refreshCount = 0;
+  DateTime? _rateLimitEndTime;
+  Timer? _rateLimitTimer;
 
   // Filters
   ActivityTimeFilter _timeFilter = ActivityTimeFilter.all;
@@ -472,10 +480,72 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     );
   }
 
+  bool get _isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  String get _rateLimitRemainingTime {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return '${mins}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _startRateLimitTimer() {
+    _rateLimitTimer?.cancel();
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (!_isRateLimited) {
+          _rateLimitTimer?.cancel();
+          setState(() {
+            _rateLimitEndTime = null;
+            _refreshCount = 0;
+          });
+        } else {
+          setState(() {}); // Update UI
+        }
+      }
+    });
+  }
+
+  Future<void> _handleRefresh() async {
+    // Check rate limit
+    if (_isRateLimited) {
+      if (mounted) {
+        AppToast.warning(
+          context,
+          'Rate limited. Please wait $_rateLimitRemainingTime',
+        );
+      }
+      return;
+    }
+
+    // Increment refresh count
+    _refreshCount++;
+    if (_refreshCount >= _maxRefreshes) {
+      _rateLimitEndTime = DateTime.now().add(
+        const Duration(minutes: _rateLimitMinutes),
+      );
+      _startRateLimitTimer();
+      if (mounted) {
+        AppToast.warning(
+          context,
+          'Too many refreshes. Please wait $_rateLimitMinutes minutes.',
+        );
+      }
+    }
+
+    await _activityService.refresh(force: true);
+  }
+
   @override
   void dispose() {
     _subscription?.cancel();
     _animController.dispose();
+    _rateLimitTimer?.cancel();
     super.dispose();
   }
 
@@ -516,8 +586,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                     : FadeTransition(
                         opacity: _fadeAnim,
                         child: RefreshIndicator(
-                          onRefresh: () =>
-                              _activityService.refresh(force: true),
+                          onRefresh: _handleRefresh,
                           color: AppColors.secondary,
                           child: ListView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -584,7 +653,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
             child: Text(
               l10n.allActivities,
               style: const TextStyle(
-                color: AppColors.dark,
+                color: AppColors.secondary,
                 fontWeight: FontWeight.w700,
                 fontSize: 22,
                 fontFamily: 'Nunito Sans',

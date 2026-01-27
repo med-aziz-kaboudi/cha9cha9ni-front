@@ -1491,4 +1491,220 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noActivitiesForFilter => 'لا توجد أنشطة تطابق الفلاتر المحددة';
+
+  @override
+  String get usageAndLimits => 'الاستخدام والحدود';
+
+  @override
+  String ownerPlusMembers(int count) {
+    return 'المالك + $count أعضاء';
+  }
+
+  @override
+  String get withdrawAccess => 'صلاحية السحب';
+
+  @override
+  String get ownerOnlyCanWithdraw => 'المالك فقط يمكنه السحب';
+
+  @override
+  String get youAreOwner => 'أنت مالك العائلة';
+
+  @override
+  String get onlyOwnerCanWithdrawDescription =>
+      'فقط مالك العائلة يمكنه سحب الأموال';
+
+  @override
+  String get kycVerified => 'تم التحقق من الهوية';
+
+  @override
+  String get kycRequired => 'مطلوب التحقق من الهوية للسحب';
+
+  @override
+  String get verifyIdentity => 'التحقق من الهوية';
+
+  @override
+  String get selectedAid => 'العيد المختار';
+
+  @override
+  String get selectAnAid => 'اضغط لاختيار عيد';
+
+  @override
+  String maxDT(int amount) {
+    return 'الحد الأقصى $amount دينار';
+  }
+
+  @override
+  String get adsToday => 'إعلانات اليوم';
+
+  @override
+  String adsPerMember(int count) {
+    return '$count إعلانات / عضو';
+  }
+
+  @override
+  String get watched => 'تمت المشاهدة';
+
+  @override
+  String get adsDescription => 'شاهد الإعلانات لكسب نقاط لمدخرات عائلتك';
+
+  @override
+  String get unlockMoreBenefits =>
+      'قم بترقية باقتك للحصول على المزيد من المزايا والسحوبات والأعياد';
+
+  @override
+  String get changeMyPack => 'تغيير باقتي';
+
+  @override
+  String get free => 'مجاني';
+
+  @override
+  String get month => 'شهر';
+
+  @override
+  String get year => 'سنة';
+
+  @override
+  String get monthly => 'شهري';
+
+  @override
+  String get yearly => 'سنوي';
+
+  @override
+  String upToAmount(int amount) {
+    return 'حتى $amount دينار إجمالي';
+  }
+
+  @override
+  String withdrawalsPerYear(int count) {
+    return '$count سحوبات / سنة';
+  }
+
+  @override
+  String get allPacks => 'جميع الباقات';
+
+  @override
+  String get choosePack => 'اختر باقتك';
+
+  @override
+  String get choosePackDescription => 'اختر الباقة التي تناسب احتياجات عائلتك';
+
+  @override
+  String minimumWithdrawal(int amount) {
+    return 'الحد الأدنى للسحب هو $amount دينار';
+  }
+
+  @override
+  String familyMembersCount(int count) {
+    return '$count أفراد العائلة';
+  }
+
+  @override
+  String aidsSelectable(int count) {
+    return '$count أعياد قابلة للاختيار';
+  }
+
+  @override
+  String get currentPack => 'الباقة الحالية';
+
+  @override
+  String get selectPack => 'اختيار الباقة';
+
+  @override
+  String upgradeTo(String name) {
+    return 'الترقية إلى $name';
+  }
+
+  @override
+  String downgradeTo(String name) {
+    return 'التخفيض إلى $name';
+  }
+
+  @override
+  String get downgradeConfirmation =>
+      'هل أنت متأكد من أنك تريد التبديل إلى الباقة المجانية؟ قد تفقد الوصول إلى بعض الميزات.';
+
+  @override
+  String upgradeConfirmation(String name, int price) {
+    return 'الترقية إلى $name مقابل $price دينار/شهر؟';
+  }
+
+  @override
+  String get subscriptionComingSoon => 'إدارة الاشتراكات قريباً!';
+
+  @override
+  String get selectAid => 'اختيار العيد';
+
+  @override
+  String get tunisianAids => 'الأعياد التونسية';
+
+  @override
+  String selectionsRemaining(int remaining, int total) {
+    return '$remaining من $total اختيارات متاحة';
+  }
+
+  @override
+  String get aidSelectionDescription =>
+      'اختر عيدك المفضل للسحب. كل عيد له فترات سحب ومبالغ قصوى محددة.';
+
+  @override
+  String get yourSelectedAids => 'أعيادك المختارة';
+
+  @override
+  String get availableAids => 'الأعياد المتاحة';
+
+  @override
+  String get selected => 'مختار';
+
+  @override
+  String get maxWithdrawal => 'الحد الأقصى للسحب';
+
+  @override
+  String get window => 'الفترة';
+
+  @override
+  String get select => 'اختيار';
+
+  @override
+  String get aidAlreadySelected => 'هذا العيد مختار بالفعل';
+
+  @override
+  String maxAidsReached(int count) {
+    return 'يمكنك اختيار $count عيد(أعياد) فقط مع باقتك الحالية';
+  }
+
+  @override
+  String get selectAidConfirmTitle => 'تأكيد اختيار العيد';
+
+  @override
+  String selectAidConfirmMessage(String name) {
+    return 'هل أنت متأكد من أنك تريد اختيار $name؟';
+  }
+
+  @override
+  String get aidSelectionWarning =>
+      'لا يمكنك تغيير عيدك المختار دون الاتصال بالدعم';
+
+  @override
+  String aidSelectedSuccess(String name) {
+    return 'تم اختيار $name بنجاح';
+  }
+
+  @override
+  String get viewOnlyPackInfo => 'فقط مالك العائلة يمكنه إدارة الباقة والأعياد';
+
+  @override
+  String get noAidSelected => 'لم يتم اختيار عيد بعد';
+
+  @override
+  String daysUntilAid(int days, String aidName) {
+    return '$days يوم حتى $aidName';
+  }
+
+  @override
+  String get aidWindowOpen => 'نافذة السحب مفتوحة!';
+
+  @override
+  String aidWindowClosed(int days) {
+    return 'النافذة تفتح بعد $days أيام';
+  }
 }

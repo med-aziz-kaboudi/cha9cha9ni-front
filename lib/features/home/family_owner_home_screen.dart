@@ -9,7 +9,7 @@ import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/services/biometric_service.dart';
-import '../../core/services/socket_service.dart' show FamilyMemberJoinedData, PointsEarnedData;
+import '../../core/services/socket_service.dart' show FamilyMemberJoinedData, PointsEarnedData, AidSelectedData;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
@@ -28,6 +28,9 @@ import '../settings/screens/language_screen.dart';
 import '../settings/screens/login_security_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import '../scan/screens/scan_screen.dart';
+import '../pack/screens/current_pack_screen.dart';
+import '../pack/pack_models.dart';
+import '../pack/pack_service.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -83,6 +86,14 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription? _rewardsSubscription;
   StreamSubscription<PointsEarnedData>? _pointsEarnedSubscription;
 
+  // Pack/Selected Aid
+  final _packService = PackService();
+  SelectedAidModel? _selectedAid;
+  int? _daysUntilAid;
+  bool _aidWindowOpen = false;
+  StreamSubscription<CurrentPackData>? _packDataSubscription;
+  StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -95,6 +106,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _listenToSessionExpired();
     _listenToFamilyMemberJoined();
     _initializeNotifications();
+    _loadSelectedAid();
+    _listenToPackUpdates();
+    _listenToAidSelectedSocket();
     // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
   }
@@ -120,6 +134,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
+    _packDataSubscription?.cancel();
+    _aidSelectedSubscription?.cancel();
     super.dispose();
   }
 
@@ -172,6 +188,114 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         final prefs = await SharedPreferences.getInstance();
         await prefs.setInt('rewards_total_points', data.newTotalPoints);
       }
+    });
+  }
+
+  /// Load selected aid for next withdrawal display
+  Future<void> _loadSelectedAid() async {
+    try {
+      // Initialize pack service (loads from cache first)
+      await _packService.initialize();
+      
+      // Check cached data first for instant display
+      final cachedAid = _packService.getCachedSelectedAid();
+      if (cachedAid != null && mounted) {
+        _updateSelectedAid(cachedAid);
+      }
+      
+      // Only fetch from API if not fetched this session
+      if (!_packService.hasFetchedOnce) {
+        final data = await _packService.fetchCurrentPack();
+        if (mounted && data.selectedAids.isNotEmpty) {
+          _updateSelectedAid(data.selectedAids.first);
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to load selected aid: $e');
+    }
+  }
+
+  /// Listen to pack data updates for real-time aid changes
+  void _listenToPackUpdates() {
+    _packDataSubscription = _packService.dataStream.listen((data) {
+      if (mounted && data.selectedAids.isNotEmpty) {
+        _updateSelectedAid(data.selectedAids.first);
+      } else if (mounted) {
+        setState(() {
+          _selectedAid = null;
+          _daysUntilAid = null;
+          _aidWindowOpen = false;
+        });
+      }
+    });
+  }
+
+  /// Listen to socket for real-time aid selection (also updates own screen)
+  void _listenToAidSelectedSocket() {
+    _aidSelectedSubscription = _sessionManager.socketService.onAidSelected.listen((aidData) {
+      if (mounted) {
+        debugPrint('🎊 Home: Received real-time aid selection: ${aidData.aidDisplayName}');
+        // Convert socket data to SelectedAidModel
+        final aid = SelectedAidModel(
+          id: aidData.aidId,
+          aidId: aidData.aidId,
+          aidName: aidData.aidName,
+          aidDisplayName: aidData.aidDisplayName,
+          maxWithdrawal: aidData.maxWithdrawal,
+          windowStart: aidData.windowStart,
+          windowEnd: aidData.windowEnd,
+          status: 'selected',
+        );
+        _updateSelectedAid(aid);
+      }
+    });
+  }
+
+  /// Update selected aid and calculate days
+  void _updateSelectedAid(SelectedAidModel aid) {
+    final now = DateTime.now();
+    int? daysUntil;
+    bool windowOpen = false;
+
+    if (aid.windowStart != null && aid.windowEnd != null) {
+      final parts = aid.windowStart!.split('-');
+      if (parts.length >= 2) {
+        final month = int.parse(parts[0]);
+        final day = int.parse(parts[1]);
+        
+        // Create window start date for this year
+        var windowStart = DateTime(now.year, month, day);
+        
+        // If window has passed this year, check next year
+        if (windowStart.isBefore(now)) {
+          // Check if we're within the window
+          final endParts = aid.windowEnd!.split('-');
+          if (endParts.length >= 2) {
+            final endMonth = int.parse(endParts[0]);
+            final endDay = int.parse(endParts[1]);
+            final windowEnd = DateTime(now.year, endMonth, endDay);
+            
+            if (now.isAfter(windowStart) && now.isBefore(windowEnd.add(const Duration(days: 1)))) {
+              // We're within the window!
+              windowOpen = true;
+              daysUntil = 0;
+            } else {
+              // Window has passed, calculate for next year
+              windowStart = DateTime(now.year + 1, month, day);
+              daysUntil = windowStart.difference(now).inDays;
+            }
+          }
+        } else {
+          // Window is upcoming this year
+          daysUntil = windowStart.difference(now).inDays;
+        }
+      }
+    }
+
+    setState(() {
+      _selectedAid = aid;
+      _daysUntilAid = daysUntil;
+      _aidWindowOpen = windowOpen;
     });
   }
 
@@ -408,6 +532,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       // Clear activity cache
       await ActivityService().clearCache();
       debugPrint('✅ Activity cache cleared');
+
+      // Clear pack service cache
+      await _packService.clearCache();
+      _packService.reset();
+      debugPrint('✅ Pack cache cleared');
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -1388,6 +1517,12 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             },
             onCurrentPack: () {
               Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CurrentPackScreen(),
+                ),
+              );
             },
             onLoginSecurity: () {
               Navigator.pop(context);
@@ -1616,73 +1751,193 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   Widget _buildNextWithdrawalCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // If no aid selected, show placeholder
+    if (_selectedAid == null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CurrentPackScreen()),
+            ).then((_) => _loadSelectedAid());
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEE3764).withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEE3764).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text('🎁', style: TextStyle(fontSize: 20)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.nextWithdrawal,
+                        style: const TextStyle(
+                          color: Color(0xFF13123A),
+                          fontSize: 12,
+                          fontFamily: 'Nunito Sans',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        l10n.selectAnAid,
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontFamily: 'Nunito Sans',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left
+                      : Icons.chevron_right,
+                  color: const Color(0xFF13123A),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // Get the emoji based on aid type
+    String aidEmoji = '🎊';
+    switch (_selectedAid!.aidName) {
+      case 'aid_kbir':
+      case 'aid_sghir':
+        aidEmoji = '🕌';
+        break;
+      case 'ramadan':
+        aidEmoji = '🌙';
+        break;
+      case 'valentine':
+        aidEmoji = '❤️';
+        break;
+      case 'new_year':
+        aidEmoji = '🎉';
+        break;
+      case 'back_to_school':
+        aidEmoji = '📚';
+        break;
+      case 'independence_day':
+      case 'revolution_day':
+        aidEmoji = '🇹🇳';
+        break;
+      case 'mothers_day':
+      case 'womens_day':
+        aidEmoji = '💐';
+        break;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEE3764).withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEE3764).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CurrentPackScreen()),
+          ).then((_) => _loadSelectedAid());
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: _aidWindowOpen 
+                ? AppColors.secondary.withValues(alpha: 0.1)
+                : const Color(0xFFEE3764).withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(15),
+            border: _aidWindowOpen 
+                ? Border.all(color: AppColors.secondary, width: 1.5)
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _aidWindowOpen 
+                      ? AppColors.secondary.withValues(alpha: 0.2)
+                      : const Color(0xFFEE3764).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(aidEmoji, style: const TextStyle(fontSize: 20)),
+                ),
               ),
-              child: const Center(
-                child: Text('🎊', style: TextStyle(fontSize: 20)),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.nextWithdrawal,
-                    style: const TextStyle(
-                      color: Color(0xFF13123A),
-                      fontSize: 12,
-                      fontFamily: 'Nunito Sans',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Text(
-                    '🎊 Aid Kbir - 1000 DT',
-                    style: TextStyle(
-                      color: Color(0xFF13123A),
-                      fontSize: 12,
-                      fontFamily: 'Nunito Sans',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Opacity(
-                    opacity: 0.6,
-                    child: Text(
-                      AppLocalizations.of(context)!.availableInDays(23),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.nextWithdrawal,
                       style: const TextStyle(
                         color: Color(0xFF13123A),
-                        fontSize: 11,
+                        fontSize: 12,
                         fontFamily: 'Nunito Sans',
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                ],
+                    Text(
+                      '$aidEmoji ${_selectedAid!.aidDisplayName} - ${_selectedAid!.maxWithdrawal} DT',
+                      style: const TextStyle(
+                        color: Color(0xFF13123A),
+                        fontSize: 12,
+                        fontFamily: 'Nunito Sans',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Opacity(
+                      opacity: 0.6,
+                      child: Text(
+                        _aidWindowOpen 
+                            ? l10n.aidWindowOpen
+                            : _daysUntilAid != null 
+                                ? l10n.availableInDays(_daysUntilAid!)
+                                : '',
+                        style: TextStyle(
+                          color: _aidWindowOpen ? AppColors.secondary : const Color(0xFF13123A),
+                          fontSize: 11,
+                          fontFamily: 'Nunito Sans',
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(
-              Directionality.of(context) == TextDirection.rtl
-                  ? Icons.chevron_left
-                  : Icons.chevron_right,
-              color: const Color(0xFF13123A),
-            ),
-          ],
+              Icon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? Icons.chevron_left
+                    : Icons.chevron_right,
+                color: const Color(0xFF13123A),
+              ),
+            ],
+          ),
         ),
       ),
     );

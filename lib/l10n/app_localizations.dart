@@ -727,7 +727,7 @@ abstract class AppLocalizations {
   /// No description provided for @yourCurrentPack.
   ///
   /// In en, this message translates to:
-  /// **'Your current pack'**
+  /// **'Your Current Pack'**
   String get yourCurrentPack;
 
   /// No description provided for @loginAndSecurity.
@@ -2817,6 +2817,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No activities match your filters'**
   String get noActivitiesForFilter;
+
+  /// No description provided for @usageAndLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage and Limits'**
+  String get usageAndLimits;
+
+  /// No description provided for @ownerPlusMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner + {count} members'**
+  String ownerPlusMembers(int count);
+
+  /// No description provided for @withdrawAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw Access'**
+  String get withdrawAccess;
+
+  /// No description provided for @ownerOnlyCanWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner only can withdraw'**
+  String get ownerOnlyCanWithdraw;
+
+  /// No description provided for @youAreOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the family owner'**
+  String get youAreOwner;
+
+  /// No description provided for @onlyOwnerCanWithdrawDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the family owner can withdraw funds'**
+  String get onlyOwnerCanWithdrawDescription;
+
+  /// No description provided for @kycVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verified'**
+  String get kycVerified;
+
+  /// No description provided for @kycRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'KYC verification required to withdraw'**
+  String get kycRequired;
+
+  /// No description provided for @verifyIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Identity'**
+  String get verifyIdentity;
+
+  /// No description provided for @selectedAid.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Aid'**
+  String get selectedAid;
+
+  /// No description provided for @selectAnAid.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select an aid'**
+  String get selectAnAid;
+
+  /// No description provided for @maxDT.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {amount} DT'**
+  String maxDT(int amount);
+
+  /// No description provided for @adsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads Today'**
+  String get adsToday;
+
+  /// No description provided for @adsPerMember.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ads / member'**
+  String adsPerMember(int count);
+
+  /// No description provided for @watched.
+  ///
+  /// In en, this message translates to:
+  /// **'watched'**
+  String get watched;
+
+  /// No description provided for @adsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ads to earn points for your family savings'**
+  String get adsDescription;
+
+  /// No description provided for @unlockMoreBenefits.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade your pack to unlock more benefits, higher withdrawals and more aids'**
+  String get unlockMoreBenefits;
+
+  /// No description provided for @changeMyPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Change my pack'**
+  String get changeMyPack;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get month;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'year'**
+  String get year;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearly;
+
+  /// No description provided for @upToAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {amount} DT total'**
+  String upToAmount(int amount);
+
+  /// No description provided for @withdrawalsPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} withdrawals / year'**
+  String withdrawalsPerYear(int count);
+
+  /// No description provided for @allPacks.
+  ///
+  /// In en, this message translates to:
+  /// **'All Packs'**
+  String get allPacks;
+
+  /// No description provided for @choosePack.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Pack'**
+  String get choosePack;
+
+  /// No description provided for @choosePackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the pack that best fits your family\'s needs'**
+  String get choosePackDescription;
+
+  /// No description provided for @minimumWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum withdrawal amount is {amount} DT'**
+  String minimumWithdrawal(int amount);
+
+  /// No description provided for @familyMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} family members'**
+  String familyMembersCount(int count);
+
+  /// No description provided for @aidsSelectable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} aids selectable'**
+  String aidsSelectable(int count);
+
+  /// No description provided for @currentPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Pack'**
+  String get currentPack;
+
+  /// No description provided for @selectPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Pack'**
+  String get selectPack;
+
+  /// No description provided for @upgradeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to {name}'**
+  String upgradeTo(String name);
+
+  /// No description provided for @downgradeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Downgrade to {name}'**
+  String downgradeTo(String name);
+
+  /// No description provided for @downgradeConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to switch to the Free pack? You may lose access to some features.'**
+  String get downgradeConfirmation;
+
+  /// No description provided for @upgradeConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to {name} for {price} DT/month?'**
+  String upgradeConfirmation(String name, int price);
+
+  /// No description provided for @subscriptionComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription management coming soon!'**
+  String get subscriptionComingSoon;
+
+  /// No description provided for @selectAid.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Aid'**
+  String get selectAid;
+
+  /// No description provided for @tunisianAids.
+  ///
+  /// In en, this message translates to:
+  /// **'Tunisian Aids'**
+  String get tunisianAids;
+
+  /// No description provided for @selectionsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} of {total} selections available'**
+  String selectionsRemaining(int remaining, int total);
+
+  /// No description provided for @aidSelectionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.'**
+  String get aidSelectionDescription;
+
+  /// No description provided for @yourSelectedAids.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Selected Aids'**
+  String get yourSelectedAids;
+
+  /// No description provided for @availableAids.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Aids'**
+  String get availableAids;
+
+  /// No description provided for @selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get selected;
+
+  /// No description provided for @maxWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Max withdrawal'**
+  String get maxWithdrawal;
+
+  /// No description provided for @window.
+  ///
+  /// In en, this message translates to:
+  /// **'Window'**
+  String get window;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @aidAlreadySelected.
+  ///
+  /// In en, this message translates to:
+  /// **'This aid is already selected'**
+  String get aidAlreadySelected;
+
+  /// No description provided for @maxAidsReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You can only select {count} aid(s) with your current pack'**
+  String maxAidsReached(int count);
+
+  /// No description provided for @selectAidConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Aid Selection'**
+  String get selectAidConfirmTitle;
+
+  /// No description provided for @selectAidConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to select {name}?'**
+  String selectAidConfirmMessage(String name);
+
+  /// No description provided for @aidSelectionWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot change your selected aid without contacting support'**
+  String get aidSelectionWarning;
+
+  /// No description provided for @aidSelectedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has been selected successfully'**
+  String aidSelectedSuccess(String name);
+
+  /// No description provided for @viewOnlyPackInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the family owner can manage pack and aids'**
+  String get viewOnlyPackInfo;
+
+  /// No description provided for @noAidSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No aid selected yet'**
+  String get noAidSelected;
+
+  /// No description provided for @daysUntilAid.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days until {aidName}'**
+  String daysUntilAid(int days, String aidName);
+
+  /// No description provided for @aidWindowOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal window is open!'**
+  String get aidWindowOpen;
+
+  /// No description provided for @aidWindowClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Window opens in {days} days'**
+  String aidWindowClosed(int days);
 }
 
 class _AppLocalizationsDelegate
