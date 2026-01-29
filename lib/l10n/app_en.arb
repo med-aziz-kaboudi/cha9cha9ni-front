@@ -937,5 +937,6 @@
   "codeSentAgain": "Code sent again",
   "tooManyAttempts": "Too many attempts. Please try again in {minutes} minutes.",
   "tooManyAttemptsTitle": "Too Many Attempts",
-  "ok": "OK"
+  "ok": "OK",
+  "couldNotOpenLink": "Could not open link"
 }

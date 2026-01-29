@@ -3285,6 +3285,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Too Many Attempts'**
   String get tooManyAttemptsTitle;
+
+  /// No description provided for @couldNotOpenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open link'**
+  String get couldNotOpenLink;
 }
 
 class _AppLocalizationsDelegate

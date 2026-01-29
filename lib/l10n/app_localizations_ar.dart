@@ -1770,4 +1770,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tooManyAttemptsTitle => 'محاولات كثيرة جداً';
+
+  @override
+  String get couldNotOpenLink => 'تعذر فتح الرابط';
 }

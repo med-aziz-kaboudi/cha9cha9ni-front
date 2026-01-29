@@ -31,6 +31,7 @@ import '../scan/screens/scan_screen.dart';
 import '../pack/screens/current_pack_screen.dart';
 import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
+import '../support/screens/tawkto_chat_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -409,6 +410,16 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       // Network errors or other issues - don't logout, just log
       debugPrint('⚠️ Session validation error (non-auth): $e');
     }
+  }
+
+  /// Open Tawk.to live chat support
+  void _openTawkToChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TawkToChatScreen(),
+      ),
+    );
   }
 
   /// Show dialog informing user another device logged in, then logout
@@ -1589,6 +1600,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             },
             onHelp: () {
               Navigator.pop(context);
+              _openTawkToChat();
             },
             onLegalAgreements: () {
               Navigator.pop(context);

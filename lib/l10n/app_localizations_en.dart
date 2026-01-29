@@ -1776,4 +1776,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooManyAttemptsTitle => 'Too Many Attempts';
+
+  @override
+  String get couldNotOpenLink => 'Could not open link';
 }

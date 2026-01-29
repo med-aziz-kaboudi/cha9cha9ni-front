@@ -1801,4 +1801,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tooManyAttemptsTitle => 'Trop de tentatives';
+
+  @override
+  String get couldNotOpenLink => 'Impossible d\'ouvrir le lien';
 }

@@ -914,5 +914,6 @@
   "resendCodeIn": "Renvoyer le code dans",
   "codeSentAgain": "Code renvoyé",
   "tooManyAttempts": "Trop de tentatives. Veuillez réessayer dans {minutes} minutes.",
-  "tooManyAttemptsTitle": "Trop de tentatives"
+  "tooManyAttemptsTitle": "Trop de tentatives",
+  "couldNotOpenLink": "Impossible d'ouvrir le lien"
 }

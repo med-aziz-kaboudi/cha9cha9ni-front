@@ -922,5 +922,6 @@
   "codeSentAgain": "تم إرسال الرمز مجدداً",
   "tooManyAttempts": "محاولات كثيرة جداً. يرجى المحاولة مرة أخرى بعد {minutes} دقيقة.",
   "tooManyAttemptsTitle": "محاولات كثيرة جداً",
-  "ok": "حسناً"
+  "ok": "حسناً",
+  "couldNotOpenLink": "تعذر فتح الرابط"
 }
