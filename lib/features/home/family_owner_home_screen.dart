@@ -9,7 +9,7 @@ import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/services/biometric_service.dart';
-import '../../core/services/socket_service.dart' show FamilyMemberJoinedData, PointsEarnedData, AidSelectedData;
+import '../../core/services/socket_service.dart' show FamilyMemberJoinedData, PointsEarnedData, AidSelectedData, MemberLeftData, SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
@@ -55,6 +55,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   StreamSubscription<String>? _sessionExpiredSubscription;
   StreamSubscription<FamilyMemberJoinedData>? _familyMemberJoinedSubscription;
+  StreamSubscription<MemberLeftData>? _memberLeftSubscription;
+  final _socketService = SocketService();
 
   // Family members state
   List<FamilyMember> _familyMembers = [];
@@ -105,6 +107,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _loadCachedDataFirst();
     _listenToSessionExpired();
     _listenToFamilyMemberJoined();
+    _listenToMemberLeft();
     _initializeNotifications();
     _loadSelectedAid();
     _listenToPackUpdates();
@@ -131,6 +134,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     WidgetsBinding.instance.removeObserver(this);
     _sessionExpiredSubscription?.cancel();
     _familyMemberJoinedSubscription?.cancel();
+    _memberLeftSubscription?.cancel();
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
@@ -359,6 +363,36 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         AppToast.success(
           context,
           '${data.memberName} has joined your family!',
+        );
+      }
+    });
+  }
+
+  /// Listen to member left events via WebSocket
+  void _listenToMemberLeft() {
+    _memberLeftSubscription = _socketService.onMemberLeft.listen((data) {
+      if (mounted) {
+        debugPrint('👋 Family member left: ${data.memberName}');
+        
+        // Remove the member from the list
+        setState(() {
+          _familyMembers.removeWhere((m) => m.id == data.memberId);
+        });
+        
+        // Update cached data
+        _tokenStorage.saveFamilyMembers(
+          _familyMembers.map((m) => m.toJson()).toList(),
+        );
+        
+        // Update cached member count
+        _tokenStorage.saveFamilyInfo(
+          memberCount: _familyMembers.length,
+        );
+        
+        // Show a toast notification
+        AppToast.info(
+          context,
+          '${data.memberName} has left the family',
         );
       }
     });
@@ -1015,7 +1049,6 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                   border: Border.all(color: Colors.grey[200]!),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       width: 44,
@@ -1043,25 +1076,31 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          member.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF23233F),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            member.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF23233F),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                        ),
-                        Text(
-                          member.email,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[500],
+                          Text(
+                            member.email,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),

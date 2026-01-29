@@ -265,6 +265,7 @@ class CurrentPackData {
   final int maxFamilyMembers;
   final WithdrawAccessInfo withdrawAccess;
   final List<SelectedAidModel> selectedAids;
+  final List<AidModel> allAids; // All available aids for selection
   final FamilyAdsStats adsStats;
 
   CurrentPackData({
@@ -274,6 +275,7 @@ class CurrentPackData {
     required this.maxFamilyMembers,
     required this.withdrawAccess,
     required this.selectedAids,
+    required this.allAids,
     required this.adsStats,
   });
 
@@ -288,6 +290,9 @@ class CurrentPackData {
       withdrawAccess: WithdrawAccessInfo.fromJson(json['withdrawAccess'] ?? {}),
       selectedAids: (json['selectedAids'] as List<dynamic>?)
           ?.map((a) => SelectedAidModel.fromJson(a))
+          .toList() ?? [],
+      allAids: (json['allAids'] as List<dynamic>?)
+          ?.map((a) => AidModel.fromJson(a))
           .toList() ?? [],
       adsStats: FamilyAdsStats.fromJson(json['adsStats'] ?? {}),
     );

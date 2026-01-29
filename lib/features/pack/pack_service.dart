@@ -35,6 +35,8 @@ class PackService {
   
   StreamSubscription<AdsStatsUpdatedData>? _adsStatsSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
+  StreamSubscription<AidRemovedData>? _aidRemovedSubscription;
+  StreamSubscription<PackUpdatedData>? _packUpdatedSubscription;
   bool _initialized = false;
   bool _hasFetchedOnce = false;
 
@@ -250,6 +252,20 @@ class PackService {
       debugPrint('📦 PackService: Received aid_selected via socket - ${data.aidDisplayName}');
       _handleAidSelectedFromSocket(data);
     });
+
+    // Listen for aid_removed events from socket
+    _aidRemovedSubscription?.cancel();
+    _aidRemovedSubscription = _socketService.onAidRemoved.listen((data) {
+      debugPrint('📦 PackService: Received aid_removed via socket - ${data.aidDisplayName}');
+      _handleAidRemovedFromSocket(data);
+    });
+
+    // Listen for pack_updated events (trigger full refresh)
+    _packUpdatedSubscription?.cancel();
+    _packUpdatedSubscription = _socketService.onPackUpdated.listen((data) {
+      debugPrint('📦 PackService: Received pack_updated via socket - reason: ${data.reason}');
+      _handlePackUpdatedFromSocket(data);
+    });
   }
 
   /// Handle real-time aid selection from socket
@@ -284,13 +300,59 @@ class PackService {
         maxFamilyMembers: _currentData!.maxFamilyMembers,
         withdrawAccess: _currentData!.withdrawAccess,
         selectedAids: updatedAids,
+        allAids: _currentData!.allAids,
         adsStats: _currentData!.adsStats,
       );
       _dataController.add(_currentData!);
+      debugPrint('📦 PackService: Emitted updated data to stream (aid added)');
     }
 
     // Save to cache
     _saveToCache();
+  }
+
+  /// Handle real-time aid removal from socket
+  void _handleAidRemovedFromSocket(AidRemovedData data) {
+    debugPrint('📦 PackService: Processing aid removal - ${data.aidDisplayName}');
+    
+    // Update current data if available
+    if (_currentData != null) {
+      final updatedAids = _currentData!.selectedAids
+          .where((a) => a.aidId != data.aidId)
+          .toList();
+
+      _currentData = CurrentPackData(
+        pack: _currentData!.pack,
+        subscription: _currentData!.subscription,
+        currentFamilyMembers: _currentData!.currentFamilyMembers,
+        maxFamilyMembers: _currentData!.maxFamilyMembers,
+        withdrawAccess: _currentData!.withdrawAccess,
+        selectedAids: updatedAids,
+        allAids: _currentData!.allAids,
+        adsStats: _currentData!.adsStats,
+      );
+      _dataController.add(_currentData!);
+      debugPrint('📦 PackService: Emitted updated data to stream (aid removed)');
+    }
+
+    // Clear selected aid if it matches
+    if (_selectedAid?.aidId == data.aidId) {
+      _selectedAid = null;
+    }
+
+    // Save to cache
+    _saveToCache();
+  }
+
+  /// Handle pack_updated event - trigger a full refresh
+  void _handlePackUpdatedFromSocket(PackUpdatedData data) {
+    debugPrint('📦 PackService: Pack updated notification received, triggering refresh');
+    // Force refresh the pack data from API
+    fetchCurrentPack(forceRefresh: true).then((_) {
+      debugPrint('📦 PackService: Pack data refreshed after socket notification');
+    }).catchError((e) {
+      debugPrint('📦 PackService: Error refreshing pack data: $e');
+    });
   }
 
   void _handleAdsStatsUpdate(AdsStatsUpdatedData data) {
@@ -333,6 +395,7 @@ class PackService {
         maxFamilyMembers: _currentData!.maxFamilyMembers,
         withdrawAccess: _currentData!.withdrawAccess,
         selectedAids: _currentData!.selectedAids,
+        allAids: _currentData!.allAids,
         adsStats: newStats,
       );
       _dataController.add(_currentData!);

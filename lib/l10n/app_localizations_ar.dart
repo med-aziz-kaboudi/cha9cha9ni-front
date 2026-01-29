@@ -361,6 +361,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get legalAgreements => 'الاتفاقيات القانونية';
 
   @override
+  String get leaveFamily => 'مغادرة العائلة';
+
+  @override
   String get logout => 'تسجيل الخروج';
 
   @override
@@ -1629,6 +1632,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get confirmSelection => 'تأكيد الاختيار';
+
+  @override
   String get subscriptionComingSoon => 'إدارة الاشتراكات قريباً!';
 
   @override
@@ -1645,6 +1651,20 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get aidSelectionDescription =>
       'اختر عيدك المفضل للسحب. كل عيد له فترات سحب ومبالغ قصوى محددة.';
+
+  @override
+  String get aidSelectionHint =>
+      'المبلغ المعروض هو الحد الأقصى الذي يمكنك سحبه خلال فترة هذا العيد بعد اختياره.';
+
+  @override
+  String get packBasedWithdrawalHint =>
+      'قم بترقية باقتك لفتح حدود سحب أعلى واختيار المزيد من الأعياد!';
+
+  @override
+  String get withdrawalLimit => 'يمكنك سحب حتى';
+
+  @override
+  String get limitReached => 'تم الوصول للحد';
 
   @override
   String get yourSelectedAids => 'أعيادك المختارة';
@@ -1707,4 +1727,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String aidWindowClosed(int days) {
     return 'النافذة تفتح بعد $days أيام';
   }
+
+  @override
+  String get leaveFamilyTitle => 'مغادرة العائلة';
+
+  @override
+  String get leaveFamilyConfirmMessage =>
+      'هل أنت متأكد من مغادرة هذه العائلة؟ نقاطك ستبقى مع عائلتك الحالية وستبدأ من جديد إذا انضممت لعائلة أخرى.';
+
+  @override
+  String get leaveFamilyWarning => 'لا يمكن التراجع عن هذا الإجراء';
+
+  @override
+  String get leave => 'مغادرة';
+
+  @override
+  String get leaveFamilyCodeSent => 'تم إرسال رمز التأكيد إلى بريدك الإلكتروني';
+
+  @override
+  String get leaveFamilySuccess => 'لقد غادرت العائلة بنجاح';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'تأكيد المغادرة';
+
+  @override
+  String get leaveFamilyCodePrompt =>
+      'أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني لتأكيد المغادرة';
+
+  @override
+  String get resendCode => 'إعادة إرسال الرمز';
+
+  @override
+  String get resendCodeIn => 'إعادة الإرسال خلال';
+
+  @override
+  String get codeSentAgain => 'تم إرسال الرمز مجدداً';
+
+  @override
+  String tooManyAttempts(Object minutes) {
+    return 'محاولات كثيرة جداً. يرجى المحاولة مرة أخرى بعد $minutes دقيقة.';
+  }
+
+  @override
+  String get tooManyAttemptsTitle => 'محاولات كثيرة جداً';
 }

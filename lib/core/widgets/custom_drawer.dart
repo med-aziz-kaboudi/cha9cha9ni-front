@@ -12,6 +12,8 @@ class CustomDrawer extends StatefulWidget {
   final VoidCallback? onNotifications;
   final VoidCallback? onHelp;
   final VoidCallback? onLegalAgreements;
+  final VoidCallback? onLeaveFamily;
+  final bool isOwner;
 
   const CustomDrawer({
     super.key,
@@ -23,6 +25,8 @@ class CustomDrawer extends StatefulWidget {
     this.onNotifications,
     this.onHelp,
     this.onLegalAgreements,
+    this.onLeaveFamily,
+    this.isOwner = true,
   });
 
   @override
@@ -342,7 +346,9 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
     required double paddingH,
     required double paddingV,
     bool isRTL = false,
+    bool isDanger = false,
   }) {
+    final itemColor = isDanger ? AppColors.primary : Colors.black87;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -351,7 +357,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
           children: [
             Icon(
               icon,
-              color: Colors.black87,
+              color: itemColor,
               size: iconSize,
             ),
             SizedBox(width: paddingH * 0.8),
@@ -359,10 +365,10 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
               child: Text(
                 title,
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: itemColor,
                   fontSize: fontSize,
                   fontFamily: 'Nunito Sans',
-                  fontWeight: FontWeight.w600,
+                  fontWeight: isDanger ? FontWeight.w700 : FontWeight.w600,
                   height: 1.50,
                   letterSpacing: 0.2,
                 ),
@@ -370,7 +376,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
             ),
             Icon(
               isRTL ? Icons.chevron_left : Icons.chevron_right,
-              color: Colors.black45,
+              color: isDanger ? itemColor.withValues(alpha: 0.7) : Colors.black45,
               size: iconSize,
             ),
           ],

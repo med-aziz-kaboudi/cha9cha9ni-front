@@ -8,7 +8,8 @@ import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/services/biometric_service.dart';
-import '../../core/services/socket_service.dart' show PointsEarnedData, AidSelectedData;
+import '../../core/services/socket_service.dart'
+    show PointsEarnedData, AidSelectedData, MemberLeftData, SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
@@ -19,6 +20,7 @@ import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../activity/widgets/recent_activities_widget.dart';
 import '../auth/screens/signin_screen.dart';
+import '../family/family_selection_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../rewards/rewards_service.dart';
 import '../rewards/screens/rewards_screen.dart';
@@ -94,6 +96,16 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   StreamSubscription<CurrentPackData>? _packDataSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
 
+  // Leave family state
+  final _socketService = SocketService();
+  StreamSubscription<MemberLeftData>? _memberLeftSubscription;
+
+  // Leave family rate limiting
+  static const String _leaveAttemptKey = 'leave_family_attempts';
+  static const String _leaveBlockedUntilKey = 'leave_family_blocked_until';
+  static const int _maxLeaveAttempts = 3;
+  static const int _blockDurationMinutes = 15;
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +121,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _loadSelectedAid();
     _listenToPackUpdates();
     _listenToAidSelectedSocket();
+    _listenToMemberLeft();
     // Delay loading removal requests to avoid too many simultaneous API calls
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _loadRemovalRequests();
@@ -137,6 +150,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _pointsEarnedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
+    _memberLeftSubscription?.cancel();
     super.dispose();
   }
 
@@ -150,7 +164,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         _familyPoints = cachedPoints;
       });
     }
-    
+
     // Then fetch fresh data
     try {
       final data = await _rewardsService.fetchRewardsData();
@@ -178,18 +192,19 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         await prefs.setInt('rewards_total_points', data.totalPoints);
       }
     });
-    
+
     // Also listen to socket for realtime updates
-    _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned.listen((data) async {
-      if (mounted) {
-        setState(() {
-          _familyPoints = data.newTotalPoints;
+    _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
+        .listen((data) async {
+          if (mounted) {
+            setState(() {
+              _familyPoints = data.newTotalPoints;
+            });
+            // Update cache for instant display next time
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('rewards_total_points', data.newTotalPoints);
+          }
         });
-        // Update cache for instant display next time
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('rewards_total_points', data.newTotalPoints);
-      }
-    });
   }
 
   /// Load selected aid from pack service (cache first, then API if needed)
@@ -197,17 +212,19 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     try {
       // Initialize pack service (loads from cache first)
       await _packService.initialize();
-      
+
       // Check cached data first for instant display
       final cachedAid = _packService.getCachedSelectedAid();
       if (cachedAid != null && mounted) {
         _updateSelectedAid(cachedAid);
       }
-      
+
       // Only fetch from API if not fetched this session
       if (!_packService.hasFetchedOnce) {
         final packData = await _packService.fetchCurrentPack();
-        _updateSelectedAid(packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null);
+        _updateSelectedAid(
+          packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null,
+        );
       }
     } catch (e) {
       debugPrint('Error loading selected aid: $e');
@@ -217,15 +234,21 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   /// Listen to pack updates for selected aid changes
   void _listenToPackUpdates() {
     _packDataSubscription = _packService.dataStream.listen((packData) {
-      _updateSelectedAid(packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null);
+      _updateSelectedAid(
+        packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null,
+      );
     });
   }
 
   /// Listen to socket for real-time aid selection by owner
   void _listenToAidSelectedSocket() {
-    _aidSelectedSubscription = _sessionManager.socketService.onAidSelected.listen((aidData) {
+    _aidSelectedSubscription = _sessionManager.socketService.onAidSelected.listen((
+      aidData,
+    ) {
       if (mounted) {
-        debugPrint('🎊 Home: Received real-time aid selection: ${aidData.aidDisplayName}');
+        debugPrint(
+          '🎊 Home: Received real-time aid selection: ${aidData.aidDisplayName}',
+        );
         // Convert socket data to SelectedAidModel
         final aid = SelectedAidModel(
           id: aidData.aidId,
@@ -245,7 +268,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   /// Update selected aid and calculate days until window
   void _updateSelectedAid(SelectedAidModel? aid) {
     if (!mounted) return;
-    
+
     if (aid == null) {
       setState(() {
         _selectedAid = null;
@@ -266,12 +289,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       });
       return;
     }
-    
+
     final parts = windowStart.split('-');
     if (parts.length == 2) {
       final month = int.tryParse(parts[0]) ?? 1;
       final day = int.tryParse(parts[1]) ?? 1;
-      
+
       // Calculate target date (this year or next)
       var targetDate = DateTime(now.year, month, day);
       if (targetDate.isBefore(now)) {
@@ -286,7 +309,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             if (endDate.isBefore(targetDate)) {
               endDate = DateTime(now.year + 1, endMonth, endDay);
             }
-            
+
             if (now.isBefore(endDate) || now.isAtSameMomentAs(endDate)) {
               // Window is open
               setState(() {
@@ -301,7 +324,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         // Window passed, next year
         targetDate = DateTime(now.year + 1, month, day);
       }
-      
+
       final daysUntil = targetDate.difference(now).inDays;
       setState(() {
         _selectedAid = aid;
@@ -314,6 +337,338 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         _daysUntilAid = null;
         _aidWindowOpen = false;
       });
+    }
+  }
+
+  /// Listen to member_left socket events (when another member leaves)
+  void _listenToMemberLeft() {
+    _memberLeftSubscription = _socketService.onMemberLeft.listen((data) {
+      if (mounted) {
+        debugPrint('👋 Family member left: ${data.memberName}');
+        // Refresh family members list
+        _refreshFamilyDataSilently();
+        // Show a toast notification
+        AppToast.info(context, '${data.memberName} has left the family');
+      }
+    });
+  }
+
+  /// Check if leave family is rate limited
+  Future<bool> _isLeaveRateLimited() async {
+    final prefs = await SharedPreferences.getInstance();
+    final blockedUntil = prefs.getInt(_leaveBlockedUntilKey);
+    if (blockedUntil != null) {
+      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(
+        blockedUntil,
+      );
+      if (DateTime.now().isBefore(blockedUntilTime)) {
+        return true;
+      } else {
+        // Block expired, reset attempts
+        await prefs.remove(_leaveBlockedUntilKey);
+        await prefs.remove(_leaveAttemptKey);
+      }
+    }
+    return false;
+  }
+
+  /// Get remaining block time in minutes
+  Future<int> _getLeaveBlockRemainingMinutes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final blockedUntil = prefs.getInt(_leaveBlockedUntilKey);
+    if (blockedUntil != null) {
+      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(
+        blockedUntil,
+      );
+      final remaining = blockedUntilTime.difference(DateTime.now()).inMinutes;
+      return remaining > 0 ? remaining + 1 : 0;
+    }
+    return 0;
+  }
+
+  /// Increment leave attempt and check if should block
+  Future<bool> _incrementLeaveAttempt() async {
+    final prefs = await SharedPreferences.getInstance();
+    int attempts = prefs.getInt(_leaveAttemptKey) ?? 0;
+    attempts++;
+    await prefs.setInt(_leaveAttemptKey, attempts);
+
+    if (attempts >= _maxLeaveAttempts) {
+      // Block for 15 minutes
+      final blockedUntil = DateTime.now().add(
+        Duration(minutes: _blockDurationMinutes),
+      );
+      await prefs.setInt(
+        _leaveBlockedUntilKey,
+        blockedUntil.millisecondsSinceEpoch,
+      );
+      return true; // Now blocked
+    }
+    return false;
+  }
+
+  /// Reset leave attempts on success
+  Future<void> _resetLeaveAttempts() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_leaveAttemptKey);
+    await prefs.remove(_leaveBlockedUntilKey);
+  }
+
+  /// Handle leave family button tap - shows bottom sheet with all states
+  Future<void> _handleLeaveFamily() async {
+    // Check rate limit first
+    if (await _isLeaveRateLimited()) {
+      final remainingMinutes = await _getLeaveBlockRemainingMinutes();
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.error(context, l10n.tooManyAttempts(remainingMinutes));
+      }
+      return;
+    }
+
+    // Show the new combined bottom sheet
+
+    // Show the new combined bottom sheet
+    _showLeaveFamilyBottomSheet();
+  }
+
+  /// Show family options bottom sheet
+  void _showFamilyOptionsSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Family info header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.family_restroom_rounded,
+                        color: AppColors.secondary,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _familyName ?? l10n.myFamily,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF23233F),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${_familyMembers.length} ${l10n.members}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Owner info
+                if (_familyOwnerName != null)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.shield_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.owner,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                _familyOwnerName!,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                // Leave family button
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Use Future.delayed to ensure bottom sheet is fully closed
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      if (mounted) _handleLeaveFamily();
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.leaveFamily,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                l10n.leaveFamilyWarning,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: Colors.red.withValues(alpha: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show leave family bottom sheet with confirmation and code input
+  void _showLeaveFamilyBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: true,
+      builder: (sheetContext) => _LeaveFamilyBottomSheet(
+        familyName: _familyName,
+        familyMembersCount: _familyMembers.length,
+        ownerName: _familyOwnerName,
+        familyApiService: _familyApiService,
+        onSuccess: () async {
+          Navigator.pop(sheetContext);
+          await _resetLeaveAttempts();
+          await _performLeaveAndNavigate();
+        },
+        onAttemptUsed: () async {
+          await _incrementLeaveAttempt();
+        },
+        isRateLimited: _isLeaveRateLimited,
+        getBlockRemainingMinutes: _getLeaveBlockRemainingMinutes,
+      ),
+    );
+  }
+
+  /// After successful leave, navigate to family selection screen
+  Future<void> _performLeaveAndNavigate() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Clear pack cache since we're leaving family
+    await PackService().clearCache();
+    PackService().reset();
+
+    // Clear cached family info
+    await _tokenStorage.clearFamilyInfo();
+
+    // Force token refresh to get new token without family association
+    // This ensures subsequent API calls (create/join family) work correctly
+    debugPrint('🔄 Refreshing token after leaving family...');
+    await _familyApiService.forceTokenRefresh();
+
+    // Show success message
+    AppToast.success(context, l10n.leaveFamilySuccess);
+
+    // Navigate to family selection screen where they can create or join a new family
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const FamilySelectionScreen()),
+        (route) => false,
+      );
     }
   }
 
@@ -513,7 +868,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
-      
+
       // Clear security cache so unlock screen doesn't show on next login
       await BiometricService().clearSecurityCache();
       debugPrint('✅ Security cache cleared');
@@ -621,8 +976,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         String? ownerLastName;
         if (family.ownerName != null && family.ownerName!.isNotEmpty) {
           final nameParts = family.ownerName!.trim().split(' ');
-          ownerLastName =
-              nameParts.length > 1 ? nameParts.last : nameParts.first;
+          ownerLastName = nameParts.length > 1
+              ? nameParts.last
+              : nameParts.first;
           ownerLastName =
               ownerLastName[0].toUpperCase() + ownerLastName.substring(1);
         }
@@ -866,8 +1222,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        AppLocalizations.of(dialogContext)
-                                ?.verificationCodeWillBeSent ??
+                        AppLocalizations.of(
+                              dialogContext,
+                            )?.verificationCodeWillBeSent ??
                             'A verification code will be sent to your email',
                         style: TextStyle(fontSize: 12, color: Colors.blue[700]),
                       ),
@@ -1094,8 +1451,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                                   if (codeController.text.length != 6) {
                                     AppToast.error(
                                       dialogContext,
-                                      AppLocalizations.of(dialogContext)
-                                              ?.enterValidCode ??
+                                      AppLocalizations.of(
+                                            dialogContext,
+                                          )?.enterValidCode ??
                                           'Enter a valid 6-digit code',
                                     );
                                     return;
@@ -1104,10 +1462,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                                   setDialogState(() => isVerifying = true);
 
                                   try {
-                                    await _familyApiService.confirmMemberRemoval(
-                                      request.id,
-                                      codeController.text,
-                                    );
+                                    await _familyApiService
+                                        .confirmMemberRemoval(
+                                          request.id,
+                                          codeController.text,
+                                        );
 
                                     if (!dialogContext.mounted) return;
                                     Navigator.pop(dialogContext);
@@ -1118,9 +1477,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                                     AppToast.error(
                                       dialogContext,
                                       e.toString().replaceAll(
-                                            'Exception: ',
-                                            '',
-                                          ),
+                                        'Exception: ',
+                                        '',
+                                      ),
                                     );
                                   }
                                 },
@@ -1268,7 +1627,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       _openScanScreen();
       return;
     }
-    
+
     // For home (0) and rewards (2), just switch the view
     setState(() {
       _currentNavIndex = index;
@@ -1276,12 +1635,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   void _openScanScreen() async {
-    final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (context) => const ScanScreen(),
-      ),
-    );
-    
+    final result = await Navigator.of(
+      context,
+    ).push<String>(MaterialPageRoute(builder: (context) => const ScanScreen()));
+
     if (result != null && mounted) {
       // Handle the scanned code
       debugPrint('📷 Scanned code: $result');
@@ -1356,9 +1713,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Space for the fixed header
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.32,
-                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.32),
 
                 // Pending removal banner (if any)
                 if (_hasPendingRemovalFromOwner) ...[
@@ -1459,7 +1814,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   Widget _buildNextWithdrawalCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Get emoji for aid type
     String getAidEmoji(String aidName) {
       switch (aidName.toLowerCase()) {
@@ -1496,9 +1851,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           // Navigate to pack screen (read-only for members)
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const CurrentPackScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const CurrentPackScreen()),
           );
         },
         child: Container(
@@ -1510,7 +1863,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 : const Color(0xFFEE3764).withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(15),
             border: _aidWindowOpen
-                ? Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3))
+                ? Border.all(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+                  )
                 : null,
           ),
           child: Row(
@@ -1563,8 +1918,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                           _aidWindowOpen
                               ? l10n.aidWindowOpen
                               : (_daysUntilAid != null
-                                  ? l10n.daysUntilAid(_daysUntilAid!, _selectedAid!.aidDisplayName)
-                                  : l10n.availableInDays(0)),
+                                    ? l10n.daysUntilAid(
+                                        _daysUntilAid!,
+                                        _selectedAid!.aidDisplayName,
+                                      )
+                                    : l10n.availableInDays(0)),
                           style: TextStyle(
                             color: _aidWindowOpen
                                 ? const Color(0xFF4CAF50)
@@ -1608,10 +1966,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   /// Build the family members section (view only, no add/remove)
   Widget _buildFamilyMembersSection(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    
+
     // Get the display name for family - translate "My Family" if it's the default
     String? displayFamilyName = _familyName;
-    if (_familyName == 'My Family' || _familyName == 'Ma Famille' || _familyName == 'عائلتي') {
+    if (_familyName == 'My Family' ||
+        _familyName == 'Ma Famille' ||
+        _familyName == 'عائلتي') {
       displayFamilyName = l10n?.myFamily ?? _familyName;
     }
 
@@ -1632,36 +1992,49 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              // Show family name badge
+              // Show family name badge - tappable for family options
               if (displayFamilyName != null && displayFamilyName.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.family_restroom_rounded,
-                        color: AppColors.secondary,
-                        size: 16,
+                GestureDetector(
+                  onTap: () => _showFamilyOptionsSheet(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.3),
+                        width: 1,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        displayFamilyName,
-                        style: const TextStyle(
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.family_restroom_rounded,
                           color: AppColors.secondary,
-                          fontSize: 14,
-                          fontFamily: 'Nunito Sans',
-                          fontWeight: FontWeight.w600,
+                          size: 16,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          displayFamilyName,
+                          style: const TextStyle(
+                            color: AppColors.secondary,
+                            fontSize: 14,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: AppColors.secondary.withValues(alpha: 0.7),
+                          size: 18,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -1728,17 +2101,21 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: () {
                   // Sort members: owner first, then others
-                  final sortedMembers = [..._familyMembers]..sort((a, b) {
-                    if (a.isOwner && !b.isOwner) return -1;
-                    if (!a.isOwner && b.isOwner) return 1;
-                    return 0;
-                  });
-                  return sortedMembers.take(5).map(
-                    (member) => Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: _buildFamilyMemberAvatar(member),
-                    ),
-                  ).toList();
+                  final sortedMembers = [..._familyMembers]
+                    ..sort((a, b) {
+                      if (a.isOwner && !b.isOwner) return -1;
+                      if (!a.isOwner && b.isOwner) return 1;
+                      return 0;
+                    });
+                  return sortedMembers
+                      .take(5)
+                      .map(
+                        (member) => Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: _buildFamilyMemberAvatar(member),
+                        ),
+                      )
+                      .toList();
                 }(),
               ),
             ),
@@ -1774,14 +2151,14 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                             AppColors.primary.withValues(alpha: 0.3),
                           ]
                         : isOwner
-                            ? [
-                                AppColors.secondary.withValues(alpha: 0.15),
-                                AppColors.secondary.withValues(alpha: 0.25),
-                              ]
-                            : [
-                                AppColors.secondary.withValues(alpha: 0.1),
-                                AppColors.primary.withValues(alpha: 0.1),
-                              ],
+                        ? [
+                            AppColors.secondary.withValues(alpha: 0.15),
+                            AppColors.secondary.withValues(alpha: 0.25),
+                          ]
+                        : [
+                            AppColors.secondary.withValues(alpha: 0.1),
+                            AppColors.primary.withValues(alpha: 0.1),
+                          ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1789,8 +2166,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     color: hasPendingRemoval
                         ? AppColors.primary
                         : isOwner
-                            ? AppColors.secondary
-                            : AppColors.secondary.withValues(alpha: 0.3),
+                        ? AppColors.secondary
+                        : AppColors.secondary.withValues(alpha: 0.3),
                     width: hasPendingRemoval || isOwner ? 3 : 2,
                   ),
                 ),
@@ -1801,8 +2178,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                       color: hasPendingRemoval
                           ? AppColors.primary
                           : isOwner
-                              ? AppColors.secondary
-                              : AppColors.secondary,
+                          ? AppColors.secondary
+                          : AppColors.secondary,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1820,8 +2197,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     color: hasPendingRemoval
                         ? AppColors.primary
                         : isOwner
-                            ? AppColors.secondary
-                            : Colors.transparent,
+                        ? AppColors.secondary
+                        : Colors.transparent,
                     shape: BoxShape.circle,
                     border: (hasPendingRemoval || isOwner)
                         ? Border.all(color: Colors.white, width: 2)
@@ -1844,12 +2221,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                             size: 14,
                           )
                         : isOwner
-                            ? const Icon(
-                                Icons.star_rounded,
-                                color: Colors.white,
-                                size: 14,
-                              )
-                            : null,
+                        ? const Icon(
+                            Icons.star_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          )
+                        : null,
                   ),
                 ),
               ),
@@ -1869,8 +2246,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                         : const Color(0xFF23233F),
                     fontSize: 13,
                     fontFamily: 'DM Sans',
-                    fontWeight:
-                        hasPendingRemoval ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: hasPendingRemoval
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -1948,10 +2326,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                       AppColors.primary.withValues(alpha: 0.3),
                     ],
                   ),
-                  border: Border.all(
-                    color: AppColors.primary,
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppColors.primary, width: 2),
                 ),
                 child: Center(
                   child: Text(
@@ -1994,8 +2369,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
@@ -2037,7 +2414,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const EditProfileScreen()),
+                  builder: (context) => const EditProfileScreen(),
+                ),
               );
             },
             onCurrentPack: () {
@@ -2054,7 +2432,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const LoginSecurityScreen()),
+                  builder: (context) => const LoginSecurityScreen(),
+                ),
               );
             },
             onLanguages: () {
@@ -2069,7 +2448,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const NotificationsScreen()),
+                  builder: (context) => const NotificationsScreen(),
+                ),
               );
               // No need to fetch on return - stream subscription handles real-time updates
             },
@@ -2079,6 +2459,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             onLegalAgreements: () {
               Navigator.pop(context);
             },
+            isOwner: false,
           ),
           body: IndexedStack(
             index: _currentNavIndex == 2 ? 1 : 0,
@@ -2111,6 +2492,604 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               });
             },
           ),
+      ],
+    );
+  }
+}
+
+/// Bottom sheet for leave family flow with all states
+class _LeaveFamilyBottomSheet extends StatefulWidget {
+  final String? familyName;
+  final int familyMembersCount;
+  final String? ownerName;
+  final FamilyApiService familyApiService;
+  final VoidCallback onSuccess;
+  final Future<void> Function() onAttemptUsed;
+  final Future<bool> Function() isRateLimited;
+  final Future<int> Function() getBlockRemainingMinutes;
+
+  const _LeaveFamilyBottomSheet({
+    required this.familyName,
+    required this.familyMembersCount,
+    required this.ownerName,
+    required this.familyApiService,
+    required this.onSuccess,
+    required this.onAttemptUsed,
+    required this.isRateLimited,
+    required this.getBlockRemainingMinutes,
+  });
+
+  @override
+  State<_LeaveFamilyBottomSheet> createState() =>
+      _LeaveFamilyBottomSheetState();
+}
+
+class _LeaveFamilyBottomSheetState extends State<_LeaveFamilyBottomSheet> {
+  // States: 'sending', 'code', 'blocked'
+  String _currentState = 'sending';
+
+  final _codeController = TextEditingController();
+  bool _isSendingCode = true; // Start as sending
+  bool _isVerifying = false;
+  String? _errorMessage;
+
+  // Resend countdown
+  int _resendCountdown = 0;
+  Timer? _resendTimer;
+
+  // Rate limit state
+  int _blockedMinutes = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAndSendCode();
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _resendTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Check rate limit and send code automatically
+  Future<void> _initAndSendCode() async {
+    final isBlocked = await widget.isRateLimited();
+    if (isBlocked) {
+      final minutes = await widget.getBlockRemainingMinutes();
+      if (mounted) {
+        setState(() {
+          _blockedMinutes = minutes;
+          _currentState = 'blocked';
+        });
+      }
+      return;
+    }
+
+    // Send code automatically
+    try {
+      await widget.familyApiService.initiateSelfLeave();
+      await widget.onAttemptUsed();
+
+      // Check if now blocked after this attempt
+      if (await widget.isRateLimited()) {
+        final minutes = await widget.getBlockRemainingMinutes();
+        if (mounted) {
+          setState(() {
+            _blockedMinutes = minutes;
+            _currentState = 'blocked';
+            _isSendingCode = false;
+          });
+        }
+        return;
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentState = 'code';
+          _isSendingCode = false;
+        });
+        _startResendCountdown();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSendingCode = false;
+          _currentState = 'code'; // Show code input with error
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  void _startResendCountdown() {
+    setState(() => _resendCountdown = 60);
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        _resendCountdown--;
+        if (_resendCountdown <= 0) {
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> _resendCode() async {
+    if (_resendCountdown > 0) return;
+
+    // Check rate limit
+    if (await widget.isRateLimited()) {
+      final minutes = await widget.getBlockRemainingMinutes();
+      setState(() {
+        _blockedMinutes = minutes;
+        _currentState = 'blocked';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSendingCode = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await widget.familyApiService.initiateSelfLeave();
+      await widget.onAttemptUsed();
+
+      // Check if now blocked
+      if (await widget.isRateLimited()) {
+        final minutes = await widget.getBlockRemainingMinutes();
+        setState(() {
+          _blockedMinutes = minutes;
+          _currentState = 'blocked';
+          _isSendingCode = false;
+        });
+        return;
+      }
+
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(context, l10n.codeSentAgain);
+        setState(() => _isSendingCode = false);
+        _startResendCountdown();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSendingCode = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  Future<void> _verifyCode() async {
+    final code = _codeController.text.trim();
+    if (code.length != 6) {
+      final l10n = AppLocalizations.of(context)!;
+      setState(() => _errorMessage = l10n.enterAllDigits);
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await widget.familyApiService.confirmSelfLeave(code);
+      widget.onSuccess();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isVerifying = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Family info header (always shown)
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.family_restroom_rounded,
+                      color: AppColors.secondary,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.familyName ?? l10n.myFamily,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF23233F),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${widget.familyMembersCount} ${l10n.members}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Owner info
+              if (widget.ownerName != null)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.shield_outlined,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.owner,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              widget.ownerName!,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 16),
+
+              // Dynamic content based on state
+              _buildStateContent(l10n),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStateContent(AppLocalizations l10n) {
+    switch (_currentState) {
+      case 'blocked':
+        return _buildBlockedState(l10n);
+      case 'code':
+        return _buildCodeInputState(l10n);
+      case 'sending':
+      default:
+        return _buildSendingState(l10n);
+    }
+  }
+
+  Widget _buildSendingState(AppLocalizations l10n) {
+    return Column(
+      children: [
+        // Warning message
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.leaveFamilyWarning,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Loading indicator
+        const Center(child: CircularProgressIndicator()),
+        const SizedBox(height: 16),
+
+        Text(
+          l10n.leaveFamilyCodeSent.replaceAll('sent', 'sending...'),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildCodeInputState(AppLocalizations l10n) {
+    return Column(
+      children: [
+        // Info text
+        Text(
+          l10n.leaveFamilyCodePrompt,
+          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+
+        // Code input
+        TextField(
+          controller: _codeController,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 28,
+            letterSpacing: 12,
+            fontWeight: FontWeight.bold,
+          ),
+          decoration: InputDecoration(
+            hintText: '000000',
+            hintStyle: TextStyle(color: Colors.grey[300], letterSpacing: 12),
+            counterText: '',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 12,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Error message
+        if (_errorMessage != null) ...[
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Resend button
+        TextButton(
+          onPressed: (_resendCountdown > 0 || _isSendingCode)
+              ? null
+              : _resendCode,
+          child: _isSendingCode
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  _resendCountdown > 0
+                      ? '${l10n.resendCodeIn} ${_resendCountdown}s'
+                      : l10n.resendCode,
+                  style: TextStyle(
+                    color: _resendCountdown > 0
+                        ? Colors.grey
+                        : AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 12),
+
+        // Buttons row
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _isVerifying
+                    ? null
+                    : () {
+                        _resendTimer?.cancel();
+                        Navigator.pop(context);
+                      },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  side: BorderSide(color: Colors.grey[300]!),
+                ),
+                child: Text(
+                  l10n.cancel,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _isVerifying ? null : _verifyCode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isVerifying
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.confirm,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildBlockedState(AppLocalizations l10n) {
+    return Column(
+      children: [
+        // Blocked icon
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.block_rounded, color: Colors.red, size: 48),
+        ),
+        const SizedBox(height: 16),
+
+        Text(
+          l10n.tooManyAttemptsTitle,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.red,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        Text(
+          l10n.tooManyAttempts(_blockedMinutes),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 24),
+
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              l10n.ok,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }

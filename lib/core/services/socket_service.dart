@@ -10,9 +10,12 @@ enum SocketEvent {
   disconnected,
   forceLogout,
   familyMemberJoined,
+  familyMemberLeft,
   pointsEarned,
   adsStatsUpdated,
   aidSelected,
+  aidRemoved,
+  packUpdated,
   error,
 }
 
@@ -144,6 +147,75 @@ class AidSelectedData {
   }
 }
 
+/// Data class for aid removed event
+class AidRemovedData {
+  final String aidId;
+  final String aidName;
+  final String aidDisplayName;
+  final DateTime timestamp;
+
+  AidRemovedData({
+    required this.aidId,
+    required this.aidName,
+    required this.aidDisplayName,
+    required this.timestamp,
+  });
+
+  factory AidRemovedData.fromJson(Map<String, dynamic> json) {
+    return AidRemovedData(
+      aidId: json['aidId'] ?? '',
+      aidName: json['aidName'] ?? '',
+      aidDisplayName: json['aidDisplayName'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
+/// Data class for pack updated event (generic refresh signal)
+class PackUpdatedData {
+  final String reason;
+  final DateTime timestamp;
+
+  PackUpdatedData({
+    required this.reason,
+    required this.timestamp,
+  });
+
+  factory PackUpdatedData.fromJson(Map<String, dynamic> json) {
+    return PackUpdatedData(
+      reason: json['reason'] ?? 'unknown',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
+/// Data class for member left event (member voluntarily left the family)
+class MemberLeftData {
+  final String memberId;
+  final String memberName;
+  final DateTime timestamp;
+
+  MemberLeftData({
+    required this.memberId,
+    required this.memberName,
+    required this.timestamp,
+  });
+
+  factory MemberLeftData.fromJson(Map<String, dynamic> json) {
+    return MemberLeftData(
+      memberId: json['memberId'] ?? '',
+      memberName: json['memberName'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Data class for ads stats update event
 class AdsStatsUpdatedData {
   final int familyTotalAdsToday;
@@ -195,6 +267,9 @@ class SocketService {
   final _pointsEarnedController = StreamController<PointsEarnedData>.broadcast();
   final _adsStatsUpdatedController = StreamController<AdsStatsUpdatedData>.broadcast();
   final _aidSelectedController = StreamController<AidSelectedData>.broadcast();
+  final _aidRemovedController = StreamController<AidRemovedData>.broadcast();
+  final _packUpdatedController = StreamController<PackUpdatedData>.broadcast();
+  final _memberLeftController = StreamController<MemberLeftData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -213,6 +288,15 @@ class SocketService {
 
   /// Stream of aid selected events - listen to this to update home screen
   Stream<AidSelectedData> get onAidSelected => _aidSelectedController.stream;
+
+  /// Stream of aid removed events
+  Stream<AidRemovedData> get onAidRemoved => _aidRemovedController.stream;
+
+  /// Stream of pack updated events - listen to this to refresh pack data
+  Stream<PackUpdatedData> get onPackUpdated => _packUpdatedController.stream;
+
+  /// Stream of member left events - listen to this to update family member list
+  Stream<MemberLeftData> get onMemberLeft => _memberLeftController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -340,6 +424,36 @@ class SocketService {
       }
     });
 
+    // Listen for aid removed event
+    _socket!.on('aid_removed', (data) {
+      debugPrint('🗑️ Socket: Received aid_removed event');
+      if (data is Map<String, dynamic>) {
+        final aidData = AidRemovedData.fromJson(data);
+        _aidRemovedController.add(aidData);
+        _eventController.add(SocketEvent.aidRemoved);
+      }
+    });
+
+    // Listen for pack updated event (generic refresh signal)
+    _socket!.on('pack_updated', (data) {
+      debugPrint('📦 Socket: Received pack_updated event');
+      if (data is Map<String, dynamic>) {
+        final packData = PackUpdatedData.fromJson(data);
+        _packUpdatedController.add(packData);
+        _eventController.add(SocketEvent.packUpdated);
+      }
+    });
+
+    // Listen for member left event (member voluntarily left the family)
+    _socket!.on('member_left', (data) {
+      debugPrint('👋 Socket: Received member_left event');
+      if (data is Map<String, dynamic>) {
+        final memberData = MemberLeftData.fromJson(data);
+        _memberLeftController.add(memberData);
+        _eventController.add(SocketEvent.familyMemberLeft);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -390,5 +504,8 @@ class SocketService {
     _pointsEarnedController.close();
     _adsStatsUpdatedController.close();
     _aidSelectedController.close();
+    _aidRemovedController.close();
+    _packUpdatedController.close();
+    _memberLeftController.close();
   }
 }

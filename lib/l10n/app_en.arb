@@ -145,6 +145,7 @@
   "notifications": "Notifications",
   "help": "Help",
   "legalAgreements": "Legal Agreements",
+  "leaveFamily": "Leave Family",
   "logout": "Logout",
   "balance": "Balance",
   "topUp": "Top up",
@@ -847,6 +848,7 @@
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
+  "confirmSelection": "Confirm Selection",
   "subscriptionComingSoon": "Subscription management coming soon!",
   "selectAid": "Select Aid",
   "tunisianAids": "Tunisian Aids",
@@ -862,6 +864,10 @@
     }
   },
   "aidSelectionDescription": "Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.",
+  "aidSelectionHint": "The amount shown is the maximum you can withdraw during this aid's window period after selecting it.",
+  "packBasedWithdrawalHint": "Upgrade your pack to unlock higher withdrawal limits and select more aids!",
+  "withdrawalLimit": "You can withdraw up to",
+  "limitReached": "Limit reached",
   "yourSelectedAids": "Your Selected Aids",
   "availableAids": "Available Aids",
   "selected": "Selected",
@@ -916,5 +922,20 @@
         "type": "int"
       }
     }
-  }
+  },
+  "leaveFamilyTitle": "Leave Family",
+  "leaveFamilyConfirmMessage": "Are you sure you want to leave this family? Your points will stay with your current family and you will start fresh if you join a new one.",
+  "leaveFamilyWarning": "This action cannot be undone",
+  "leave": "Leave",
+  "cancel": "Cancel",
+  "leaveFamilyCodeSent": "Confirmation code sent to your email",
+  "leaveFamilySuccess": "You have successfully left the family",
+  "leaveFamilyConfirmTitle": "Confirm Leave",
+  "leaveFamilyCodePrompt": "Enter the 6-digit code sent to your email to confirm leaving the family",
+  "resendCode": "Resend Code",
+  "resendCodeIn": "Resend code in",
+  "codeSentAgain": "Code sent again",
+  "tooManyAttempts": "Too many attempts. Please try again in {minutes} minutes.",
+  "tooManyAttemptsTitle": "Too Many Attempts",
+  "ok": "OK"
 }

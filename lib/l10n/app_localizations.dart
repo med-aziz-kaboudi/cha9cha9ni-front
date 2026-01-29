@@ -760,6 +760,12 @@ abstract class AppLocalizations {
   /// **'Legal Agreements'**
   String get legalAgreements;
 
+  /// No description provided for @leaveFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family'**
+  String get leaveFamily;
+
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:
@@ -3040,6 +3046,12 @@ abstract class AppLocalizations {
   /// **'Upgrade to {name} for {price} DT/month?'**
   String upgradeConfirmation(String name, int price);
 
+  /// No description provided for @confirmSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Selection'**
+  String get confirmSelection;
+
   /// No description provided for @subscriptionComingSoon.
   ///
   /// In en, this message translates to:
@@ -3069,6 +3081,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.'**
   String get aidSelectionDescription;
+
+  /// No description provided for @aidSelectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount shown is the maximum you can withdraw during this aid\'s window period after selecting it.'**
+  String get aidSelectionHint;
+
+  /// No description provided for @packBasedWithdrawalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade your pack to unlock higher withdrawal limits and select more aids!'**
+  String get packBasedWithdrawalHint;
+
+  /// No description provided for @withdrawalLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can withdraw up to'**
+  String get withdrawalLimit;
+
+  /// No description provided for @limitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit reached'**
+  String get limitReached;
 
   /// No description provided for @yourSelectedAids.
   ///
@@ -3171,6 +3207,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Window opens in {days} days'**
   String aidWindowClosed(int days);
+
+  /// No description provided for @leaveFamilyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Family'**
+  String get leaveFamilyTitle;
+
+  /// No description provided for @leaveFamilyConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave this family? Your points will stay with your current family and you will start fresh if you join a new one.'**
+  String get leaveFamilyConfirmMessage;
+
+  /// No description provided for @leaveFamilyWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone'**
+  String get leaveFamilyWarning;
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
+  /// No description provided for @leaveFamilyCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation code sent to your email'**
+  String get leaveFamilyCodeSent;
+
+  /// No description provided for @leaveFamilySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'You have successfully left the family'**
+  String get leaveFamilySuccess;
+
+  /// No description provided for @leaveFamilyConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Leave'**
+  String get leaveFamilyConfirmTitle;
+
+  /// No description provided for @leaveFamilyCodePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to your email to confirm leaving the family'**
+  String get leaveFamilyCodePrompt;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// No description provided for @resendCodeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in'**
+  String get resendCodeIn;
+
+  /// No description provided for @codeSentAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent again'**
+  String get codeSentAgain;
+
+  /// No description provided for @tooManyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again in {minutes} minutes.'**
+  String tooManyAttempts(Object minutes);
+
+  /// No description provided for @tooManyAttemptsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Too Many Attempts'**
+  String get tooManyAttemptsTitle;
 }
 
 class _AppLocalizationsDelegate

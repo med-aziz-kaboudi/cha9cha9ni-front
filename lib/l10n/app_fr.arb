@@ -138,6 +138,7 @@
   "notifications": "Notifications",
   "help": "Aide",
   "legalAgreements": "Accords juridiques",
+  "leaveFamily": "Quitter la famille",
   "logout": "Déconnexion",
   "balance": "Solde",
   "topUp": "Recharger",
@@ -901,5 +902,17 @@
         "type": "int"
       }
     }
-  }
+  },
+  "leaveFamilyTitle": "Quitter la famille",
+  "leaveFamilyConfirmMessage": "Êtes-vous sûr de vouloir quitter cette famille ? Vos points resteront avec votre famille actuelle et vous recommencerez à zéro si vous rejoignez une nouvelle famille.",
+  "leaveFamilyWarning": "Cette action est irréversible",
+  "leaveFamilyCodeSent": "Code de confirmation envoyé à votre email",
+  "leaveFamilySuccess": "Vous avez quitté la famille avec succès",
+  "leaveFamilyConfirmTitle": "Confirmer le départ",
+  "leaveFamilyCodePrompt": "Entrez le code à 6 chiffres envoyé à votre email pour confirmer",
+  "resendCode": "Renvoyer le code",
+  "resendCodeIn": "Renvoyer le code dans",
+  "codeSentAgain": "Code renvoyé",
+  "tooManyAttempts": "Trop de tentatives. Veuillez réessayer dans {minutes} minutes.",
+  "tooManyAttemptsTitle": "Trop de tentatives"
 }

@@ -367,6 +367,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get legalAgreements => 'Accords juridiques';
 
   @override
+  String get leaveFamily => 'Quitter la famille';
+
+  @override
   String get logout => 'Déconnexion';
 
   @override
@@ -1658,6 +1661,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get confirmSelection => 'Confirm Selection';
+
+  @override
   String get subscriptionComingSoon =>
       'Gestion des abonnements bientôt disponible !';
 
@@ -1675,6 +1681,20 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get aidSelectionDescription =>
       'Sélectionnez votre aide préférée pour le retrait. Chaque aide a des fenêtres de retrait et des montants maximum spécifiques.';
+
+  @override
+  String get aidSelectionHint =>
+      'The amount shown is the maximum you can withdraw during this aid\'s window period after selecting it.';
+
+  @override
+  String get packBasedWithdrawalHint =>
+      'Upgrade your pack to unlock higher withdrawal limits and select more aids!';
+
+  @override
+  String get withdrawalLimit => 'You can withdraw up to';
+
+  @override
+  String get limitReached => 'Limit reached';
 
   @override
   String get yourSelectedAids => 'Vos Aides Sélectionnées';
@@ -1738,4 +1758,47 @@ class AppLocalizationsFr extends AppLocalizations {
   String aidWindowClosed(int days) {
     return 'Fenêtre ouvre dans $days jours';
   }
+
+  @override
+  String get leaveFamilyTitle => 'Quitter la famille';
+
+  @override
+  String get leaveFamilyConfirmMessage =>
+      'Êtes-vous sûr de vouloir quitter cette famille ? Vos points resteront avec votre famille actuelle et vous recommencerez à zéro si vous rejoignez une nouvelle famille.';
+
+  @override
+  String get leaveFamilyWarning => 'Cette action est irréversible';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get leaveFamilyCodeSent => 'Code de confirmation envoyé à votre email';
+
+  @override
+  String get leaveFamilySuccess => 'Vous avez quitté la famille avec succès';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'Confirmer le départ';
+
+  @override
+  String get leaveFamilyCodePrompt =>
+      'Entrez le code à 6 chiffres envoyé à votre email pour confirmer';
+
+  @override
+  String get resendCode => 'Renvoyer le code';
+
+  @override
+  String get resendCodeIn => 'Renvoyer le code dans';
+
+  @override
+  String get codeSentAgain => 'Code renvoyé';
+
+  @override
+  String tooManyAttempts(Object minutes) {
+    return 'Trop de tentatives. Veuillez réessayer dans $minutes minutes.';
+  }
+
+  @override
+  String get tooManyAttemptsTitle => 'Trop de tentatives';
 }

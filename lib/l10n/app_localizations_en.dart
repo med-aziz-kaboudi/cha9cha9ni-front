@@ -361,6 +361,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legalAgreements => 'Legal Agreements';
 
   @override
+  String get leaveFamily => 'Leave Family';
+
+  @override
   String get logout => 'Logout';
 
   @override
@@ -1634,6 +1637,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get confirmSelection => 'Confirm Selection';
+
+  @override
   String get subscriptionComingSoon => 'Subscription management coming soon!';
 
   @override
@@ -1650,6 +1656,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aidSelectionDescription =>
       'Select your preferred aid for withdrawal. Each aid has specific withdrawal windows and maximum amounts.';
+
+  @override
+  String get aidSelectionHint =>
+      'The amount shown is the maximum you can withdraw during this aid\'s window period after selecting it.';
+
+  @override
+  String get packBasedWithdrawalHint =>
+      'Upgrade your pack to unlock higher withdrawal limits and select more aids!';
+
+  @override
+  String get withdrawalLimit => 'You can withdraw up to';
+
+  @override
+  String get limitReached => 'Limit reached';
 
   @override
   String get yourSelectedAids => 'Your Selected Aids';
@@ -1713,4 +1733,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String aidWindowClosed(int days) {
     return 'Window opens in $days days';
   }
+
+  @override
+  String get leaveFamilyTitle => 'Leave Family';
+
+  @override
+  String get leaveFamilyConfirmMessage =>
+      'Are you sure you want to leave this family? Your points will stay with your current family and you will start fresh if you join a new one.';
+
+  @override
+  String get leaveFamilyWarning => 'This action cannot be undone';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get leaveFamilyCodeSent => 'Confirmation code sent to your email';
+
+  @override
+  String get leaveFamilySuccess => 'You have successfully left the family';
+
+  @override
+  String get leaveFamilyConfirmTitle => 'Confirm Leave';
+
+  @override
+  String get leaveFamilyCodePrompt =>
+      'Enter the 6-digit code sent to your email to confirm leaving the family';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String get resendCodeIn => 'Resend code in';
+
+  @override
+  String get codeSentAgain => 'Code sent again';
+
+  @override
+  String tooManyAttempts(Object minutes) {
+    return 'Too many attempts. Please try again in $minutes minutes.';
+  }
+
+  @override
+  String get tooManyAttemptsTitle => 'Too Many Attempts';
 }

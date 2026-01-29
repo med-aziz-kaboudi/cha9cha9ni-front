@@ -54,6 +54,20 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
   bool _showJoinInput = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Ensure we have fresh tokens when arriving at this screen
+    // This is important after leaving a family to get tokens without family association
+    _ensureFreshToken();
+  }
+
+  Future<void> _ensureFreshToken() async {
+    debugPrint('🔄 FamilySelectionScreen: Ensuring fresh token...');
+    await _familyApiService.forceTokenRefresh();
+    debugPrint('✅ FamilySelectionScreen: Token refreshed');
+  }
+
+  @override
   void dispose() {
     _inviteCodeController.dispose();
     super.dispose();

@@ -70,15 +70,50 @@ class FamilyApiService {
     }
   }
 
+  /// Force token refresh - useful after operations that change user state (like leaving a family)
+  Future<bool> forceTokenRefresh() async {
+    debugPrint('🔄 Forcing token refresh...');
+    return await _refreshToken();
+  }
+
   /// Create a new family
   Future<FamilyModel> createFamily(CreateFamilyRequest request) async {
-    final headers = await _getHeaders();
+    var headers = await _getHeaders();
     
-    final response = await http.post(
+    debugPrint('🏠 API: Creating family...');
+    
+    var response = await http.post(
       Uri.parse('$_baseUrl/family/create'),
       headers: headers,
       body: json.encode(request.toJson()),
     );
+
+    // Handle 401 - try to refresh token
+    if (response.statusCode == 401) {
+      debugPrint('🔒 401: Unauthorized - attempting token refresh for createFamily');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        debugPrint('✅ Token refreshed, retrying createFamily request');
+        // Retry with new token
+        headers = await _getHeaders();
+        response = await http.post(
+          Uri.parse('$_baseUrl/family/create'),
+          headers: headers,
+          body: json.encode(request.toJson()),
+        );
+        
+        // If still 401 after refresh, user needs to re-login
+        if (response.statusCode == 401) {
+          debugPrint('❌ Still 401 after token refresh - user needs to re-login');
+          _sessionManager.notifySessionExpired('Session expired');
+          throw AuthenticationException('Session expired. Please sign in again.');
+        }
+      } else {
+        debugPrint('❌ Token refresh failed - user needs to re-login');
+        _sessionManager.notifySessionExpired('Session expired');
+        throw AuthenticationException('Session expired. Please sign in again.');
+      }
+    }
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -91,13 +126,42 @@ class FamilyApiService {
 
   /// Join an existing family using invite code
   Future<FamilyModel> joinFamily(JoinFamilyRequest request) async {
-    final headers = await _getHeaders();
+    var headers = await _getHeaders();
     
-    final response = await http.post(
+    debugPrint('🎫 API: Joining family...');
+    
+    var response = await http.post(
       Uri.parse('$_baseUrl/family/join'),
       headers: headers,
       body: json.encode(request.toJson()),
     );
+
+    // Handle 401 - try to refresh token
+    if (response.statusCode == 401) {
+      debugPrint('🔒 401: Unauthorized - attempting token refresh for joinFamily');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        debugPrint('✅ Token refreshed, retrying joinFamily request');
+        // Retry with new token
+        headers = await _getHeaders();
+        response = await http.post(
+          Uri.parse('$_baseUrl/family/join'),
+          headers: headers,
+          body: json.encode(request.toJson()),
+        );
+        
+        // If still 401 after refresh, user needs to re-login
+        if (response.statusCode == 401) {
+          debugPrint('❌ Still 401 after token refresh - user needs to re-login');
+          _sessionManager.notifySessionExpired('Session expired');
+          throw AuthenticationException('Session expired. Please sign in again.');
+        }
+      } else {
+        debugPrint('❌ Token refresh failed - user needs to re-login');
+        _sessionManager.notifySessionExpired('Session expired');
+        throw AuthenticationException('Session expired. Please sign in again.');
+      }
+    }
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -324,6 +388,43 @@ class FamilyApiService {
     } else {
       final error = json.decode(response.body);
       throw Exception(error['message'] ?? 'Failed to confirm removal');
+    }
+  }
+
+  // ==================== Member Self-Leave Methods ====================
+
+  /// Member initiates leaving the family - sends confirmation email
+  Future<Map<String, dynamic>> initiateSelfLeave() async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/leave/initiate'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to initiate leave request');
+    }
+  }
+
+  /// Member confirms leaving with verification code
+  Future<Map<String, dynamic>> confirmSelfLeave(String code) async {
+    final headers = await _getHeaders();
+    
+    final response = await http.post(
+      Uri.parse('$_baseUrl/family/leave/confirm'),
+      headers: headers,
+      body: json.encode({'code': code}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['message'] ?? 'Failed to confirm leaving family');
     }
   }
 

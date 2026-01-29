@@ -67,6 +67,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
             maxFamilyMembers: _packData!.maxFamilyMembers,
             withdrawAccess: _packData!.withdrawAccess,
             selectedAids: _packData!.selectedAids,
+            allAids: _packData!.allAids,
             adsStats: stats,
           );
         });
@@ -821,7 +822,11 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const AidSelectionScreen(),
+              builder: (context) => AidSelectionScreen(
+                allAids: _packData!.allAids,
+                selectedAids: _packData!.selectedAids,
+                maxAidsSelectable: _packData!.pack.maxAidsSelectable,
+              ),
             ),
           ).then((_) => _loadData());
         } : null,

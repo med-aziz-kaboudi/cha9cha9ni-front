@@ -138,6 +138,7 @@
   "notifications": "الإشعارات",
   "help": "المساعدة",
   "legalAgreements": "الاتفاقيات القانونية",
+  "leaveFamily": "مغادرة العائلة",
   "logout": "تسجيل الخروج",
   "balance": "الرصيد",
   "topUp": "شحن",
@@ -832,6 +833,7 @@
   },
   "cancel": "إلغاء",
   "confirm": "تأكيد",
+  "confirmSelection": "تأكيد الاختيار",
   "subscriptionComingSoon": "إدارة الاشتراكات قريباً!",
   "selectAid": "اختيار العيد",
   "tunisianAids": "الأعياد التونسية",
@@ -847,6 +849,10 @@
     }
   },
   "aidSelectionDescription": "اختر عيدك المفضل للسحب. كل عيد له فترات سحب ومبالغ قصوى محددة.",
+  "aidSelectionHint": "المبلغ المعروض هو الحد الأقصى الذي يمكنك سحبه خلال فترة هذا العيد بعد اختياره.",
+  "packBasedWithdrawalHint": "قم بترقية باقتك لفتح حدود سحب أعلى واختيار المزيد من الأعياد!",
+  "withdrawalLimit": "يمكنك سحب حتى",
+  "limitReached": "تم الوصول للحد",
   "yourSelectedAids": "أعيادك المختارة",
   "availableAids": "الأعياد المتاحة",
   "selected": "مختار",
@@ -901,5 +907,20 @@
         "type": "int"
       }
     }
-  }
+  },
+  "leaveFamilyTitle": "مغادرة العائلة",
+  "leaveFamilyConfirmMessage": "هل أنت متأكد من مغادرة هذه العائلة؟ نقاطك ستبقى مع عائلتك الحالية وستبدأ من جديد إذا انضممت لعائلة أخرى.",
+  "leaveFamilyWarning": "لا يمكن التراجع عن هذا الإجراء",
+  "leave": "مغادرة",
+  "cancel": "إلغاء",
+  "leaveFamilyCodeSent": "تم إرسال رمز التأكيد إلى بريدك الإلكتروني",
+  "leaveFamilySuccess": "لقد غادرت العائلة بنجاح",
+  "leaveFamilyConfirmTitle": "تأكيد المغادرة",
+  "leaveFamilyCodePrompt": "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني لتأكيد المغادرة",
+  "resendCode": "إعادة إرسال الرمز",
+  "resendCodeIn": "إعادة الإرسال خلال",
+  "codeSentAgain": "تم إرسال الرمز مجدداً",
+  "tooManyAttempts": "محاولات كثيرة جداً. يرجى المحاولة مرة أخرى بعد {minutes} دقيقة.",
+  "tooManyAttemptsTitle": "محاولات كثيرة جداً",
+  "ok": "حسناً"
 }
