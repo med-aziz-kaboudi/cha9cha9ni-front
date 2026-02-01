@@ -6,10 +6,14 @@ import '../../../l10n/app_localizations.dart';
 String _formatPoints(int points) {
   if (points >= 1000000) {
     final value = points / 1000000;
-    return value == value.truncate() ? '${value.truncate()}M' : '${value.toStringAsFixed(1)}M';
+    return value == value.truncate()
+        ? '${value.truncate()}M'
+        : '${value.toStringAsFixed(1)}M';
   } else if (points >= 1000) {
     final value = points / 1000;
-    return value == value.truncate() ? '${value.truncate()}K' : '${value.toStringAsFixed(1)}K';
+    return value == value.truncate()
+        ? '${value.truncate()}K'
+        : '${value.toStringAsFixed(1)}K';
   }
   return points.toString();
 }
@@ -21,6 +25,7 @@ class HomeHeaderWidget extends StatelessWidget {
   final VoidCallback? onWithdraw;
   final VoidCallback onStatement;
   final VoidCallback? onNotification;
+  final VoidCallback? onPoints;
   final int notificationCount;
   final bool showWithdraw;
   // Tutorial keys
@@ -38,6 +43,7 @@ class HomeHeaderWidget extends StatelessWidget {
     this.onWithdraw,
     required this.onStatement,
     this.onNotification,
+    this.onPoints,
     this.notificationCount = 0,
     this.showWithdraw = true,
     this.topUpKey,
@@ -53,7 +59,7 @@ class HomeHeaderWidget extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final topPadding = MediaQuery.of(context).padding.top;
     final isRTL = Directionality.of(context) == TextDirection.rtl;
-    
+
     // Responsive values based on screen height
     final headerHeight = screenHeight * 0.28; // 28% of screen height
     final backgroundHeight = headerHeight * 0.85;
@@ -122,10 +128,7 @@ class HomeHeaderWidget extends StatelessWidget {
               height: screenWidth * 0.3,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF4CC3C7),
-                  width: 20,
-                ),
+                border: Border.all(color: const Color(0xFF4CC3C7), width: 20),
               ),
             ),
           ),
@@ -140,10 +143,7 @@ class HomeHeaderWidget extends StatelessWidget {
               height: screenWidth * 0.45,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFF4CC3C7),
-                  width: 30,
-                ),
+                border: Border.all(color: const Color(0xFF4CC3C7), width: 30),
               ),
             ),
           ),
@@ -152,21 +152,25 @@ class HomeHeaderWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceSection(BuildContext context, double top, double screenHeight) {
+  Widget _buildBalanceSection(
+    BuildContext context,
+    double top,
+    double screenHeight,
+  ) {
     // Responsive font sizes
     final balanceLabelSize = screenHeight * 0.020;
     final balanceAmountSize = screenHeight * 0.028;
     final isRTL = Directionality.of(context) == TextDirection.rtl;
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Responsive values for points badge
     final badgeFontSize = (screenHeight * 0.014).clamp(10.0, 14.0);
     final badgePaddingH = (screenWidth * 0.025).clamp(8.0, 12.0);
     final badgePaddingV = (screenHeight * 0.005).clamp(3.0, 6.0);
     final badgeMargin = (screenWidth * 0.02).clamp(6.0, 12.0);
     final badgeRadius = (screenHeight * 0.015).clamp(10.0, 14.0);
-    
+
     return Positioned(
       top: top,
       left: 0,
@@ -211,20 +215,26 @@ class HomeHeaderWidget extends StatelessWidget {
               Positioned(
                 right: isRTL ? null : badgeMargin,
                 left: isRTL ? badgeMargin : null,
-                child: Container(
-                  key: pointsKey,
-                  padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEBC11),
-                    borderRadius: BorderRadius.circular(badgeRadius),
-                  ),
-                  child: Text(
-                    '🎁 ${_formatPoints(points)} ${l10n.pts}',
-                    style: TextStyle(
-                      color: const Color(0xFF141936),
-                      fontSize: badgeFontSize,
-                      fontFamily: 'Nunito Sans',
-                      fontWeight: FontWeight.w700,
+                child: GestureDetector(
+                  onTap: onPoints,
+                  child: Container(
+                    key: pointsKey,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: badgePaddingH,
+                      vertical: badgePaddingV,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEBC11),
+                      borderRadius: BorderRadius.circular(badgeRadius),
+                    ),
+                    child: Text(
+                      '🎁 ${_formatPoints(points)} ${l10n.pts}',
+                      style: TextStyle(
+                        color: const Color(0xFF141936),
+                        fontSize: badgeFontSize,
+                        fontFamily: 'Nunito Sans',
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -236,7 +246,10 @@ class HomeHeaderWidget extends StatelessWidget {
                 child: Opacity(
                   opacity: 0,
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: badgePaddingH,
+                      vertical: badgePaddingV,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEBC11),
                       borderRadius: BorderRadius.circular(badgeRadius),
@@ -318,7 +331,7 @@ class HomeHeaderWidget extends StatelessWidget {
     final buttonSize = (screenWidth * 0.10).clamp(36.0, 44.0);
     final iconSize = (screenWidth * 0.07).clamp(24.0, 32.0);
     final labelSize = (screenWidth * 0.028).clamp(10.0, 12.0);
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
       child: Container(
@@ -394,11 +407,7 @@ class HomeHeaderWidget extends StatelessWidget {
               color: const Color(0xFFFAFAFA),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: iconSize,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: iconSize),
           ),
           const SizedBox(height: 8),
           Text(

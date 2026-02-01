@@ -2752,6 +2752,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get filterAll;
 
+  /// No description provided for @filterLast10Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 10 days'**
+  String get filterLast10Days;
+
   /// No description provided for @filterLast7Days.
   ///
   /// In en, this message translates to:
@@ -3286,11 +3292,143 @@ abstract class AppLocalizations {
   /// **'Too Many Attempts'**
   String get tooManyAttemptsTitle;
 
+  /// No description provided for @rateLimitedWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate limited. Please wait {time}'**
+  String rateLimitedWait(String time);
+
+  /// No description provided for @tooManyRefreshes.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many refreshes. Please wait {minutes} minutes.'**
+  String tooManyRefreshes(int minutes);
+
   /// No description provided for @couldNotOpenLink.
   ///
   /// In en, this message translates to:
   /// **'Could not open link'**
   String get couldNotOpenLink;
+
+  /// No description provided for @statementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement'**
+  String get statementTitle;
+
+  /// No description provided for @statementSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a start date to generate your statement and receive it via email'**
+  String get statementSubtitle;
+
+  /// No description provided for @statementSelectStartDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Start Date'**
+  String get statementSelectStartDate;
+
+  /// No description provided for @statementDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement from this date to today'**
+  String get statementDateHint;
+
+  /// No description provided for @statementYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get statementYear;
+
+  /// No description provided for @statementMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get statementMonth;
+
+  /// No description provided for @statementPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement Period'**
+  String get statementPeriod;
+
+  /// No description provided for @statementToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get statementToday;
+
+  /// No description provided for @statementSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a date'**
+  String get statementSelectDate;
+
+  /// No description provided for @statementNoActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity found for this period. Please select another date.'**
+  String get statementNoActivity;
+
+  /// No description provided for @statementLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load data. Please try again.'**
+  String get statementLoadError;
+
+  /// No description provided for @statementGenerateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate statement. Please try again.'**
+  String get statementGenerateError;
+
+  /// No description provided for @statementSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending...'**
+  String get statementSending;
+
+  /// No description provided for @statementSendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to My Email'**
+  String get statementSendButton;
+
+  /// No description provided for @statementRateLimitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit reached! You can only send 2 statements per day.'**
+  String get statementRateLimitError;
+
+  /// No description provided for @statementRateLimitNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited to 2 sends per day'**
+  String get statementRateLimitNote;
+
+  /// No description provided for @statementRemainingEmails.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} send(s) remaining today'**
+  String statementRemainingEmails(int count);
+
+  /// No description provided for @statementSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Statement Sent!'**
+  String get statementSentTitle;
+
+  /// No description provided for @statementSentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your statement from {startDate} to today has been sent to'**
+  String statementSentDescription(String startDate);
+
+  /// No description provided for @statementGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get statementGotIt;
 }
 
 class _AppLocalizationsDelegate

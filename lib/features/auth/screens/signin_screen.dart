@@ -11,6 +11,7 @@ import '../../../core/services/api_exception.dart';
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/family_api_service.dart';
 import '../../../core/services/biometric_service.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../family/family_selection_screen.dart';
 import '../../home/family_owner_home_screen.dart';
 import '../../home/family_member_home_screen.dart';
@@ -431,6 +432,9 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
             ),
           );
         } else if (response.isSuccess) {
+          // Track login success
+          AnalyticsService().trackLogin(method: 'email');
+          
           // Store tokens
           await _tokenStorage.saveTokens(
             accessToken: response.accessToken!,

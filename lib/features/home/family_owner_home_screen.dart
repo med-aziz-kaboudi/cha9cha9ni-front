@@ -9,12 +9,19 @@ import '../../core/services/family_api_service.dart'
     show FamilyApiService, AuthenticationException;
 import '../../core/services/session_manager.dart';
 import '../../core/services/biometric_service.dart';
-import '../../core/services/socket_service.dart' show FamilyMemberJoinedData, PointsEarnedData, AidSelectedData, MemberLeftData, SocketService;
+import '../../core/services/socket_service.dart'
+    show
+        FamilyMemberJoinedData,
+        PointsEarnedData,
+        AidSelectedData,
+        MemberLeftData,
+        SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
+import '../../core/widgets/skeleton_loading.dart';
 import '../../core/widgets/tutorial_overlay.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
@@ -31,6 +38,7 @@ import '../scan/screens/scan_screen.dart';
 import '../pack/screens/current_pack_screen.dart';
 import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
+import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 import 'widgets/home_header_widget.dart';
 
@@ -97,6 +105,13 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription<CurrentPackData>? _packDataSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
 
+  // Pull-to-refresh rate limiting
+  static const int _maxRefreshes = 3;
+  static const int _rateLimitMinutes = 15;
+  int _refreshCount = 0;
+  DateTime? _rateLimitEndTime;
+  Timer? _rateLimitTimer;
+
   @override
   void initState() {
     super.initState();
@@ -141,7 +156,78 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _pointsEarnedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
+    _rateLimitTimer?.cancel();
     super.dispose();
+  }
+
+  // Rate limiting helpers for pull-to-refresh
+  bool get _isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  String get _rateLimitRemainingTime {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return '${mins}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _startRateLimitTimer() {
+    _rateLimitTimer?.cancel();
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (!_isRateLimited) {
+          _rateLimitTimer?.cancel();
+          setState(() {
+            _rateLimitEndTime = null;
+            _refreshCount = 0;
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> _handlePullToRefresh() async {
+    // Check rate limit
+    if (_isRateLimited) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        AppToast.warning(
+          context,
+          l10n?.rateLimitedWait(_rateLimitRemainingTime) ??
+              'Rate limited. Please wait $_rateLimitRemainingTime',
+        );
+      }
+      return;
+    }
+
+    // Increment refresh count
+    _refreshCount++;
+    if (_refreshCount >= _maxRefreshes) {
+      _rateLimitEndTime = DateTime.now().add(
+        const Duration(minutes: _rateLimitMinutes),
+      );
+      _startRateLimitTimer();
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        AppToast.warning(
+          context,
+          l10n?.tooManyRefreshes(_rateLimitMinutes) ??
+              'Too many refreshes. Please wait $_rateLimitMinutes minutes.',
+        );
+      }
+    }
+
+    // Refresh all data
+    await Future.wait([
+      _refreshFamilyData(),
+      _loadFamilyPoints(),
+      _loadSelectedAid(),
+      ActivityService().refresh(force: true),
+    ]);
   }
 
   /// Load family points from rewards service
@@ -154,7 +240,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         _familyPoints = cachedPoints;
       });
     }
-    
+
     // Then fetch fresh data
     try {
       final data = await _rewardsService.fetchRewardsData();
@@ -182,18 +268,19 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         await prefs.setInt('rewards_total_points', data.totalPoints);
       }
     });
-    
+
     // Also listen to socket for realtime updates
-    _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned.listen((data) async {
-      if (mounted) {
-        setState(() {
-          _familyPoints = data.newTotalPoints;
+    _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
+        .listen((data) async {
+          if (mounted) {
+            setState(() {
+              _familyPoints = data.newTotalPoints;
+            });
+            // Update cache for instant display next time
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('rewards_total_points', data.newTotalPoints);
+          }
         });
-        // Update cache for instant display next time
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('rewards_total_points', data.newTotalPoints);
-      }
-    });
   }
 
   /// Load selected aid for next withdrawal display
@@ -201,13 +288,13 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     try {
       // Initialize pack service (loads from cache first)
       await _packService.initialize();
-      
+
       // Check cached data first for instant display
       final cachedAid = _packService.getCachedSelectedAid();
       if (cachedAid != null && mounted) {
         _updateSelectedAid(cachedAid);
       }
-      
+
       // Only fetch from API if not fetched this session
       if (!_packService.hasFetchedOnce) {
         final data = await _packService.fetchCurrentPack();
@@ -237,9 +324,13 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   /// Listen to socket for real-time aid selection (also updates own screen)
   void _listenToAidSelectedSocket() {
-    _aidSelectedSubscription = _sessionManager.socketService.onAidSelected.listen((aidData) {
+    _aidSelectedSubscription = _sessionManager.socketService.onAidSelected.listen((
+      aidData,
+    ) {
       if (mounted) {
-        debugPrint('🎊 Home: Received real-time aid selection: ${aidData.aidDisplayName}');
+        debugPrint(
+          '🎊 Home: Received real-time aid selection: ${aidData.aidDisplayName}',
+        );
         // Convert socket data to SelectedAidModel
         final aid = SelectedAidModel(
           id: aidData.aidId,
@@ -267,10 +358,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       if (parts.length >= 2) {
         final month = int.parse(parts[0]);
         final day = int.parse(parts[1]);
-        
+
         // Create window start date for this year
         var windowStart = DateTime(now.year, month, day);
-        
+
         // If window has passed this year, check next year
         if (windowStart.isBefore(now)) {
           // Check if we're within the window
@@ -279,8 +370,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             final endMonth = int.parse(endParts[0]);
             final endDay = int.parse(endParts[1]);
             final windowEnd = DateTime(now.year, endMonth, endDay);
-            
-            if (now.isAfter(windowStart) && now.isBefore(windowEnd.add(const Duration(days: 1)))) {
+
+            if (now.isAfter(windowStart) &&
+                now.isBefore(windowEnd.add(const Duration(days: 1)))) {
               // We're within the window!
               windowOpen = true;
               daysUntil = 0;
@@ -326,47 +418,46 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   /// Listen to family member joined events via WebSocket
   void _listenToFamilyMemberJoined() {
-    _familyMemberJoinedSubscription = _sessionManager.onFamilyMemberJoined.listen((
-      data,
-    ) {
-      if (mounted) {
-        debugPrint('👨‍👩‍👧 New family member joined: ${data.memberName}');
-        
-        // Add the new member to the list
-        final newMember = FamilyMember(
-          id: data.memberId,
-          name: data.memberName,
-          email: data.memberEmail,
-          isOwner: false,
-        );
-        
-        setState(() {
-          // Add member to list if not already present
-          if (!_familyMembers.any((m) => m.id == data.memberId)) {
-            _familyMembers.add(newMember);
+    _familyMemberJoinedSubscription = _sessionManager.onFamilyMemberJoined
+        .listen((data) {
+          if (mounted) {
+            debugPrint('👨‍👩‍👧 New family member joined: ${data.memberName}');
+
+            // Add the new member to the list
+            final newMember = FamilyMember(
+              id: data.memberId,
+              name: data.memberName,
+              email: data.memberEmail,
+              isOwner: false,
+            );
+
+            setState(() {
+              // Add member to list if not already present
+              if (!_familyMembers.any((m) => m.id == data.memberId)) {
+                _familyMembers.add(newMember);
+              }
+              // Update invite code
+              _inviteCode = data.newInviteCode;
+            });
+
+            // Update cached data
+            _tokenStorage.saveFamilyMembers(
+              _familyMembers.map((m) => m.toJson()).toList(),
+            );
+
+            // Update cached invite code and member count
+            _tokenStorage.saveFamilyInfo(
+              inviteCode: data.newInviteCode,
+              memberCount: _familyMembers.length,
+            );
+
+            // Show a toast notification
+            AppToast.success(
+              context,
+              '${data.memberName} has joined your family!',
+            );
           }
-          // Update invite code
-          _inviteCode = data.newInviteCode;
         });
-        
-        // Update cached data
-        _tokenStorage.saveFamilyMembers(
-          _familyMembers.map((m) => m.toJson()).toList(),
-        );
-        
-        // Update cached invite code and member count
-        _tokenStorage.saveFamilyInfo(
-          inviteCode: data.newInviteCode,
-          memberCount: _familyMembers.length,
-        );
-        
-        // Show a toast notification
-        AppToast.success(
-          context,
-          '${data.memberName} has joined your family!',
-        );
-      }
-    });
   }
 
   /// Listen to member left events via WebSocket
@@ -374,27 +465,22 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _memberLeftSubscription = _socketService.onMemberLeft.listen((data) {
       if (mounted) {
         debugPrint('👋 Family member left: ${data.memberName}');
-        
+
         // Remove the member from the list
         setState(() {
           _familyMembers.removeWhere((m) => m.id == data.memberId);
         });
-        
+
         // Update cached data
         _tokenStorage.saveFamilyMembers(
           _familyMembers.map((m) => m.toJson()).toList(),
         );
-        
+
         // Update cached member count
-        _tokenStorage.saveFamilyInfo(
-          memberCount: _familyMembers.length,
-        );
-        
+        _tokenStorage.saveFamilyInfo(memberCount: _familyMembers.length);
+
         // Show a toast notification
-        AppToast.info(
-          context,
-          '${data.memberName} has left the family',
-        );
+        AppToast.info(context, '${data.memberName} has left the family');
       }
     });
   }
@@ -416,9 +502,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   void _openTawkToChat() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TawkToChatScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const TawkToChatScreen()),
     );
   }
 
@@ -564,12 +648,12 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     try {
       // Disconnect WebSocket first
       _sessionManager.disconnectSocket();
-      
+
       await _tokenStorage.clearTokens();
       debugPrint('✅ Tokens cleared');
       await PendingVerificationHelper.clear();
       debugPrint('✅ Pending verification cleared');
-      
+
       // Clear security cache so unlock screen doesn't show on next login
       await BiometricService().clearSecurityCache();
       debugPrint('✅ Security cache cleared');
@@ -793,7 +877,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       }
     } catch (e) {
       if (context.mounted) {
-        AppToast.error(context, '${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}');
+        AppToast.error(
+          context,
+          '${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}',
+        );
       }
     }
   }
@@ -804,7 +891,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       _openScanScreen();
       return;
     }
-    
+
     // For home (0) and rewards (2), just switch the view
     setState(() {
       _currentNavIndex = index;
@@ -812,12 +899,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   void _openScanScreen() async {
-    final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (context) => const ScanScreen(),
-      ),
-    );
-    
+    final result = await Navigator.of(
+      context,
+    ).push<String>(MaterialPageRoute(builder: (context) => const ScanScreen()));
+
     if (result != null && mounted) {
       // Handle the scanned code - could be an invite code to add member
       debugPrint('📷 Scanned code: $result');
@@ -827,11 +912,22 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   void _handleNotificationTap(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const NotificationsScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const NotificationsScreen()),
     );
     // No need to fetch on return - stream subscription handles real-time updates
+  }
+
+  void _navigateToRewards(BuildContext context) {
+    // Switch to rewards tab in nav bar instead of pushing new route
+    setState(() {
+      _currentNavIndex = 2;
+    });
+  }
+
+  void _navigateToStatement(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const StatementScreen()));
   }
 
   /// Initialize notification service and listen for updates
@@ -849,7 +945,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         setState(() => _notificationCount = count);
       }
     });
-    
+
     // No need to call fetchNotifications() here - connect() handles it
   }
 
@@ -1453,9 +1549,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
                                     // OPTIMISTIC UPDATE: Update member status immediately
                                     setState(() {
-                                      _familyMembers = _familyMembers.map((
-                                        m,
-                                      ) {
+                                      _familyMembers = _familyMembers.map((m) {
                                         if (m.id == member.id) {
                                           return FamilyMember(
                                             id: m.id,
@@ -1578,7 +1672,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const LoginSecurityScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const LoginSecurityScreen(),
+                ),
               );
             },
             onLanguages: () {
@@ -1592,7 +1688,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
               ).then((_) {
                 // Refresh notification count when returning
                 _notificationService.fetchUnreadCount();
@@ -1696,114 +1794,121 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   Widget _buildHomeContent() {
-    return Stack(
-      children: [
-        // Scrollable content - behind everything
-        Positioned.fill(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Space for the fixed header
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.32,
-                ),
+    return RefreshIndicator(
+      onRefresh: _handlePullToRefresh,
+      color: AppColors.secondary,
+      displacement: 40,
+      edgeOffset: MediaQuery.of(context).padding.top,
+      child: Stack(
+        children: [
+          // Scrollable content - behind everything
+          Positioned.fill(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Space for the fixed header
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.32),
 
-                // Next Withdrawal Card
-                _buildNextWithdrawalCard(context),
+                  // Next Withdrawal Card
+                  _buildNextWithdrawalCard(context),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Family Members Section
-                _buildFamilyMembersSection(context),
+                  // Family Members Section
+                  _buildFamilyMembersSection(context),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Recent Activities Section
-                _buildRecentActivitiesSection(context),
+                  // Recent Activities Section
+                  _buildRecentActivitiesSection(context),
 
-                // Bottom padding for nav bar
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ),
-
-        // Fixed Header on top - doesn't move
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: HomeHeaderWidget(
-            points: _familyPoints,
-            onTopUp: () {},
-            onWithdraw: () {},
-            onStatement: () {},
-            onNotification: () => _handleNotificationTap(context),
-            notificationCount: _notificationCount,
-            topUpKey: _topUpKey,
-            withdrawKey: _withdrawKey,
-            statementKey: _statementKey,
-            pointsKey: _pointsKey,
-            notificationKey: _notificationKey,
-          ),
-        ),
-
-        // Drawer handle - positioned at top (RTL aware)
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 60,
-          left: Directionality.of(context) == TextDirection.rtl ? null : 0,
-          right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
-          child: GestureDetector(
-            key: _sidebarKey,
-            onTap: () => _scaffoldKey.currentState?.openDrawer(),
-            child: Container(
-              width: 24,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.only(
-                  topRight: Directionality.of(context) == TextDirection.rtl
-                      ? Radius.zero
-                      : const Radius.circular(24),
-                  bottomRight: Directionality.of(context) == TextDirection.rtl
-                      ? Radius.zero
-                      : const Radius.circular(24),
-                  topLeft: Directionality.of(context) == TextDirection.rtl
-                      ? const Radius.circular(24)
-                      : Radius.zero,
-                  bottomLeft: Directionality.of(context) == TextDirection.rtl
-                      ? const Radius.circular(24)
-                      : Radius.zero,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.secondary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: Directionality.of(context) == TextDirection.rtl
-                        ? const Offset(-2, 0)
-                        : const Offset(2, 0),
-                  ),
+                  // Bottom padding for nav bar
+                  const SizedBox(height: 100),
                 ],
               ),
-              child: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left
-                    : Icons.chevron_right,
-                color: Colors.white,
-                size: 18,
+            ),
+          ),
+
+          // Fixed Header on top - doesn't move
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: HomeHeaderWidget(
+              points: _familyPoints,
+              onTopUp: () {},
+              onWithdraw: () {},
+              onStatement: () => _navigateToStatement(context),
+              onPoints: () => _navigateToRewards(context),
+              onNotification: () => _handleNotificationTap(context),
+              notificationCount: _notificationCount,
+              topUpKey: _topUpKey,
+              withdrawKey: _withdrawKey,
+              statementKey: _statementKey,
+              pointsKey: _pointsKey,
+              notificationKey: _notificationKey,
+            ),
+          ),
+
+          // Drawer handle - positioned at top (RTL aware)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            left: Directionality.of(context) == TextDirection.rtl ? null : 0,
+            right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
+            child: GestureDetector(
+              key: _sidebarKey,
+              onTap: () => _scaffoldKey.currentState?.openDrawer(),
+              child: Container(
+                width: 24,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.only(
+                    topRight: Directionality.of(context) == TextDirection.rtl
+                        ? Radius.zero
+                        : const Radius.circular(24),
+                    bottomRight: Directionality.of(context) == TextDirection.rtl
+                        ? Radius.zero
+                        : const Radius.circular(24),
+                    topLeft: Directionality.of(context) == TextDirection.rtl
+                        ? const Radius.circular(24)
+                        : Radius.zero,
+                    bottomLeft: Directionality.of(context) == TextDirection.rtl
+                        ? const Radius.circular(24)
+                        : Radius.zero,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: Directionality.of(context) == TextDirection.rtl
+                          ? const Offset(-2, 0)
+                          : const Offset(2, 0),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left
+                      : Icons.chevron_right,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildNextWithdrawalCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // If no aid selected, show placeholder
     if (_selectedAid == null) {
       return Padding(
@@ -1812,7 +1917,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CurrentPackScreen()),
+              MaterialPageRoute(
+                builder: (context) => const CurrentPackScreen(),
+              ),
             ).then((_) => _loadSelectedAid());
           },
           child: Container(
@@ -1873,7 +1980,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         ),
       );
     }
-    
+
     // Get the emoji based on aid type
     String aidEmoji = '🎊';
     switch (_selectedAid!.aidName) {
@@ -1916,11 +2023,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _aidWindowOpen 
+            color: _aidWindowOpen
                 ? AppColors.secondary.withValues(alpha: 0.1)
                 : const Color(0xFFEE3764).withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(15),
-            border: _aidWindowOpen 
+            border: _aidWindowOpen
                 ? Border.all(color: AppColors.secondary, width: 1.5)
                 : null,
           ),
@@ -1930,7 +2037,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _aidWindowOpen 
+                  color: _aidWindowOpen
                       ? AppColors.secondary.withValues(alpha: 0.2)
                       : const Color(0xFFEE3764).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
@@ -1965,13 +2072,15 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                     Opacity(
                       opacity: 0.6,
                       child: Text(
-                        _aidWindowOpen 
+                        _aidWindowOpen
                             ? l10n.aidWindowOpen
-                            : _daysUntilAid != null 
-                                ? l10n.availableInDays(_daysUntilAid!)
-                                : '',
+                            : _daysUntilAid != null
+                            ? l10n.availableInDays(_daysUntilAid!)
+                            : '',
                         style: TextStyle(
-                          color: _aidWindowOpen ? AppColors.secondary : const Color(0xFF13123A),
+                          color: _aidWindowOpen
+                              ? AppColors.secondary
+                              : const Color(0xFF13123A),
                           fontSize: 11,
                           fontFamily: 'Nunito Sans',
                           fontWeight: FontWeight.w700,
@@ -2048,18 +2157,16 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           ),
           const SizedBox(height: 16),
           if (_isLoadingMembers)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: CircularProgressIndicator(),
-              ),
-            )
+            const SkeletonFamilyMembersRow(itemCount: 3)
           else if (_familyMembers.where((m) => !m.isOwner).isEmpty)
             GestureDetector(
               onTap: _showAddMemberDialog,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 24,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [

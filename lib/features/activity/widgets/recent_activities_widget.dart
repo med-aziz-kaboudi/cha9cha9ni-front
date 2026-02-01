@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/skeleton_loading.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../rewards/rewards_model.dart';
 import '../activity_service.dart';
@@ -29,6 +30,11 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
   final _activityService = ActivityService();
   List<RewardActivity> _activities = [];
   StreamSubscription<List<RewardActivity>>? _subscription;
+  bool _isLoading = true;
+  bool _hasFetchedOnce = false;
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
+  Timer? _retryTimer;
 
   @override
   void initState() {
@@ -37,27 +43,87 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
   }
 
   Future<void> _initializeService() async {
-    await _activityService.initialize();
-    if (mounted) {
-      setState(() {
-        _activities = _activityService.getRecentActivities(
+    try {
+      await _activityService.initialize();
+      if (mounted) {
+        final activities = _activityService.getRecentActivities(
           count: widget.maxActivities,
         );
-      });
-    }
+        setState(() {
+          _activities = activities;
+          _isLoading = activities.isEmpty && !_hasFetchedOnce;
+        });
 
-    _subscription = _activityService.activitiesStream.listen((activities) {
+        // If no cached data, fetch from API
+        if (activities.isEmpty && !_hasFetchedOnce) {
+          _fetchWithRetry();
+        } else {
+          _hasFetchedOnce = true;
+          setState(() => _isLoading = false);
+        }
+      }
+
+      _subscription = _activityService.activitiesStream.listen((activities) {
+        if (mounted) {
+          setState(() {
+            _activities = activities.take(widget.maxActivities).toList();
+            _isLoading = false;
+            _hasFetchedOnce = true;
+          });
+        }
+      });
+    } catch (e) {
+      debugPrint('RecentActivitiesWidget: Init error - $e');
+      if (mounted && !_hasFetchedOnce) {
+        _fetchWithRetry();
+      }
+    }
+  }
+
+  Future<void> _fetchWithRetry() async {
+    if (_retryCount >= _maxRetries) {
       if (mounted) {
         setState(() {
-          _activities = activities.take(widget.maxActivities).toList();
+          _isLoading = false;
+          _hasFetchedOnce = true;
         });
       }
-    });
+      return;
+    }
+
+    try {
+      await _activityService.refresh(force: true);
+      if (mounted) {
+        final activities = _activityService.getRecentActivities(
+          count: widget.maxActivities,
+        );
+        setState(() {
+          _activities = activities;
+          _isLoading = false;
+          _hasFetchedOnce = true;
+          _retryCount = 0;
+        });
+      }
+    } catch (e) {
+      debugPrint(
+        'RecentActivitiesWidget: Fetch error (retry $_retryCount) - $e',
+      );
+      _retryCount++;
+      // Retry with exponential backoff
+      final delay = Duration(seconds: _retryCount * 2);
+      _retryTimer?.cancel();
+      _retryTimer = Timer(delay, () {
+        if (mounted && _activities.isEmpty) {
+          _fetchWithRetry();
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _retryTimer?.cancel();
     super.dispose();
   }
 
@@ -195,8 +261,10 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
             ],
           ),
           const SizedBox(height: 14),
-          // Activities list or empty state
-          if (_activities.isEmpty)
+          // Show skeleton while loading, otherwise show activities or empty state
+          if (_isLoading)
+            const SkeletonRecentActivities(itemCount: 3)
+          else if (_activities.isEmpty)
             _buildEmptyState(l10n)
           else
             Column(

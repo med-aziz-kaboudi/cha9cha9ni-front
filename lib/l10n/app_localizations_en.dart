@@ -1463,6 +1463,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAll => 'All';
 
   @override
+  String get filterLast10Days => 'Last 10 days';
+
+  @override
   String get filterLast7Days => 'Last 7 days';
 
   @override
@@ -1778,5 +1781,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooManyAttemptsTitle => 'Too Many Attempts';
 
   @override
+  String rateLimitedWait(String time) {
+    return 'Rate limited. Please wait $time';
+  }
+
+  @override
+  String tooManyRefreshes(int minutes) {
+    return 'Too many refreshes. Please wait $minutes minutes.';
+  }
+
+  @override
   String get couldNotOpenLink => 'Could not open link';
+
+  @override
+  String get statementTitle => 'Statement';
+
+  @override
+  String get statementSubtitle =>
+      'Select a start date to generate your statement and receive it via email';
+
+  @override
+  String get statementSelectStartDate => 'Select Start Date';
+
+  @override
+  String get statementDateHint => 'Statement from this date to today';
+
+  @override
+  String get statementYear => 'Year';
+
+  @override
+  String get statementMonth => 'Month';
+
+  @override
+  String get statementPeriod => 'Statement Period';
+
+  @override
+  String get statementToday => 'Today';
+
+  @override
+  String get statementSelectDate => 'Please select a date';
+
+  @override
+  String get statementNoActivity =>
+      'No activity found for this period. Please select another date.';
+
+  @override
+  String get statementLoadError => 'Failed to load data. Please try again.';
+
+  @override
+  String get statementGenerateError =>
+      'Failed to generate statement. Please try again.';
+
+  @override
+  String get statementSending => 'Sending...';
+
+  @override
+  String get statementSendButton => 'Send to My Email';
+
+  @override
+  String get statementRateLimitError =>
+      'Limit reached! You can only send 2 statements per day.';
+
+  @override
+  String get statementRateLimitNote => 'Limited to 2 sends per day';
+
+  @override
+  String statementRemainingEmails(int count) {
+    return '$count send(s) remaining today';
+  }
+
+  @override
+  String get statementSentTitle => 'Statement Sent!';
+
+  @override
+  String statementSentDescription(String startDate) {
+    return 'Your statement from $startDate to today has been sent to';
+  }
+
+  @override
+  String get statementGotIt => 'Got it!';
 }

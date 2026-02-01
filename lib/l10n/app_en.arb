@@ -714,6 +714,7 @@
   "filterByTime": "By Time Period",
   "filterByType": "By Activity Type",
   "filterAll": "All",
+  "filterLast10Days": "Last 10 days",
   "filterLast7Days": "Last 7 days",
   "filterLast30Days": "Last 30 days",
   "filterLast3Months": "Last 3 months",
@@ -937,6 +938,56 @@
   "codeSentAgain": "Code sent again",
   "tooManyAttempts": "Too many attempts. Please try again in {minutes} minutes.",
   "tooManyAttemptsTitle": "Too Many Attempts",
+  "rateLimitedWait": "Rate limited. Please wait {time}",
+  "@rateLimitedWait": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tooManyRefreshes": "Too many refreshes. Please wait {minutes} minutes.",
+  "@tooManyRefreshes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "ok": "OK",
-  "couldNotOpenLink": "Could not open link"
+  "couldNotOpenLink": "Could not open link",
+  "statementTitle": "Statement",
+  "statementSubtitle": "Select a start date to generate your statement and receive it via email",
+  "statementSelectStartDate": "Select Start Date",
+  "statementDateHint": "Statement from this date to today",
+  "statementYear": "Year",
+  "statementMonth": "Month",
+  "statementPeriod": "Statement Period",
+  "statementToday": "Today",
+  "statementSelectDate": "Please select a date",
+  "statementNoActivity": "No activity found for this period. Please select another date.",
+  "statementLoadError": "Failed to load data. Please try again.",
+  "statementGenerateError": "Failed to generate statement. Please try again.",
+  "statementSending": "Sending...",
+  "statementSendButton": "Send to My Email",
+  "statementRateLimitError": "Limit reached! You can only send 2 statements per day.",
+  "statementRateLimitNote": "Limited to 2 sends per day",
+  "statementRemainingEmails": "{count} send(s) remaining today",
+  "@statementRemainingEmails": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statementSentTitle": "Statement Sent!",
+  "statementSentDescription": "Your statement from {startDate} to today has been sent to",
+  "@statementSentDescription": {
+    "placeholders": {
+      "startDate": {
+        "type": "String"
+      }
+    }
+  },
+  "statementGotIt": "Got it!"
 }

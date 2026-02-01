@@ -699,6 +699,7 @@
   "filterByTime": "حسب الفترة الزمنية",
   "filterByType": "حسب نوع النشاط",
   "filterAll": "الكل",
+  "filterLast10Days": "آخر 10 أيام",
   "filterLast7Days": "آخر 7 أيام",
   "filterLast30Days": "آخر 30 يوم",
   "filterLast3Months": "آخر 3 أشهر",
@@ -922,6 +923,42 @@
   "codeSentAgain": "تم إرسال الرمز مجدداً",
   "tooManyAttempts": "محاولات كثيرة جداً. يرجى المحاولة مرة أخرى بعد {minutes} دقيقة.",
   "tooManyAttemptsTitle": "محاولات كثيرة جداً",
+  "rateLimitedWait": "تم تجاوز الحد. يرجى الانتظار {time}",
+  "tooManyRefreshes": "تحديثات كثيرة جداً. يرجى الانتظار {minutes} دقيقة.",
   "ok": "حسناً",
-  "couldNotOpenLink": "تعذر فتح الرابط"
+  "couldNotOpenLink": "تعذر فتح الرابط",
+  "statementTitle": "كشف الحساب",
+  "statementSubtitle": "اختر تاريخ البداية لإنشاء كشف حسابك واستلامه عبر البريد الإلكتروني",
+  "statementSelectStartDate": "اختر تاريخ البداية",
+  "statementDateHint": "الكشف من هذا التاريخ حتى اليوم",
+  "statementYear": "السنة",
+  "statementMonth": "الشهر",
+  "statementPeriod": "فترة الكشف",
+  "statementToday": "اليوم",
+  "statementSelectDate": "يرجى اختيار تاريخ",
+  "statementNoActivity": "لا يوجد نشاط في هذه الفترة. يرجى اختيار تاريخ آخر.",
+  "statementLoadError": "فشل تحميل البيانات. يرجى المحاولة مرة أخرى.",
+  "statementGenerateError": "فشل إنشاء الكشف. يرجى المحاولة مرة أخرى.",
+  "statementSending": "جاري الإرسال...",
+  "statementSendButton": "إرسال إلى بريدي",
+  "statementRateLimitError": "تم الوصول للحد! يمكنك إرسال كشفين فقط يومياً.",
+  "statementRateLimitNote": "محدود بـ 2 إرسال يومياً",
+  "statementRemainingEmails": "{count} إرسال متبقي اليوم",
+  "@statementRemainingEmails": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statementSentTitle": "تم إرسال الكشف!",
+  "statementSentDescription": "تم إرسال كشف حسابك من {startDate} إلى اليوم إلى",
+  "@statementSentDescription": {
+    "placeholders": {
+      "startDate": {
+        "type": "String"
+      }
+    }
+  },
+  "statementGotIt": "حسناً!"
 }

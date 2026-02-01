@@ -1460,6 +1460,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get filterAll => 'الكل';
 
   @override
+  String get filterLast10Days => 'آخر 10 أيام';
+
+  @override
   String get filterLast7Days => 'آخر 7 أيام';
 
   @override
@@ -1772,5 +1775,84 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tooManyAttemptsTitle => 'محاولات كثيرة جداً';
 
   @override
+  String rateLimitedWait(String time) {
+    return 'تم تجاوز الحد. يرجى الانتظار $time';
+  }
+
+  @override
+  String tooManyRefreshes(int minutes) {
+    return 'تحديثات كثيرة جداً. يرجى الانتظار $minutes دقيقة.';
+  }
+
+  @override
   String get couldNotOpenLink => 'تعذر فتح الرابط';
+
+  @override
+  String get statementTitle => 'كشف الحساب';
+
+  @override
+  String get statementSubtitle =>
+      'اختر تاريخ البداية لإنشاء كشف حسابك واستلامه عبر البريد الإلكتروني';
+
+  @override
+  String get statementSelectStartDate => 'اختر تاريخ البداية';
+
+  @override
+  String get statementDateHint => 'الكشف من هذا التاريخ حتى اليوم';
+
+  @override
+  String get statementYear => 'السنة';
+
+  @override
+  String get statementMonth => 'الشهر';
+
+  @override
+  String get statementPeriod => 'فترة الكشف';
+
+  @override
+  String get statementToday => 'اليوم';
+
+  @override
+  String get statementSelectDate => 'يرجى اختيار تاريخ';
+
+  @override
+  String get statementNoActivity =>
+      'لا يوجد نشاط في هذه الفترة. يرجى اختيار تاريخ آخر.';
+
+  @override
+  String get statementLoadError =>
+      'فشل تحميل البيانات. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get statementGenerateError =>
+      'فشل إنشاء الكشف. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get statementSending => 'جاري الإرسال...';
+
+  @override
+  String get statementSendButton => 'إرسال إلى بريدي';
+
+  @override
+  String get statementRateLimitError =>
+      'تم الوصول للحد! يمكنك إرسال كشفين فقط يومياً.';
+
+  @override
+  String get statementRateLimitNote => 'محدود بـ 2 إرسال يومياً';
+
+  @override
+  String statementRemainingEmails(int count) {
+    return '$count إرسال متبقي اليوم';
+  }
+
+  @override
+  String get statementSentTitle => 'تم إرسال الكشف!';
+
+  @override
+  String statementSentDescription(String startDate) {
+    return 'تم إرسال كشف حسابك من $startDate إلى اليوم إلى';
+  }
+
+  @override
+  String get statementGotIt => 'حسناً!';
 }

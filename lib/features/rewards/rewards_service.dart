@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/services/socket_service.dart';
+import '../../core/services/analytics_service.dart';
 import 'rewards_api_service.dart';
 import 'rewards_model.dart';
 
@@ -103,6 +104,12 @@ class RewardsService {
       final result = await _apiService.claimReward(clientEventId);
       _isWatchingAd = false;
       _pendingEventId = null;
+
+      // Track reward earned
+      AnalyticsService().trackRewardEarned(
+        rewardType: 'ad_watch',
+        points: result.pointsEarned,
+      );
 
       // Refresh data to get updated state
       await fetchRewardsData();

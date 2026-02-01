@@ -11,13 +11,16 @@ import '../../core/services/biometric_service.dart';
 import '../../core/services/socket_service.dart'
     show PointsEarnedData, AidSelectedData, MemberLeftData, SocketService;
 import '../../core/services/notification_service.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
+import '../../core/widgets/skeleton_loading.dart';
 import '../../core/widgets/tutorial_overlay.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
+import '../activity/activity_service.dart';
 import '../activity/widgets/recent_activities_widget.dart';
 import '../auth/screens/signin_screen.dart';
 import '../family/family_selection_screen.dart';
@@ -31,6 +34,7 @@ import '../scan/screens/scan_screen.dart';
 import '../pack/screens/current_pack_screen.dart';
 import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
+import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 import 'widgets/home_header_widget.dart';
 
@@ -107,6 +111,13 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   static const int _maxLeaveAttempts = 3;
   static const int _blockDurationMinutes = 15;
 
+  // Pull-to-refresh rate limiting
+  static const int _maxRefreshes = 3;
+  static const int _rateLimitMinutes = 15;
+  int _refreshCount = 0;
+  DateTime? _rateLimitEndTime;
+  Timer? _rateLimitTimer;
+
   @override
   void initState() {
     super.initState();
@@ -152,7 +163,79 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
     _memberLeftSubscription?.cancel();
+    _rateLimitTimer?.cancel();
     super.dispose();
+  }
+
+  // Rate limiting helpers for pull-to-refresh
+  bool get _isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  String get _rateLimitRemainingTime {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return '${mins}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _startRateLimitTimer() {
+    _rateLimitTimer?.cancel();
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (!_isRateLimited) {
+          _rateLimitTimer?.cancel();
+          setState(() {
+            _rateLimitEndTime = null;
+            _refreshCount = 0;
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> _handlePullToRefresh() async {
+    // Check rate limit
+    if (_isRateLimited) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        AppToast.warning(
+          context,
+          l10n?.rateLimitedWait(_rateLimitRemainingTime) ??
+              'Rate limited. Please wait $_rateLimitRemainingTime',
+        );
+      }
+      return;
+    }
+
+    // Increment refresh count
+    _refreshCount++;
+    if (_refreshCount >= _maxRefreshes) {
+      _rateLimitEndTime = DateTime.now().add(
+        const Duration(minutes: _rateLimitMinutes),
+      );
+      _startRateLimitTimer();
+      if (mounted) {
+        final l10n = AppLocalizations.of(context);
+        AppToast.warning(
+          context,
+          l10n?.tooManyRefreshes(_rateLimitMinutes) ??
+              'Too many refreshes. Please wait $_rateLimitMinutes minutes.',
+        );
+      }
+    }
+
+    // Refresh all data
+    await Future.wait([
+      _refreshFamilyDataSilently(),
+      _loadFamilyPoints(),
+      _loadSelectedAid(),
+      _loadRemovalRequests(),
+      ActivityService().refresh(force: true),
+    ]);
   }
 
   /// Load family points from rewards service
@@ -664,6 +747,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     // Show success message
     AppToast.success(context, l10n.leaveFamilySuccess);
 
+    // Track leave family event
+    AnalyticsService().trackLeaveFamily();
+
     // Navigate to family selection screen where they can create or join a new family
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -727,9 +813,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   void _openTawkToChat() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TawkToChatScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const TawkToChatScreen()),
     );
   }
 
@@ -1665,6 +1749,19 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     // No need to fetch on return - stream subscription handles real-time updates
   }
 
+  void _navigateToRewards(BuildContext context) {
+    // Switch to rewards tab in nav bar instead of pushing new route
+    setState(() {
+      _currentNavIndex = 2;
+    });
+  }
+
+  void _navigateToStatement(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const StatementScreen()));
+  }
+
   List<TutorialStep> _buildTutorialSteps() {
     final l10n = AppLocalizations.of(context)!;
     return [
@@ -1714,112 +1811,121 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   Widget _buildHomeContent() {
-    return Stack(
-      children: [
-        // Scrollable content - behind everything
-        Positioned.fill(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Space for the fixed header
-                SizedBox(height: MediaQuery.of(context).size.height * 0.32),
+    return RefreshIndicator(
+      onRefresh: _handlePullToRefresh,
+      color: AppColors.secondary,
+      displacement: 40,
+      edgeOffset: MediaQuery.of(context).padding.top,
+      child: Stack(
+        children: [
+          // Scrollable content - behind everything
+          Positioned.fill(
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Space for the fixed header
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.32),
 
-                // Pending removal banner (if any)
-                if (_hasPendingRemovalFromOwner) ...[
-                  _buildPendingRemovalBanner(context),
-                  const SizedBox(height: 16),
+                  // Pending removal banner (if any)
+                  if (_hasPendingRemovalFromOwner) ...[
+                    _buildPendingRemovalBanner(context),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Next Withdrawal Card
+                  _buildNextWithdrawalCard(context),
+
+                  const SizedBox(height: 24),
+
+                  // Family Members Section (view only)
+                  _buildFamilyMembersSection(context),
+
+                  const SizedBox(height: 24),
+
+                  // Recent Activities Section
+                  _buildRecentActivitiesSection(context),
+
+                  // Bottom padding for nav bar
+                  const SizedBox(height: 100),
                 ],
-
-                // Next Withdrawal Card
-                _buildNextWithdrawalCard(context),
-
-                const SizedBox(height: 24),
-
-                // Family Members Section (view only)
-                _buildFamilyMembersSection(context),
-
-                const SizedBox(height: 24),
-
-                // Recent Activities Section
-                _buildRecentActivitiesSection(context),
-
-                // Bottom padding for nav bar
-                const SizedBox(height: 100),
-              ],
+              ),
             ),
           ),
-        ),
 
-        // Fixed Header on top - doesn't move
-        // Member only sees TopUp and Statement (no Withdraw)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: HomeHeaderWidget(
-            points: _familyPoints,
-            onTopUp: () {},
-            onStatement: () {},
-            showWithdraw: false, // Hide withdraw for members
-            onNotification: () => _handleNotificationTap(context),
-            notificationCount: _notificationCount,
-            topUpKey: _topUpKey,
-            statementKey: _statementKey,
-            pointsKey: _pointsKey,
-            notificationKey: _notificationKey,
+          // Fixed Header on top - doesn't move
+          // Member only sees TopUp and Statement (no Withdraw)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: HomeHeaderWidget(
+              points: _familyPoints,
+              onTopUp: () {},
+              onStatement: () => _navigateToStatement(context),
+              showWithdraw: false, // Hide withdraw for members
+              onPoints: () => _navigateToRewards(context),
+              onNotification: () => _handleNotificationTap(context),
+              notificationCount: _notificationCount,
+              topUpKey: _topUpKey,
+              statementKey: _statementKey,
+              pointsKey: _pointsKey,
+              notificationKey: _notificationKey,
+            ),
           ),
-        ),
 
-        // Drawer handle - positioned at top (RTL aware)
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 60,
-          left: Directionality.of(context) == TextDirection.rtl ? null : 0,
-          right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
-          child: GestureDetector(
-            key: _sidebarKey,
-            onTap: () => _scaffoldKey.currentState?.openDrawer(),
-            child: Container(
-              width: 24,
-              height: 48,
-              decoration: BoxDecoration(
-                color: AppColors.secondary,
-                borderRadius: BorderRadius.only(
-                  topRight: Directionality.of(context) == TextDirection.rtl
-                      ? Radius.zero
-                      : const Radius.circular(24),
-                  bottomRight: Directionality.of(context) == TextDirection.rtl
-                      ? Radius.zero
-                      : const Radius.circular(24),
-                  topLeft: Directionality.of(context) == TextDirection.rtl
-                      ? const Radius.circular(24)
-                      : Radius.zero,
-                  bottomLeft: Directionality.of(context) == TextDirection.rtl
-                      ? const Radius.circular(24)
-                      : Radius.zero,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.secondary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: Directionality.of(context) == TextDirection.rtl
-                        ? const Offset(-2, 0)
-                        : const Offset(2, 0),
+          // Drawer handle - positioned at top (RTL aware)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 60,
+            left: Directionality.of(context) == TextDirection.rtl ? null : 0,
+            right: Directionality.of(context) == TextDirection.rtl ? 0 : null,
+            child: GestureDetector(
+              key: _sidebarKey,
+              onTap: () => _scaffoldKey.currentState?.openDrawer(),
+              child: Container(
+                width: 24,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.only(
+                    topRight: Directionality.of(context) == TextDirection.rtl
+                        ? Radius.zero
+                        : const Radius.circular(24),
+                    bottomRight: Directionality.of(context) == TextDirection.rtl
+                        ? Radius.zero
+                        : const Radius.circular(24),
+                    topLeft: Directionality.of(context) == TextDirection.rtl
+                        ? const Radius.circular(24)
+                        : Radius.zero,
+                    bottomLeft: Directionality.of(context) == TextDirection.rtl
+                        ? const Radius.circular(24)
+                        : Radius.zero,
                   ),
-                ],
-              ),
-              child: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left
-                    : Icons.chevron_right,
-                color: Colors.white,
-                size: 18,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: Directionality.of(context) == TextDirection.rtl
+                          ? const Offset(-2, 0)
+                          : const Offset(2, 0),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.chevron_left
+                      : Icons.chevron_right,
+                  color: Colors.white,
+                  size: 18,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -2052,12 +2158,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           ),
           const SizedBox(height: 16),
           if (_isLoadingMembers)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: CircularProgressIndicator(),
-              ),
-            )
+            const SkeletonFamilyMembersRow(itemCount: 3)
           else if (_familyMembers.isEmpty)
             Container(
               width: double.infinity,

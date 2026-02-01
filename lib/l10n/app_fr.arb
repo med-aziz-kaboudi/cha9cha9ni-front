@@ -699,6 +699,7 @@
   "filterByTime": "Par période",
   "filterByType": "Par type d'activité",
   "filterAll": "Tout",
+  "filterLast10Days": "10 derniers jours",
   "filterLast7Days": "7 derniers jours",
   "filterLast30Days": "30 derniers jours",
   "filterLast3Months": "3 derniers mois",
@@ -915,5 +916,41 @@
   "codeSentAgain": "Code renvoyé",
   "tooManyAttempts": "Trop de tentatives. Veuillez réessayer dans {minutes} minutes.",
   "tooManyAttemptsTitle": "Trop de tentatives",
-  "couldNotOpenLink": "Impossible d'ouvrir le lien"
+  "rateLimitedWait": "Limite atteinte. Veuillez patienter {time}",
+  "tooManyRefreshes": "Trop de rafraîchissements. Veuillez patienter {minutes} minutes.",
+  "couldNotOpenLink": "Impossible d'ouvrir le lien",
+  "statementTitle": "Relevé",
+  "statementSubtitle": "Sélectionnez une date de début pour générer votre relevé et le recevoir par email",
+  "statementSelectStartDate": "Sélectionner la Date de Début",
+  "statementDateHint": "Relevé de cette date jusqu'à aujourd'hui",
+  "statementYear": "Année",
+  "statementMonth": "Mois",
+  "statementPeriod": "Période du Relevé",
+  "statementToday": "Aujourd'hui",
+  "statementSelectDate": "Veuillez sélectionner une date",
+  "statementNoActivity": "Aucune activité trouvée pour cette période. Veuillez sélectionner une autre date.",
+  "statementLoadError": "Échec du chargement des données. Veuillez réessayer.",
+  "statementGenerateError": "Échec de la génération du relevé. Veuillez réessayer.",
+  "statementSending": "Envoi en cours...",
+  "statementSendButton": "Envoyer à Mon Email",
+  "statementRateLimitError": "Limite atteinte ! Vous ne pouvez envoyer que 2 relevés par jour.",
+  "statementRateLimitNote": "Limité à 2 envois par jour",
+  "statementRemainingEmails": "{count} envoi(s) restant(s) aujourd'hui",
+  "@statementRemainingEmails": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statementSentTitle": "Relevé Envoyé!",
+  "statementSentDescription": "Votre relevé du {startDate} à aujourd'hui a été envoyé à",
+  "@statementSentDescription": {
+    "placeholders": {
+      "startDate": {
+        "type": "String"
+      }
+    }
+  },
+  "statementGotIt": "Compris!"
 }

@@ -5,6 +5,7 @@ import '../../core/models/family_model.dart';
 import '../../core/services/family_api_service.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/biometric_service.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';import '../../l10n/app_localizations.dart';import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
@@ -125,6 +126,9 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
 
       debugPrint('✅ Family created: ${family.id}, Invite: ${family.inviteCode}');
 
+      // Track family creation
+      AnalyticsService().trackCreateFamily(familyId: family.id);
+
       if (!mounted) return;
 
       // Show success dialog with invite code
@@ -182,6 +186,9 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       );
 
       debugPrint('✅ Successfully joined family');
+      
+      // Track join family
+      AnalyticsService().trackJoinFamily();
       
       // Verify family membership by fetching family info
       final family = await _familyApiService.getMyFamily();

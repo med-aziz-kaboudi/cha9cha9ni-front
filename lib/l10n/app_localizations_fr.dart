@@ -1486,6 +1486,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAll => 'Tout';
 
   @override
+  String get filterLast10Days => '10 derniers jours';
+
+  @override
   String get filterLast7Days => '7 derniers jours';
 
   @override
@@ -1803,5 +1806,84 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tooManyAttemptsTitle => 'Trop de tentatives';
 
   @override
+  String rateLimitedWait(String time) {
+    return 'Limite atteinte. Veuillez patienter $time';
+  }
+
+  @override
+  String tooManyRefreshes(int minutes) {
+    return 'Trop de rafraîchissements. Veuillez patienter $minutes minutes.';
+  }
+
+  @override
   String get couldNotOpenLink => 'Impossible d\'ouvrir le lien';
+
+  @override
+  String get statementTitle => 'Relevé';
+
+  @override
+  String get statementSubtitle =>
+      'Sélectionnez une date de début pour générer votre relevé et le recevoir par email';
+
+  @override
+  String get statementSelectStartDate => 'Sélectionner la Date de Début';
+
+  @override
+  String get statementDateHint => 'Relevé de cette date jusqu\'à aujourd\'hui';
+
+  @override
+  String get statementYear => 'Année';
+
+  @override
+  String get statementMonth => 'Mois';
+
+  @override
+  String get statementPeriod => 'Période du Relevé';
+
+  @override
+  String get statementToday => 'Aujourd\'hui';
+
+  @override
+  String get statementSelectDate => 'Veuillez sélectionner une date';
+
+  @override
+  String get statementNoActivity =>
+      'Aucune activité trouvée pour cette période. Veuillez sélectionner une autre date.';
+
+  @override
+  String get statementLoadError =>
+      'Échec du chargement des données. Veuillez réessayer.';
+
+  @override
+  String get statementGenerateError =>
+      'Échec de la génération du relevé. Veuillez réessayer.';
+
+  @override
+  String get statementSending => 'Envoi en cours...';
+
+  @override
+  String get statementSendButton => 'Envoyer à Mon Email';
+
+  @override
+  String get statementRateLimitError =>
+      'Limite atteinte ! Vous ne pouvez envoyer que 2 relevés par jour.';
+
+  @override
+  String get statementRateLimitNote => 'Limité à 2 envois par jour';
+
+  @override
+  String statementRemainingEmails(int count) {
+    return '$count envoi(s) restant(s) aujourd\'hui';
+  }
+
+  @override
+  String get statementSentTitle => 'Relevé Envoyé!';
+
+  @override
+  String statementSentDescription(String startDate) {
+    return 'Votre relevé du $startDate à aujourd\'hui a été envoyé à';
+  }
+
+  @override
+  String get statementGotIt => 'Compris!';
 }

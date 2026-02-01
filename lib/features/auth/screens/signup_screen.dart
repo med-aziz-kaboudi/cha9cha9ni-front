@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/language_selector.dart';
 import '../../../core/services/api_exception.dart';
+import '../../../core/services/analytics_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../models/auth_request_models.dart';
 import '../services/auth_api_service.dart';
@@ -228,6 +229,9 @@ class _SignUpScreenState extends State<SignUpScreen> with WidgetsBindingObserver
       final response = await _authApiService.register(request);
 
       if (mounted) {
+        // Track signup success
+        AnalyticsService().trackSignUp(method: 'email');
+        
         // Show success message from backend
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -4,12 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
+import '../../../core/widgets/skeleton_loading.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../rewards/rewards_model.dart';
 import '../activity_service.dart';
 
 /// Filter options for activities
-enum ActivityTimeFilter { all, today, yesterday, last7Days, last30Days, last3Months }
+enum ActivityTimeFilter {
+  last10Days,
+  today,
+  yesterday,
+  last7Days,
+  last30Days,
+  last3Months,
+  all,
+}
 
 /// Screen that displays all family activities with filters
 class AllActivitiesScreen extends StatefulWidget {
@@ -34,8 +43,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   DateTime? _rateLimitEndTime;
   Timer? _rateLimitTimer;
 
-  // Filters
-  ActivityTimeFilter _timeFilter = ActivityTimeFilter.all;
+  // Filters - default to last 10 days
+  ActivityTimeFilter _timeFilter = ActivityTimeFilter.last10Days;
   ActivityType? _typeFilter;
 
   late AnimationController _animController;
@@ -111,6 +120,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
               a.createdAt.isAtSameMomentAs(weekAgo);
         }).toList();
         break;
+      case ActivityTimeFilter.last10Days:
+        final tenDaysAgo = today.subtract(const Duration(days: 10));
+        result = result.where((a) {
+          return a.createdAt.isAfter(tenDaysAgo) ||
+              a.createdAt.isAtSameMomentAs(tenDaysAgo);
+        }).toList();
+        break;
       case ActivityTimeFilter.last30Days:
         final monthAgo = today.subtract(const Duration(days: 30));
         result = result.where((a) {
@@ -139,6 +155,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
 
   String _getTimeFilterLabel(ActivityTimeFilter filter, AppLocalizations l10n) {
     switch (filter) {
+      case ActivityTimeFilter.last10Days:
+        return l10n.filterLast10Days;
       case ActivityTimeFilter.all:
         return l10n.filterAll;
       case ActivityTimeFilter.today:
@@ -376,7 +394,11 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                   children: [
                     _buildTypeChip(null, l10n, setModalState),
                     _buildTypeChip(ActivityType.adWatched, l10n, setModalState),
-                    _buildTypeChip(ActivityType.dailyCheckIn, l10n, setModalState),
+                    _buildTypeChip(
+                      ActivityType.dailyCheckIn,
+                      l10n,
+                      setModalState,
+                    ),
                     _buildTypeChip(ActivityType.topUp, l10n, setModalState),
                   ],
                 ),
@@ -419,7 +441,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                     child: TextButton(
                       onPressed: () {
                         setModalState(() {
-                          _timeFilter = ActivityTimeFilter.all;
+                          _timeFilter = ActivityTimeFilter.last10Days;
                           _typeFilter = null;
                         });
                         setState(() => _applyFilters());
@@ -555,7 +577,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     final isRTL = Directionality.of(context) == ui.TextDirection.rtl;
     final groupedActivities = _groupActivitiesByDate(l10n);
     final hasActiveFilters =
-        _timeFilter != ActivityTimeFilter.all || _typeFilter != null;
+        _timeFilter != ActivityTimeFilter.last10Days || _typeFilter != null;
 
     return Scaffold(
       body: Container(
@@ -714,7 +736,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
           GestureDetector(
             onTap: () {
               setState(() {
-                _timeFilter = ActivityTimeFilter.all;
+                _timeFilter = ActivityTimeFilter.last10Days;
                 _typeFilter = null;
                 _applyFilters();
               });
@@ -738,26 +760,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              color: AppColors.secondary,
-              strokeWidth: 3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Loading activities...',
-            style: TextStyle(color: Colors.grey[500], fontSize: 14),
-          ),
-        ],
-      ),
-    );
+    return const SingleChildScrollView(child: SkeletonAllActivities());
   }
 
   Widget _buildEmptyState(AppLocalizations l10n) {
@@ -804,13 +807,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
               style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
-            if (_timeFilter != ActivityTimeFilter.all ||
+            if (_timeFilter != ActivityTimeFilter.last10Days ||
                 _typeFilter != null) ...[
               const SizedBox(height: 24),
               TextButton.icon(
                 onPressed: () {
                   setState(() {
-                    _timeFilter = ActivityTimeFilter.all;
+                    _timeFilter = ActivityTimeFilter.last10Days;
                     _typeFilter = null;
                     _applyFilters();
                   });

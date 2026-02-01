@@ -7,6 +7,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   local_auth_windows
   permission_handler_windows
+  printing
+  share_plus
   url_launcher_windows
 )
 

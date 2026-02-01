@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/services/token_storage_service.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
@@ -192,6 +193,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _profile = updatedProfile;
         _isSaving = false;
       });
+
+      // Track profile updated
+      AnalyticsService().trackProfileUpdated();
 
       if (mounted) {
         AppToast.success(context, l10n.profileUpdatedSuccessfully);

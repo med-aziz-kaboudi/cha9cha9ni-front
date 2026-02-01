@@ -26,6 +26,7 @@ import 'core/services/token_storage_service.dart';
 import 'core/services/family_api_service.dart' show FamilyApiService, AuthenticationException;
 import 'core/services/session_manager.dart';
 import 'core/services/biometric_service.dart';
+import 'core/services/analytics_service.dart';
 import 'core/theme/app_colors.dart';
 
 void main() async {
@@ -52,6 +53,9 @@ void main() async {
     url: 'https://wfqglbotmchhopdgfclx.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcWdsYm90bWNoaG9wZGdmY2x4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgwNzcxMTAsImV4cCI6MjA4MzY1MzExMH0.gVyQTGRQVT5S3xxgConvbakuv6AYDe_D0vTOy-4Oyc8',
   );
+  
+  // Initialize Aptabase Analytics
+  await AnalyticsService().initialize();
   
   // Load saved language
   await LanguageService().loadLanguage();
@@ -291,6 +295,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   }
 
   Future<void> _performSessionLogout() async {
+    // Track logout event
+    AnalyticsService().trackLogout();
+    
     SessionManager().disconnectSocket();
     await _tokenStorage.clearAll();
     await _biometricService.clearSecurityCache();
@@ -433,6 +440,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
 
   /// Called when user logs out from unlock screen
   Future<void> _onLogoutFromUnlock() async {
+    // Track logout event
+    AnalyticsService().trackLogout();
+    
     await _handleAuthFailure();
   }
 
@@ -836,6 +846,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   }
 
   void _onSplashFinished() {
+    // Track app open event
+    AnalyticsService().trackAppOpen();
+    
     // Only hide splash if initialization is complete
     // If not complete yet, we'll wait for it
     if (_initializationComplete) {
