@@ -241,6 +241,7 @@ class _StatementScreenState extends State<StatementScreen>
 
     // Check rate limit first
     if (!_canSendEmail()) {
+      _analytics.trackStatementRateLimited(emailsSentToday: _emailsSentToday);
       AppToast.error(context, l10n.statementRateLimitError);
       return;
     }
@@ -290,6 +291,14 @@ class _StatementScreenState extends State<StatementScreen>
         year: _selectedYear!,
       );
 
+      // Track successful statement send
+      _analytics.trackStatementSent(
+        month: _selectedMonth,
+        year: _selectedYear,
+        activitiesCount: activities.length,
+        totalPoints: totalPoints,
+      );
+
       // Increment rate limit counter after successful send
       await _incrementEmailCount();
 
@@ -297,6 +306,10 @@ class _StatementScreenState extends State<StatementScreen>
     } catch (e, stackTrace) {
       print('❌ Statement generation error: $e');
       print('📍 Stack trace: $stackTrace');
+      
+      // Track statement error
+      _analytics.trackStatementError(error: e.toString());
+      
       if (mounted) {
         AppToast.error(context, l10n.statementGenerateError);
       }

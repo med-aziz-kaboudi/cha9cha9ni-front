@@ -96,6 +96,30 @@ class AnalyticsService {
     _trackEvent('profile_updated');
   }
 
+  /// Track statement sent successfully
+  void trackStatementSent({int? month, int? year, int? activitiesCount, int? totalPoints}) {
+    _trackEvent('statement_sent', {
+      if (month != null) 'month': month,
+      if (year != null) 'year': year,
+      if (activitiesCount != null) 'activities_count': activitiesCount,
+      if (totalPoints != null) 'total_points': totalPoints,
+    });
+  }
+
+  /// Track statement error
+  void trackStatementError({String? error}) {
+    _trackEvent('statement_error', {
+      if (error != null) 'error': error,
+    });
+  }
+
+  /// Track statement rate limited
+  void trackStatementRateLimited({int? emailsSentToday}) {
+    _trackEvent('statement_rate_limited', {
+      if (emailsSentToday != null) 'emails_sent_today': emailsSentToday,
+    });
+  }
+
   /// Generic event tracking
   void _trackEvent(String eventName, [Map<String, dynamic>? properties]) {
     if (!_initialized) {
