@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/config/api_config.dart';
 import '../../../core/services/token_storage_service.dart';
+import '../../../core/utils/number_formatter.dart';
 import '../../rewards/rewards_model.dart';
 
 /// Service for generating professional PDF statements
@@ -97,7 +98,7 @@ class PdfStatementService {
               pw.Image(logo, width: 150),
               pw.SizedBox(height: 8),
               pw.Text(
-                'Relevé de Points',
+                'Relevé de Compte',
                 style: pw.TextStyle(
                   fontSize: 12,
                   color: darkGray,
@@ -117,7 +118,8 @@ class PdfStatementService {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  'Période du Relevé',
+                  'Période',
+
                   style: pw.TextStyle(
                     fontSize: 10,
                     color: darkGray,
@@ -507,8 +509,9 @@ class PdfStatementService {
           border: pw.TableBorder.all(color: lightGray, width: 0.5),
           columnWidths: {
             0: const pw.FlexColumnWidth(1),
-            1: const pw.FlexColumnWidth(2.5),
-            2: const pw.FlexColumnWidth(1),
+            1: const pw.FlexColumnWidth(2),
+            2: const pw.FlexColumnWidth(1.2),
+            3: const pw.FlexColumnWidth(1),
           },
           children: [
             // Header
@@ -517,6 +520,7 @@ class PdfStatementService {
               children: [
                 _buildTableHeader('Heure'),
                 _buildTableHeader('Activité'),
+                _buildTableHeader('Montant'),
                 _buildTableHeader('Points'),
               ],
             ),
@@ -525,6 +529,22 @@ class PdfStatementService {
               children: [
                 _buildTableCell(DateFormat('HH:mm').format(activity.createdAt)),
                 _buildTableCell(_getActivityName(activity.activityType)),
+                // Amount column - only for topups
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(8),
+                  child: pw.Text(
+                    activity.activityType == ActivityType.topUp && activity.amount != null
+                        ? '+${_formatAmount(activity.amount!)} TND'
+                        : '-',
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: activity.amount != null ? pw.FontWeight.bold : pw.FontWeight.normal,
+                      color: activity.amount != null ? accentColor : darkGray,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ),
+                // Points column
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(8),
                   child: pw.Text(
@@ -637,12 +657,12 @@ class PdfStatementService {
   }
 
   String _formatNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}M';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    }
-    return number.toString();
+    return NumberFormatter.formatPoints(number);
+  }
+
+  /// Format amount - show whole number if no decimals, otherwise show decimals
+  String _formatAmount(double amount) {
+    return NumberFormatter.formatAmount(amount);
   }
 
   /// Save PDF to temporary file and return path
@@ -664,14 +684,11 @@ class PdfStatementService {
     final token = await tokenStorage.getAccessToken();
     
     if (token == null) {
-      print('❌ Statement: Not authenticated');
       throw Exception('Not authenticated');
     }
 
     // Convert PDF to base64
     final base64Pdf = base64Encode(pdfData);
-    print('📄 Statement: PDF generated, size: ${pdfData.length} bytes');
-    print('📄 Statement: Sending to ${ApiConfig.baseUrl}/users/send-statement');
 
     try {
       final response = await http.post(
@@ -687,16 +704,10 @@ class PdfStatementService {
         }),
       );
 
-      print('📄 Statement: Response status: ${response.statusCode}');
-      print('📄 Statement: Response body: ${response.body}');
-
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception('Failed to send statement: ${response.body}');
       }
-      
-      print('✅ Statement: Sent successfully!');
     } catch (e) {
-      print('❌ Statement: Error sending - $e');
       rethrow;
     }
   }

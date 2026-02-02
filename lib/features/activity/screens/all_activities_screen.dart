@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../core/widgets/skeleton_loading.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/services/token_storage_service.dart';
 import '../../rewards/rewards_model.dart';
 import '../activity_service.dart';
 
@@ -46,6 +47,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   // Filters - default to last 10 days
   ActivityTimeFilter _timeFilter = ActivityTimeFilter.last10Days;
   ActivityType? _typeFilter;
+  bool _showOnlyMyActivities = false;
+  String? _currentUserName;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -59,6 +62,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
 
+    _loadCurrentUserName();
     _loadActivities();
 
     _subscription = _activityService.activitiesStream.listen((activities) {
@@ -69,6 +73,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         });
       }
     });
+  }
+
+  Future<void> _loadCurrentUserName() async {
+    final tokenStorage = TokenStorageService();
+    final profile = await tokenStorage.getCachedUserProfile();
+    _currentUserName = profile['fullName'] ?? 
+                      '${profile['firstName'] ?? ''} ${profile['lastName'] ?? ''}'.trim();
   }
 
   Future<void> _loadActivities() async {
@@ -148,6 +159,11 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     // Apply type filter
     if (_typeFilter != null) {
       result = result.where((a) => a.activityType == _typeFilter).toList();
+    }
+
+    // Apply member filter (show only my activities)
+    if (_showOnlyMyActivities && _currentUserName != null) {
+      result = result.where((a) => a.memberName == _currentUserName).toList();
     }
 
     _filteredActivities = result;
@@ -402,6 +418,50 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                     _buildTypeChip(ActivityType.topUp, l10n, setModalState),
                   ],
                 ),
+                const SizedBox(height: 24),
+
+                // Member filter section
+                Text(
+                  l10n.filterByMember,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n.showOnlyMyActivities,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.dark,
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _showOnlyMyActivities,
+                        onChanged: (value) {
+                          setModalState(() => _showOnlyMyActivities = value);
+                        },
+                        activeColor: AppColors.secondary,
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 32),
 
                 // Apply button
@@ -432,8 +492,9 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                 ),
 
                 // Clear filters
-                if (_timeFilter != ActivityTimeFilter.all ||
-                    _typeFilter != null) ...[
+                if (_timeFilter != ActivityTimeFilter.last10Days ||
+                    _typeFilter != null ||
+                    _showOnlyMyActivities) ...[
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -443,6 +504,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                         setModalState(() {
                           _timeFilter = ActivityTimeFilter.last10Days;
                           _typeFilter = null;
+                          _showOnlyMyActivities = false;
                         });
                         setState(() => _applyFilters());
                         Navigator.pop(context);
@@ -868,6 +930,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
 
   Widget _buildActivityCard(RewardActivity activity, AppLocalizations l10n) {
     final color = _getActivityColor(activity.activityType);
+    final isTopUp = activity.activityType == ActivityType.topUp;
 
     return Container(
       decoration: BoxDecoration(
@@ -969,46 +1032,103 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                   ),
                 ),
 
-                // Points
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFFFFD700).withValues(alpha: 0.25),
-                        const Color(0xFFFFA500).withValues(alpha: 0.12),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                // For topups: show amount + points, otherwise just points
+                if (isTopUp && activity.amount != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text(
-                        '+',
-                        style: TextStyle(
-                          color: Color(0xFFD4900A),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                      // Amount badge (primary - TND)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFF10B981).withValues(alpha: 0.2),
+                              const Color(0xFF10B981).withValues(alpha: 0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '+${_formatAmount(activity.amount!)} TND',
+                          style: const TextStyle(
+                            color: Color(0xFF059669),
+                            fontSize: 13,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                      Text(
-                        '${activity.pointsEarned}',
-                        style: const TextStyle(
-                          color: Color(0xFFD4900A),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Nunito Sans',
+                      const SizedBox(height: 4),
+                      // Points badge (secondary - smaller)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFFFFD700).withValues(alpha: 0.2),
+                              const Color(0xFFFFA500).withValues(alpha: 0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '+${activity.pointsEarned} pts',
+                          style: const TextStyle(
+                            color: Color(0xFFD4900A),
+                            fontSize: 11,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
+                  )
+                else
+                  // Points only
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          const Color(0xFFFFA500).withValues(alpha: 0.12),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          '+',
+                          style: TextStyle(
+                            color: Color(0xFFD4900A),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${activity.pointsEarned}',
+                          style: const TextStyle(
+                            color: Color(0xFFD4900A),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Nunito Sans',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -1038,5 +1158,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     }
 
     return Icon(iconData, color: color, size: 26);
+  }
+
+  /// Format amount - show whole number if no decimals, otherwise show decimals
+  String _formatAmount(double amount) {
+    if (amount == amount.truncateToDouble()) {
+      return amount.toInt().toString();
+    }
+    return amount.toStringAsFixed(3);
   }
 }

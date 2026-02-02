@@ -303,10 +303,7 @@ class _StatementScreenState extends State<StatementScreen>
       await _incrementEmailCount();
 
       if (mounted) _showSuccessDialog();
-    } catch (e, stackTrace) {
-      print('❌ Statement generation error: $e');
-      print('📍 Stack trace: $stackTrace');
-      
+    } catch (e) {
       // Track statement error
       _analytics.trackStatementError(error: e.toString());
       

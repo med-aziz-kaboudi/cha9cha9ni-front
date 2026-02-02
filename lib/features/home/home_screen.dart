@@ -357,15 +357,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _openScanScreen() async {
-    final result = await Navigator.of(context).push<String>(
+    await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (context) => const ScanScreen(),
+        builder: (context) => const ScanScreen(handleRedemption: true),
       ),
     );
-    
-    if (result != null && mounted) {
-      debugPrint('📷 Scanned code: $result');
-    }
   }
 
   @override

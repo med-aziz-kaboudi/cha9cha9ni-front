@@ -312,6 +312,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get owner => 'المالك';
 
   @override
+  String get you => 'أنت';
+
+  @override
+  String get member => 'عضو';
+
+  @override
   String get members => 'الأعضاء';
 
   @override
@@ -371,6 +377,53 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get topUp => 'شحن';
+
+  @override
+  String get topUpCreditCard => 'البطاقة البنكية';
+
+  @override
+  String get topUpCreditCardDesc => 'ادفع بأمان باستخدام بطاقتك البنكية';
+
+  @override
+  String get topUpPayWithCard => 'الدفع بالبطاقة';
+
+  @override
+  String get topUpScratchCard => 'بطاقة الكشط';
+
+  @override
+  String get topUpScratchCardDesc => 'استخدم رمز بطاقة الكشط لإضافة الرصيد';
+
+  @override
+  String get topUpRedeemCard => 'استخدام البطاقة';
+
+  @override
+  String get topUpCurrentBalance => 'الرصيد الحالي';
+
+  @override
+  String get topUpFeeNotice =>
+      'تُطبق رسوم خدمة بنسبة 5% على المدفوعات بالبطاقة البنكية';
+
+  @override
+  String get topUpChooseMethod => 'اختر طريقة الدفع';
+
+  @override
+  String get topUpEnterCode => 'أدخل رمز بطاقة الكشط';
+
+  @override
+  String get topUpEnterCodeDesc =>
+      'اكشط ظهر البطاقة للكشف عن الرمز وأدخله أدناه';
+
+  @override
+  String get topUpSuccess => 'تمت عملية الشحن بنجاح!';
+
+  @override
+  String get topUpPointsEarned => 'نقاط مكتسبة';
+
+  @override
+  String get topUpNewBalance => 'الرصيد الجديد';
+
+  @override
+  String get topUpScanQR => 'أو امسح رمز QR';
 
   @override
   String get withdraw => 'سحب';
@@ -1455,6 +1508,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filterByType => 'حسب نوع النشاط';
+
+  @override
+  String get filterByMember => 'تصفية حسب العضو';
+
+  @override
+  String get showOnlyMyActivities => 'إظهار أنشطتي فقط';
 
   @override
   String get filterAll => 'الكل';

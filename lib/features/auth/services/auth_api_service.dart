@@ -74,9 +74,6 @@ class AuthApiService {
         throw ApiException(message: 'No Supabase session found');
       }
 
-      print('🔑 Sending request to: $url');
-      print('🔑 Token (first 50 chars): ${supabaseToken.substring(0, 50)}...');
-
       final response = await _client
           .post(
             url,
@@ -84,9 +81,6 @@ class AuthApiService {
             body: jsonEncode(request.toJson()),
           )
           .timeout(ApiConfig.connectionTimeout);
-
-      print('🔑 Response status: ${response.statusCode}');
-      print('🔑 Response body: ${response.body}');
 
       return _handleAuthResponse(response);
     } on SocketException {

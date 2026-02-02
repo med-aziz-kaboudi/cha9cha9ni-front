@@ -312,6 +312,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get owner => 'Owner';
 
   @override
+  String get you => 'You';
+
+  @override
+  String get member => 'Member';
+
+  @override
   String get members => 'Members';
 
   @override
@@ -371,6 +377,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get topUp => 'Top up';
+
+  @override
+  String get topUpCreditCard => 'Credit Card';
+
+  @override
+  String get topUpCreditCardDesc =>
+      'Pay securely with your credit or debit card';
+
+  @override
+  String get topUpPayWithCard => 'Pay with Card';
+
+  @override
+  String get topUpScratchCard => 'Scratch Card';
+
+  @override
+  String get topUpScratchCardDesc =>
+      'Redeem your scratch card code to add funds';
+
+  @override
+  String get topUpRedeemCard => 'Redeem Card';
+
+  @override
+  String get topUpCurrentBalance => 'Current Balance';
+
+  @override
+  String get topUpFeeNotice =>
+      'Service fees of 5% apply on credit card purchases';
+
+  @override
+  String get topUpChooseMethod => 'Choose Payment Method';
+
+  @override
+  String get topUpEnterCode => 'Enter Scratch Card Code';
+
+  @override
+  String get topUpEnterCodeDesc =>
+      'Scratch the back of your card to reveal the code and enter it below';
+
+  @override
+  String get topUpSuccess => 'Top Up Successful!';
+
+  @override
+  String get topUpPointsEarned => 'points earned';
+
+  @override
+  String get topUpNewBalance => 'New balance';
+
+  @override
+  String get topUpScanQR => 'Or scan QR code';
 
   @override
   String get withdraw => 'withdraw';
@@ -1458,6 +1513,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterByType => 'By Activity Type';
+
+  @override
+  String get filterByMember => 'Filter by Member';
+
+  @override
+  String get showOnlyMyActivities => 'Show only my activities';
 
   @override
   String get filterAll => 'All';

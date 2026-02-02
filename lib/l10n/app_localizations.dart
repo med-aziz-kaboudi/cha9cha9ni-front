@@ -664,6 +664,18 @@ abstract class AppLocalizations {
   /// **'Owner'**
   String get owner;
 
+  /// No description provided for @you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get you;
+
+  /// No description provided for @member.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get member;
+
   /// No description provided for @members.
   ///
   /// In en, this message translates to:
@@ -783,6 +795,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Top up'**
   String get topUp;
+
+  /// No description provided for @topUpCreditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get topUpCreditCard;
+
+  /// No description provided for @topUpCreditCardDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay securely with your credit or debit card'**
+  String get topUpCreditCardDesc;
+
+  /// No description provided for @topUpPayWithCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with Card'**
+  String get topUpPayWithCard;
+
+  /// No description provided for @topUpScratchCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Scratch Card'**
+  String get topUpScratchCard;
+
+  /// No description provided for @topUpScratchCardDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem your scratch card code to add funds'**
+  String get topUpScratchCardDesc;
+
+  /// No description provided for @topUpRedeemCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem Card'**
+  String get topUpRedeemCard;
+
+  /// No description provided for @topUpCurrentBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Balance'**
+  String get topUpCurrentBalance;
+
+  /// No description provided for @topUpFeeNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Service fees of 5% apply on credit card purchases'**
+  String get topUpFeeNotice;
+
+  /// No description provided for @topUpChooseMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Payment Method'**
+  String get topUpChooseMethod;
+
+  /// No description provided for @topUpEnterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Scratch Card Code'**
+  String get topUpEnterCode;
+
+  /// No description provided for @topUpEnterCodeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Scratch the back of your card to reveal the code and enter it below'**
+  String get topUpEnterCodeDesc;
+
+  /// No description provided for @topUpSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Up Successful!'**
+  String get topUpSuccess;
+
+  /// No description provided for @topUpPointsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'points earned'**
+  String get topUpPointsEarned;
+
+  /// No description provided for @topUpNewBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'New balance'**
+  String get topUpNewBalance;
+
+  /// No description provided for @topUpScanQR.
+  ///
+  /// In en, this message translates to:
+  /// **'Or scan QR code'**
+  String get topUpScanQR;
 
   /// No description provided for @withdraw.
   ///
@@ -2745,6 +2847,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By Activity Type'**
   String get filterByType;
+
+  /// No description provided for @filterByMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by Member'**
+  String get filterByMember;
+
+  /// No description provided for @showOnlyMyActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only my activities'**
+  String get showOnlyMyActivities;
 
   /// No description provided for @filterAll.
   ///

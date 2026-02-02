@@ -40,6 +40,9 @@ class ActivityService {
 
     // Load cached data first for instant display
     await _loadFromCache();
+    
+    // Clean up any existing duplicates from cached data
+    _removeDuplicates();
 
     // Listen to rewards service for updates (it handles socket events internally)
     _rewardsSubscription = _rewardsService.dataStream.listen((data) {
@@ -99,6 +102,7 @@ class ActivityService {
                   ? 'referral'
                   : 'unknown',
               'createdAt': a.createdAt.toIso8601String(),
+              'amount': a.amount,
             },
           )
           .toList();
@@ -114,26 +118,65 @@ class ActivityService {
   }
 
   /// Merge new activities with existing ones (avoiding duplicates)
+  /// Detects duplicates by:
+  /// 1. Matching ID (for API-returned activities)
+  /// 2. Matching source + memberName + pointsEarned + close timestamp (for socket vs API)
   void _mergeActivities(List<RewardActivity> newActivities) {
-    final existingIds = _activities.map((a) => a.id).toSet();
-
-    for (final activity in newActivities) {
-      if (!existingIds.contains(activity.id)) {
-        _activities.insert(0, activity);
-        existingIds.add(activity.id);
+    bool hasChanges = false;
+    
+    for (final newActivity in newActivities) {
+      // Check for exact ID match
+      final existingByIdIndex = _activities.indexWhere((a) => a.id == newActivity.id);
+      if (existingByIdIndex != -1) {
+        // Update existing if new one has more info (e.g., amount)
+        if (newActivity.amount != null && _activities[existingByIdIndex].amount == null) {
+          _activities[existingByIdIndex] = newActivity;
+          hasChanges = true;
+        }
+        continue;
       }
+
+      // Check for duplicate by content (same type, member, points, within 5 minutes)
+      // Use 5 minute window to catch both socket and API activities
+      final existingSimilarIndex = _activities.indexWhere((a) =>
+          a.activityType == newActivity.activityType &&
+          a.memberName == newActivity.memberName &&
+          a.pointsEarned == newActivity.pointsEarned &&
+          (a.createdAt.difference(newActivity.createdAt).inMinutes.abs() < 5));
+      
+      if (existingSimilarIndex != -1) {
+        // Replace existing with new if new has more info (amount, real ID)
+        final existing = _activities[existingSimilarIndex];
+        final newHasRealId = !newActivity.id.contains('-') || newActivity.id.length > 30;
+        final existingHasRealId = !existing.id.contains('-') || existing.id.length > 30;
+        
+        if ((newActivity.amount != null && existing.amount == null) ||
+            (newHasRealId && !existingHasRealId)) {
+          // New has amount or real ID, prefer it
+          _activities[existingSimilarIndex] = newActivity;
+          hasChanges = true;
+          debugPrint('📊 ActivityService: Replaced duplicate with better version');
+        }
+        continue;
+      }
+
+      // No duplicate found, add it
+      _activities.insert(0, newActivity);
+      hasChanges = true;
     }
 
-    // Sort by date (newest first)
-    _activities.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    if (hasChanges) {
+      // Sort by date (newest first)
+      _activities.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    // Keep only the last 100 activities
-    if (_activities.length > 100) {
-      _activities = _activities.sublist(0, 100);
+      // Keep only the last 100 activities
+      if (_activities.length > 100) {
+        _activities = _activities.sublist(0, 100);
+      }
+
+      _activitiesController.add(_activities);
+      _saveToCache();
     }
-
-    _activitiesController.add(_activities);
-    _saveToCache();
   }
 
   /// Get the last N activities (for home screen)
@@ -169,12 +212,42 @@ class ActivityService {
     try {
       final data = await _rewardsService.fetchRewardsData();
       if (data.recentActivity.isNotEmpty) {
-        _mergeActivities(data.recentActivity);
+        // If force refresh, replace all activities instead of merging
+        if (force) {
+          _activities = List.from(data.recentActivity);
+          _activities.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _activitiesController.add(_activities);
+          _saveToCache();
+        } else {
+          _mergeActivities(data.recentActivity);
+        }
       }
     } catch (e) {
       debugPrint('📊 ActivityService: Failed to refresh - $e');
     } finally {
       _isLoading = false;
+    }
+  }
+
+  /// Clean up any duplicate activities in the current list
+  void _removeDuplicates() {
+    final seen = <String>{};
+    final cleaned = <RewardActivity>[];
+    
+    for (final activity in _activities) {
+      // Create a unique key based on content (use 5-minute window = 300000ms)
+      final key = '${activity.activityType}-${activity.memberName}-${activity.pointsEarned}-${activity.createdAt.millisecondsSinceEpoch ~/ 300000}';
+      if (!seen.contains(key)) {
+        seen.add(key);
+        cleaned.add(activity);
+      }
+    }
+    
+    if (cleaned.length != _activities.length) {
+      debugPrint('📊 ActivityService: Removed ${_activities.length - cleaned.length} duplicates');
+      _activities = cleaned;
+      _activitiesController.add(_activities);
+      _saveToCache();
     }
   }
 

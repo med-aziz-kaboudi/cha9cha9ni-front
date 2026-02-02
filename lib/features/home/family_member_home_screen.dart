@@ -9,7 +9,12 @@ import '../../core/services/family_api_service.dart'
 import '../../core/services/session_manager.dart';
 import '../../core/services/biometric_service.dart';
 import '../../core/services/socket_service.dart'
-    show PointsEarnedData, AidSelectedData, MemberLeftData, SocketService;
+    show
+        PointsEarnedData,
+        AidSelectedData,
+        MemberLeftData,
+        SocketService,
+        BalanceUpdatedData;
 import '../../core/services/notification_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -18,11 +23,13 @@ import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
 import '../../core/widgets/skeleton_loading.dart';
 import '../../core/widgets/tutorial_overlay.dart';
+import '../../core/utils/number_formatter.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../activity/activity_service.dart';
 import '../activity/widgets/recent_activities_widget.dart';
 import '../auth/screens/signin_screen.dart';
+import '../topup/topup_service.dart';
 import '../family/family_selection_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../rewards/rewards_service.dart';
@@ -36,6 +43,7 @@ import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
 import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
+import '../topup/screens/topup_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
@@ -54,6 +62,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   String? _familyOwnerName;
   // ignore: unused_field
   String? _familyOwnerId;
+  String? _currentUserId; // Track current user for "You" label
   // ignore: unused_field
   bool _isLoadingFamily = true;
   final _tokenStorage = TokenStorageService();
@@ -93,6 +102,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   StreamSubscription? _rewardsSubscription;
   StreamSubscription<PointsEarnedData>? _pointsEarnedSubscription;
 
+  // Balance
+  final _topUpService = TopUpService();
+  double _familyBalance = 0.0;
+  StreamSubscription<BalanceUpdatedData>? _balanceUpdatedSubscription;
+
   // Pack/Selected Aid
   final _packService = PackService();
   SelectedAidModel? _selectedAid;
@@ -112,7 +126,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   static const int _blockDurationMinutes = 15;
 
   // Pull-to-refresh rate limiting
-  static const int _maxRefreshes = 3;
+  static const int _maxRefreshes = 10;
   static const int _rateLimitMinutes = 15;
   int _refreshCount = 0;
   DateTime? _rateLimitEndTime;
@@ -130,6 +144,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _checkTutorialStatus();
     _loadFamilyPoints();
     _listenToPointsUpdates();
+    _loadFamilyBalance();
+    _listenToBalanceUpdates();
     _loadSelectedAid();
     _listenToPackUpdates();
     _listenToAidSelectedSocket();
@@ -160,6 +176,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
+    _balanceUpdatedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
     _memberLeftSubscription?.cancel();
@@ -231,6 +248,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     // Refresh all data
     await Future.wait([
       _refreshFamilyDataSilently(),
+      _loadFamilyBalance(), // Add balance refresh
       _loadFamilyPoints(),
       _loadSelectedAid(),
       _loadRemovalRequests(),
@@ -266,27 +284,55 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   /// Listen to realtime points updates
   void _listenToPointsUpdates() {
-    _rewardsSubscription = _rewardsService.dataStream.listen((data) async {
+    _rewardsSubscription = _rewardsService.dataStream.listen((data) {
       if (mounted) {
         setState(() {
           _familyPoints = data.totalPoints;
         });
-        // Update cache for instant display next time
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('rewards_total_points', data.totalPoints);
       }
     });
 
     // Also listen to socket for realtime updates
     _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
-        .listen((data) async {
+        .listen((data) {
+          debugPrint('🎁 Socket: Points earned - new total: ${data.newTotalPoints}');
           if (mounted) {
             setState(() {
               _familyPoints = data.newTotalPoints;
             });
-            // Update cache for instant display next time
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('rewards_total_points', data.newTotalPoints);
+          }
+        });
+  }
+
+  /// Load family balance from top-up service (always fresh from API)
+  Future<void> _loadFamilyBalance() async {
+    try {
+      debugPrint('💰 Fetching fresh balance from API...');
+      final balance = await _topUpService.getFamilyBalance();
+      if (mounted) {
+        debugPrint('💰 Balance fetched: $balance');
+        setState(() {
+          _familyBalance = balance;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load family balance: $e');
+    }
+  }
+
+  /// Listen to realtime balance updates via socket
+  void _listenToBalanceUpdates() {
+    _balanceUpdatedSubscription = _sessionManager.socketService.onBalanceUpdated
+        .listen((data) async {
+          debugPrint('💰 Socket: Balance updated to ${data.newBalance}');
+          if (mounted) {
+            setState(() {
+              _familyBalance = data.newBalance;
+              // Also update points if they changed
+              if (data.pointsAwarded != null && data.pointsAwarded! > 0) {
+                _familyPoints = data.newTotalPoints ?? _familyPoints;
+              }
+            });
           }
         });
   }
@@ -973,6 +1019,14 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       _packService.reset();
       debugPrint('✅ Pack cache cleared');
 
+      // Clear activity cache
+      await ActivityService().clearCache();
+      debugPrint('✅ Activity cache cleared');
+
+      // Clear TopUp/balance cache
+      TopUpService.clearCache();
+      debugPrint('✅ Balance cache cleared');
+
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         await Supabase.instance.client.auth.signOut();
@@ -1014,8 +1068,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   Future<void> _loadCachedDataFirst() async {
-    // Load display name
+    // Load display name and current user ID
     final name = await _tokenStorage.getUserDisplayName();
+    final userId = await _tokenStorage.getUserId();
+    debugPrint('👤 Current user ID loaded: $userId');
 
     // Load cached family info first for instant display
     final cachedFamily = await _tokenStorage.getCachedFamilyInfo();
@@ -1024,6 +1080,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     if (mounted) {
       setState(() {
         _displayName = name;
+        _currentUserId = userId;
         if (cachedFamily != null) {
           _familyName = cachedFamily['familyName'];
           _familyOwnerName = cachedFamily['ownerName'];
@@ -1136,6 +1193,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       await _tokenStorage.clearTokens();
       await PendingVerificationHelper.clear();
       await BiometricService().clearSecurityCache();
+      await ActivityService().clearCache();
+      TopUpService.clearCache();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -1730,15 +1789,14 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   void _openScanScreen() async {
-    final result = await Navigator.of(
+    await Navigator.of(
       context,
-    ).push<String>(MaterialPageRoute(builder: (context) => const ScanScreen()));
+    ).push<String>(MaterialPageRoute(
+      builder: (context) => const ScanScreen(handleRedemption: true),
+    ));
 
-    if (result != null && mounted) {
-      // Handle the scanned code
-      debugPrint('📷 Scanned code: $result');
-      // TODO: Process the scanned code
-    }
+    // Refresh balance from API after returning from scan
+    _loadFamilyBalance();
   }
 
   void _handleNotificationTap(BuildContext context) {
@@ -1760,6 +1818,17 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const StatementScreen()));
+  }
+
+  Future<void> _navigateToTopUp(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TopUpScreen(initialBalance: _familyBalance),
+      ),
+    );
+    
+    // Refresh balance from API after returning from TopUp
+    _loadFamilyBalance();
   }
 
   List<TutorialStep> _buildTutorialSteps() {
@@ -1863,8 +1932,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             left: 0,
             right: 0,
             child: HomeHeaderWidget(
+              balance: NumberFormatter.formatBalance(_familyBalance),
               points: _familyPoints,
-              onTopUp: () {},
+              onTopUp: () => _navigateToTopUp(context),
               onStatement: () => _navigateToStatement(context),
               showWithdraw: false, // Hide withdraw for members
               onPoints: () => _navigateToRewards(context),
@@ -2375,14 +2445,32 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
-              if (hasPendingRemoval)
+                )
+              else if (hasPendingRemoval)
                 Text(
                   AppLocalizations.of(context)?.wantsToRemoveYou ??
                       'Wants to remove',
                   style: TextStyle(
                     color: AppColors.primary,
                     fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else if (member.id == _currentUserId)
+                Text(
+                  AppLocalizations.of(context)?.you ?? 'You',
+                  style: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else
+                Text(
+                  AppLocalizations.of(context)?.member ?? 'Member',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

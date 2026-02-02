@@ -15,6 +15,7 @@ import '../../core/services/socket_service.dart'
         PointsEarnedData,
         AidSelectedData,
         MemberLeftData,
+        BalanceUpdatedData,
         SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -23,10 +24,12 @@ import '../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../core/widgets/custom_drawer.dart';
 import '../../core/widgets/skeleton_loading.dart';
 import '../../core/widgets/tutorial_overlay.dart';
+import '../../core/utils/number_formatter.dart';
 import '../../l10n/app_localizations.dart';
 import '../../main.dart' show PendingVerificationHelper;
 import '../activity/activity_service.dart';
 import '../activity/widgets/recent_activities_widget.dart';
+import '../topup/topup_service.dart';
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
 import '../rewards/rewards_service.dart';
@@ -40,6 +43,7 @@ import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
 import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
+import '../topup/screens/topup_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -97,6 +101,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription? _rewardsSubscription;
   StreamSubscription<PointsEarnedData>? _pointsEarnedSubscription;
 
+  // Balance (from Top-up)
+  final _topUpService = TopUpService();
+  double _familyBalance = 0.0;
+  StreamSubscription<BalanceUpdatedData>? _balanceUpdatedSubscription;
+
   // Pack/Selected Aid
   final _packService = PackService();
   SelectedAidModel? _selectedAid;
@@ -106,7 +115,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
 
   // Pull-to-refresh rate limiting
-  static const int _maxRefreshes = 3;
+  static const int _maxRefreshes = 10;
   static const int _rateLimitMinutes = 15;
   int _refreshCount = 0;
   DateTime? _rateLimitEndTime;
@@ -119,7 +128,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _notificationCount = _notificationService.cachedUnreadCount;
     WidgetsBinding.instance.addObserver(this);
     _loadFamilyPoints();
+    _loadFamilyBalance();
     _listenToPointsUpdates();
+    _listenToBalanceUpdates();
     _loadCachedDataFirst();
     _listenToSessionExpired();
     _listenToFamilyMemberJoined();
@@ -154,6 +165,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
+    _balanceUpdatedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
     _rateLimitTimer?.cancel();
@@ -224,6 +236,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     // Refresh all data
     await Future.wait([
       _refreshFamilyData(),
+      _loadFamilyBalance(), // Add balance refresh
       _loadFamilyPoints(),
       _loadSelectedAid(),
       ActivityService().refresh(force: true),
@@ -258,27 +271,55 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   /// Listen to realtime points updates
   void _listenToPointsUpdates() {
-    _rewardsSubscription = _rewardsService.dataStream.listen((data) async {
+    _rewardsSubscription = _rewardsService.dataStream.listen((data) {
       if (mounted) {
         setState(() {
           _familyPoints = data.totalPoints;
         });
-        // Update cache for instant display next time
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('rewards_total_points', data.totalPoints);
       }
     });
 
     // Also listen to socket for realtime updates
     _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
-        .listen((data) async {
+        .listen((data) {
+          debugPrint('🎁 Socket: Points earned - new total: ${data.newTotalPoints}');
           if (mounted) {
             setState(() {
               _familyPoints = data.newTotalPoints;
             });
-            // Update cache for instant display next time
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('rewards_total_points', data.newTotalPoints);
+          }
+        });
+  }
+
+  /// Load family balance from top-up service (always fresh from API)
+  Future<void> _loadFamilyBalance() async {
+    try {
+      debugPrint('💰 Fetching fresh balance from API...');
+      final balance = await _topUpService.getFamilyBalance();
+      if (mounted) {
+        debugPrint('💰 Balance fetched: $balance');
+        setState(() {
+          _familyBalance = balance;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load family balance: $e');
+    }
+  }
+
+  /// Listen to realtime balance updates via socket
+  void _listenToBalanceUpdates() {
+    _balanceUpdatedSubscription = _sessionManager.socketService.onBalanceUpdated
+        .listen((data) async {
+          debugPrint('💰 Socket: Balance updated to ${data.newBalance}');
+          if (mounted) {
+            setState(() {
+              _familyBalance = data.newBalance;
+              // Also update points if they changed
+              if (data.pointsAwarded != null && data.pointsAwarded! > 0) {
+                _familyPoints = data.newTotalPoints ?? _familyPoints;
+              }
+            });
           }
         });
   }
@@ -662,6 +703,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       await ActivityService().clearCache();
       debugPrint('✅ Activity cache cleared');
 
+      // Clear TopUp/balance cache
+      TopUpService.clearCache();
+      debugPrint('✅ Balance cache cleared');
+
       // Clear pack service cache
       await _packService.clearCache();
       _packService.reset();
@@ -863,6 +908,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       await PendingVerificationHelper.clear();
       await BiometricService().clearSecurityCache();
       await ActivityService().clearCache();
+      TopUpService.clearCache();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -899,15 +945,14 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   void _openScanScreen() async {
-    final result = await Navigator.of(
+    await Navigator.of(
       context,
-    ).push<String>(MaterialPageRoute(builder: (context) => const ScanScreen()));
+    ).push<String>(MaterialPageRoute(
+      builder: (context) => const ScanScreen(handleRedemption: true),
+    ));
 
-    if (result != null && mounted) {
-      // Handle the scanned code - could be an invite code to add member
-      debugPrint('📷 Scanned code: $result');
-      // TODO: Process the scanned code (e.g., validate invite code)
-    }
+    // Refresh balance from API after returning from scan
+    _loadFamilyBalance();
   }
 
   void _handleNotificationTap(BuildContext context) {
@@ -928,6 +973,17 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const StatementScreen()));
+  }
+
+  Future<void> _navigateToTopUp(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TopUpScreen(initialBalance: _familyBalance),
+      ),
+    );
+    
+    // Refresh balance from API after returning from TopUp
+    _loadFamilyBalance();
   }
 
   /// Initialize notification service and listen for updates
@@ -1839,8 +1895,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             left: 0,
             right: 0,
             child: HomeHeaderWidget(
+              balance: NumberFormatter.formatBalance(_familyBalance),
               points: _familyPoints,
-              onTopUp: () {},
+              onTopUp: () => _navigateToTopUp(context),
               onWithdraw: () {},
               onStatement: () => _navigateToStatement(context),
               onPoints: () => _navigateToRewards(context),
@@ -2248,9 +2305,20 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  // Owner avatar (You)
+                  ..._familyMembers
+                      .where((m) => m.isOwner)
+                      .take(1)
+                      .map(
+                        (owner) => Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: _buildOwnerAvatar(owner),
+                        ),
+                      ),
+                  // Member avatars
                   ..._familyMembers
                       .where((m) => !m.isOwner)
-                      .take(4)
+                      .take(3)
                       .map(
                         (member) => Padding(
                           padding: const EdgeInsets.only(right: 16),
@@ -2262,6 +2330,104 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOwnerAvatar(FamilyMember owner) {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            // Main avatar container with special owner styling
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.secondary.withValues(alpha: 0.15),
+                    AppColors.secondary.withValues(alpha: 0.25),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: AppColors.secondary,
+                  width: 3,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            // Star badge for owner
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.star_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Name and "You" label
+        Column(
+          children: [
+            SizedBox(
+              width: 65,
+              child: Text(
+                owner.name.split(' ').first,
+                style: const TextStyle(
+                  color: Color(0xFF23233F),
+                  fontSize: 13,
+                  fontFamily: 'DM Sans',
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              AppLocalizations.of(context)?.you ?? 'You',
+              style: const TextStyle(
+                color: AppColors.secondary,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -2350,7 +2516,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             ],
           ),
           const SizedBox(height: 8),
-          // Name with pending indicator
+          // Name with pending indicator or Member label
           Column(
             children: [
               SizedBox(
@@ -2377,6 +2543,15 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                   AppLocalizations.of(context)?.pendingRemoval ?? 'Pending',
                   style: TextStyle(
                     color: AppColors.primary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              else
+                Text(
+                  AppLocalizations.of(context)?.member ?? 'Member',
+                  style: TextStyle(
+                    color: Colors.grey[600],
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),

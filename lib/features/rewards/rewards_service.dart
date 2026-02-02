@@ -47,7 +47,7 @@ class RewardsService {
     // Listen for points_earned events from the socket
     _socketSubscription?.cancel();
     _socketSubscription = _socketService.onPointsEarned.listen((data) {
-      debugPrint('🎁 RewardsService: Points earned - ${data.pointsEarned} pts from ${data.memberName} (source: ${data.source})');
+      debugPrint('🎁 RewardsService: Points earned - ${data.pointsEarned} pts from ${data.memberName} (source: ${data.source}, amount: ${data.amount})');
       _handlePointsEarned({
         'earnerId': data.earnerId,
         'memberName': data.memberName,
@@ -55,6 +55,7 @@ class RewardsService {
         'slotIndex': data.slotIndex,
         'newTotalPoints': data.newTotalPoints,
         'source': data.source,
+        'amount': data.amount, // Include amount for topups
       });
     });
   }
@@ -129,6 +130,7 @@ class RewardsService {
     final pointsEarned = data['pointsEarned'] as int?;
     final slotIndex = data['slotIndex'] as int?;
     final source = data['source'] as String?;
+    final amount = data['amount'] != null ? (data['amount'] as num).toDouble() : null;
 
     if (newTotalPoints != null) {
       // Create new activity entry
@@ -139,6 +141,7 @@ class RewardsService {
         slotIndex: slotIndex ?? 0,
         activityType: ActivityType.fromString(source),
         createdAt: DateTime.now(),
+        amount: amount,
       );
 
       // If we don't have current data, create a minimal version

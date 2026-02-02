@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/number_formatter.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
 import '../ad_helper.dart';
@@ -787,12 +788,7 @@ class _RewardsContentState extends State<RewardsContent>
   }
 
   String _formatPoints(int points) {
-    if (points >= 1000000) {
-      return '${(points / 1000000).toStringAsFixed(1)}M';
-    } else if (points >= 1000) {
-      return '${(points / 1000).toStringAsFixed(points % 1000 == 0 ? 0 : 1)}K';
-    }
-    return points.toString();
+    return NumberFormatter.formatPoints(points);
   }
 
   Widget _buildDailyCheckIn(AppLocalizations l10n) {

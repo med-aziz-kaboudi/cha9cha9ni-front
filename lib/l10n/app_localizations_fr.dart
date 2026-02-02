@@ -317,6 +317,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get owner => 'Propriétaire';
 
   @override
+  String get you => 'Vous';
+
+  @override
+  String get member => 'Membre';
+
+  @override
   String get members => 'Membres';
 
   @override
@@ -377,6 +383,54 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get topUp => 'Recharger';
+
+  @override
+  String get topUpCreditCard => 'Carte Bancaire';
+
+  @override
+  String get topUpCreditCardDesc => 'Payez en toute sécurité avec votre carte';
+
+  @override
+  String get topUpPayWithCard => 'Payer par Carte';
+
+  @override
+  String get topUpScratchCard => 'Carte à Gratter';
+
+  @override
+  String get topUpScratchCardDesc =>
+      'Utilisez le code de votre carte à gratter';
+
+  @override
+  String get topUpRedeemCard => 'Utiliser la Carte';
+
+  @override
+  String get topUpCurrentBalance => 'Solde Actuel';
+
+  @override
+  String get topUpFeeNotice =>
+      'Des frais de service de 5% s\'appliquent aux paiements par carte';
+
+  @override
+  String get topUpChooseMethod => 'Choisir le Mode de Paiement';
+
+  @override
+  String get topUpEnterCode => 'Entrez le Code de la Carte';
+
+  @override
+  String get topUpEnterCodeDesc =>
+      'Grattez le dos de votre carte pour révéler le code et entrez-le ci-dessous';
+
+  @override
+  String get topUpSuccess => 'Recharge Réussie!';
+
+  @override
+  String get topUpPointsEarned => 'points gagnés';
+
+  @override
+  String get topUpNewBalance => 'Nouveau solde';
+
+  @override
+  String get topUpScanQR => 'Ou scanner le code QR';
 
   @override
   String get withdraw => 'Retirer';
@@ -1481,6 +1535,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterByType => 'Par type d\'activité';
+
+  @override
+  String get filterByMember => 'Filtrer par membre';
+
+  @override
+  String get showOnlyMyActivities => 'Afficher uniquement mes activités';
 
   @override
   String get filterAll => 'Tout';

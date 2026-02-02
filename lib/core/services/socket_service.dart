@@ -16,7 +16,43 @@ enum SocketEvent {
   aidSelected,
   aidRemoved,
   packUpdated,
+  balanceUpdated,
   error,
+}
+
+/// Data class for balance updated event (top-up/redemption)
+class BalanceUpdatedData {
+  final double newBalance;
+  final double amount;
+  final String type; // 'topup' or 'redemption'
+  final int? pointsAwarded;
+  final int? newTotalPoints;
+  final String? redeemedBy;
+  final DateTime timestamp;
+
+  BalanceUpdatedData({
+    required this.newBalance,
+    required this.amount,
+    required this.type,
+    this.pointsAwarded,
+    this.newTotalPoints,
+    this.redeemedBy,
+    required this.timestamp,
+  });
+
+  factory BalanceUpdatedData.fromJson(Map<String, dynamic> json) {
+    return BalanceUpdatedData(
+      newBalance: (json['newBalance'] ?? 0).toDouble(),
+      amount: (json['amount'] ?? 0).toDouble(),
+      type: json['type'] ?? 'topup',
+      pointsAwarded: json['pointsAwarded'],
+      newTotalPoints: json['newTotalPoints'],
+      redeemedBy: json['redeemedBy'],
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
 }
 
 /// Data class for force logout event
@@ -79,8 +115,9 @@ class PointsEarnedData {
   final int slotIndex;
   final int newTotalPoints;
   final double newTndValue;
-  final String? source; // 'ad_watch' or 'daily_checkin'
+  final String? source; // 'ad_watch', 'daily_checkin', or 'topup'
   final int? streakDay; // For daily check-in
+  final double? amount; // For topup - the TND amount
   final DateTime timestamp;
 
   PointsEarnedData({
@@ -92,6 +129,7 @@ class PointsEarnedData {
     required this.newTndValue,
     this.source,
     this.streakDay,
+    this.amount,
     required this.timestamp,
   });
 
@@ -105,6 +143,7 @@ class PointsEarnedData {
       newTndValue: (json['newTndValue'] ?? 0).toDouble(),
       source: json['source'],
       streakDay: json['streakDay'],
+      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
@@ -178,10 +217,7 @@ class PackUpdatedData {
   final String reason;
   final DateTime timestamp;
 
-  PackUpdatedData({
-    required this.reason,
-    required this.timestamp,
-  });
+  PackUpdatedData({required this.reason, required this.timestamp});
 
   factory PackUpdatedData.fromJson(Map<String, dynamic> json) {
     return PackUpdatedData(
@@ -263,13 +299,18 @@ class SocketService {
   // Stream controllers for events
   final _eventController = StreamController<SocketEvent>.broadcast();
   final _forceLogoutController = StreamController<ForceLogoutData>.broadcast();
-  final _familyMemberJoinedController = StreamController<FamilyMemberJoinedData>.broadcast();
-  final _pointsEarnedController = StreamController<PointsEarnedData>.broadcast();
-  final _adsStatsUpdatedController = StreamController<AdsStatsUpdatedData>.broadcast();
+  final _familyMemberJoinedController =
+      StreamController<FamilyMemberJoinedData>.broadcast();
+  final _pointsEarnedController =
+      StreamController<PointsEarnedData>.broadcast();
+  final _adsStatsUpdatedController =
+      StreamController<AdsStatsUpdatedData>.broadcast();
   final _aidSelectedController = StreamController<AidSelectedData>.broadcast();
   final _aidRemovedController = StreamController<AidRemovedData>.broadcast();
   final _packUpdatedController = StreamController<PackUpdatedData>.broadcast();
   final _memberLeftController = StreamController<MemberLeftData>.broadcast();
+  final _balanceUpdatedController =
+      StreamController<BalanceUpdatedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -278,13 +319,15 @@ class SocketService {
   Stream<ForceLogoutData> get onForceLogout => _forceLogoutController.stream;
 
   /// Stream of family member joined events - listen to this to update UI
-  Stream<FamilyMemberJoinedData> get onFamilyMemberJoined => _familyMemberJoinedController.stream;
+  Stream<FamilyMemberJoinedData> get onFamilyMemberJoined =>
+      _familyMemberJoinedController.stream;
 
   /// Stream of points earned events - listen to this to update rewards UI
   Stream<PointsEarnedData> get onPointsEarned => _pointsEarnedController.stream;
 
   /// Stream of ads stats updated events - listen to this to update pack UI
-  Stream<AdsStatsUpdatedData> get onAdsStatsUpdated => _adsStatsUpdatedController.stream;
+  Stream<AdsStatsUpdatedData> get onAdsStatsUpdated =>
+      _adsStatsUpdatedController.stream;
 
   /// Stream of aid selected events - listen to this to update home screen
   Stream<AidSelectedData> get onAidSelected => _aidSelectedController.stream;
@@ -297,6 +340,10 @@ class SocketService {
 
   /// Stream of member left events - listen to this to update family member list
   Stream<MemberLeftData> get onMemberLeft => _memberLeftController.stream;
+
+  /// Stream of balance updated events - listen to this to update balance display
+  Stream<BalanceUpdatedData> get onBalanceUpdated =>
+      _balanceUpdatedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -319,7 +366,9 @@ class SocketService {
     _isConnecting = true;
 
     // Build WebSocket URL (same as API but with /session namespace)
-    final wsUrl = ApiConfig.baseUrl.replaceFirst('https://', 'wss://').replaceFirst('http://', 'ws://');
+    final wsUrl = ApiConfig.baseUrl
+        .replaceFirst('https://', 'wss://')
+        .replaceFirst('http://', 'ws://');
 
     debugPrint('🔌 Socket: Connecting to $wsUrl/session');
 
@@ -330,7 +379,7 @@ class SocketService {
           .setAuth({'token': accessToken})
           .enableAutoConnect()
           .enableReconnection()
-          .setReconnectionAttempts(3)  // Limit retries to avoid spam
+          .setReconnectionAttempts(3) // Limit retries to avoid spam
           .setReconnectionDelay(2000)
           .setReconnectionDelayMax(10000)
           .build(),
@@ -359,7 +408,9 @@ class SocketService {
     });
 
     _socket!.onConnectError((error) {
-      debugPrint('🔌 Socket: Connection error (WebSocket may not be deployed yet)');
+      debugPrint(
+        '🔌 Socket: Connection error (WebSocket may not be deployed yet)',
+      );
       _isConnecting = false;
       _eventController.add(SocketEvent.error);
     });
@@ -376,11 +427,14 @@ class SocketService {
         final logoutData = ForceLogoutData.fromJson(data);
         _forceLogoutController.add(logoutData);
       } else {
-        _forceLogoutController.add(ForceLogoutData(
-          reason: 'new_login',
-          message: 'You have been logged out because your account was accessed from another device.',
-          timestamp: DateTime.now(),
-        ));
+        _forceLogoutController.add(
+          ForceLogoutData(
+            reason: 'new_login',
+            message:
+                'You have been logged out because your account was accessed from another device.',
+            timestamp: DateTime.now(),
+          ),
+        );
       }
     });
 
@@ -396,9 +450,10 @@ class SocketService {
 
     // Listen for points earned event (family rewards)
     _socket!.on('points_earned', (data) {
-      debugPrint('🎁 Socket: Received points_earned event');
+      debugPrint('🎁 Socket: Received points_earned event - data: $data');
       if (data is Map<String, dynamic>) {
         final pointsData = PointsEarnedData.fromJson(data);
+        debugPrint('🎁 Socket: Parsed points_earned - amount: ${pointsData.amount}, source: ${pointsData.source}');
         _pointsEarnedController.add(pointsData);
         _eventController.add(SocketEvent.pointsEarned);
       }
@@ -451,6 +506,16 @@ class SocketService {
         final memberData = MemberLeftData.fromJson(data);
         _memberLeftController.add(memberData);
         _eventController.add(SocketEvent.familyMemberLeft);
+      }
+    });
+
+    // Listen for balance updated event (top-up or rewards redemption)
+    _socket!.on('balance_updated', (data) {
+      debugPrint('💰 Socket: Received balance_updated event');
+      if (data is Map<String, dynamic>) {
+        final balanceData = BalanceUpdatedData.fromJson(data);
+        _balanceUpdatedController.add(balanceData);
+        _eventController.add(SocketEvent.balanceUpdated);
       }
     });
 
@@ -507,5 +572,6 @@ class SocketService {
     _aidRemovedController.close();
     _packUpdatedController.close();
     _memberLeftController.close();
+    _balanceUpdatedController.close();
   }
 }

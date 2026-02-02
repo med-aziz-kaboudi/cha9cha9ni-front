@@ -41,6 +41,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   int _resendCountdown = 0;
   Timer? _countdownTimer;
 
+  // Pull-to-refresh rate limiting
+  static const int _maxRefreshes = 5;
+  static const int _rateLimitMinutes = 10;
+  int _refreshCount = 0;
+  DateTime? _rateLimitEndTime;
+  Timer? _rateLimitTimer;
+
   @override
   void initState() {
     super.initState();
@@ -57,8 +64,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController.dispose();
     _verificationCodeController.dispose();
     _countdownTimer?.cancel();
+    _rateLimitTimer?.cancel();
     _profileApiService.dispose();
     super.dispose();
+  }
+
+  // Rate limiting helpers for pull-to-refresh
+  bool get _isRateLimited {
+    if (_rateLimitEndTime == null) return false;
+    return DateTime.now().isBefore(_rateLimitEndTime!);
+  }
+
+  String get _rateLimitRemainingTime {
+    if (_rateLimitEndTime == null) return '';
+    final remaining = _rateLimitEndTime!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final mins = remaining.inMinutes;
+    final secs = remaining.inSeconds % 60;
+    return '${mins}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _startRateLimitTimer() {
+    _rateLimitTimer?.cancel();
+    _rateLimitTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        if (!_isRateLimited) {
+          _rateLimitTimer?.cancel();
+          setState(() {
+            _rateLimitEndTime = null;
+            _refreshCount = 0;
+          });
+        }
+      }
+    });
   }
 
   void _startCountdown() {
@@ -73,12 +111,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadProfile({bool fromRefresh = false}) async {
+    // Check rate limit for pull-to-refresh
+    if (fromRefresh) {
+      if (_isRateLimited) {
+        final l10n = AppLocalizations.of(context);
+        if (l10n != null) {
+          AppToast.warning(
+            context,
+            'Rate limited. Please wait $_rateLimitRemainingTime',
+          );
+        }
+        return;
+      }
+
+      _refreshCount++;
+      if (_refreshCount >= _maxRefreshes) {
+        _rateLimitEndTime = DateTime.now().add(
+          const Duration(minutes: _rateLimitMinutes),
+        );
+        _startRateLimitTimer();
+        final l10n = AppLocalizations.of(context);
+        if (l10n != null) {
+          AppToast.warning(
+            context,
+            'Too many refreshes. Please wait $_rateLimitMinutes minutes.',
+          );
+        }
+      }
+    }
+    
     // First, load from cache for instant display
     final cachedProfile = await _tokenStorage.getCachedUserProfile();
     final hasCachedData = cachedProfile['email'] != null;
     
-    if (hasCachedData) {
+    if (hasCachedData && !fromRefresh) {
       // Show cached data immediately (no loading spinner)
       setState(() {
         _isLoading = false;
@@ -93,19 +160,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           phone = phone.substring(4);
         }
         _phoneController.text = phone;
+        
+        debugPrint('📱 Phone from cache: ${cachedProfile['phone']}');
       });
     }
 
-    // Check if data is fresh (fetched within last 60 seconds)
-    final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 60);
-    if (isFresh && hasCachedData) {
-      debugPrint('📦 Profile data is fresh, skipping API fetch');
-      return;
+    // Check if data is fresh (fetched within last 60 seconds) - skip for manual refresh
+    if (!fromRefresh) {
+      final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 60);
+      if (isFresh && hasCachedData) {
+        debugPrint('📦 Profile data is fresh, skipping API fetch');
+        return;
+      }
     }
 
     // Fetch fresh data from API in background
     try {
-      if (!hasCachedData) {
+      if (!hasCachedData && !fromRefresh) {
         setState(() {
           _isLoading = true;
           _errorMessage = null;
@@ -113,6 +184,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final profile = await _profileApiService.getProfile();
+      
+      debugPrint('📱 Phone from API: ${profile.phone}');
       
       // Save to cache for next time
       await _tokenStorage.saveUserProfile(
@@ -123,31 +196,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         phone: profile.phone,
       );
       
-      setState(() {
-        _profile = profile;
-        _isLoading = false;
-        
-        // Fill all name fields with their values (empty if null)
-        _fullNameController.text = profile.fullName ?? '';
-        _firstNameController.text = profile.firstName ?? '';
-        _lastNameController.text = profile.lastName ?? '';
-        
-        _emailController.text = profile.email;
-        
-        // Handle phone - strip +216 prefix if present
-        String phone = profile.phone ?? '';
-        if (phone.startsWith('+216')) {
-          phone = phone.substring(4);
-        }
-        _phoneController.text = phone;
-      });
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+          
+          // Fill all name fields with their values (empty if null)
+          _fullNameController.text = profile.fullName ?? '';
+          _firstNameController.text = profile.firstName ?? '';
+          _lastNameController.text = profile.lastName ?? '';
+          
+          _emailController.text = profile.email;
+          
+          // Handle phone - strip +216 prefix if present
+          String phone = profile.phone ?? '';
+          if (phone.startsWith('+216')) {
+            phone = phone.substring(4);
+          }
+          _phoneController.text = phone;
+        });
+      }
     } catch (e) {
       // Only show error if we don't have cached data
       if (!hasCachedData) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = e.toString().replaceAll('Exception: ', '');
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = e.toString().replaceAll('Exception: ', '');
+          });
+        }
       } else {
         debugPrint('⚠️ Failed to refresh profile, using cached data: $e');
       }
@@ -476,44 +553,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildProfileForm(AppLocalizations l10n) {
     return Stack(
       children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
-          child: Column(
-            children: [
-              _buildAvatar(),
-              const SizedBox(height: 32),
-              
-              // Full Name field - always shown and editable
-              _buildTextField(
-                label: l10n.fullName,
-                controller: _fullNameController,
-                isEditable: true,
-              ),
-              const SizedBox(height: 16),
-              
-              // First Name field - always shown and editable
-              _buildTextField(
-                label: l10n.firstNameLabel,
-                controller: _firstNameController,
-                isEditable: true,
-              ),
-              const SizedBox(height: 16),
-              
-              // Last Name field - always shown and editable
-              _buildTextField(
-                label: l10n.lastNameLabel,
-                controller: _lastNameController,
-                isEditable: true,
-              ),
-              const SizedBox(height: 16),
-              
-              // Email field with edit functionality
-              _buildEmailField(l10n),
-              const SizedBox(height: 16),
-              
-              // Phone field
-              _buildPhoneField(l10n),
-            ],
+        RefreshIndicator(
+          onRefresh: () => _loadProfile(fromRefresh: true),
+          color: AppColors.primary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+            child: Column(
+              children: [
+                _buildAvatar(),
+                const SizedBox(height: 32),
+                
+                // Full Name field - always shown and editable
+                _buildTextField(
+                  label: l10n.fullName,
+                  controller: _fullNameController,
+                  isEditable: true,
+                ),
+                const SizedBox(height: 16),
+                
+                // First Name field - always shown and editable
+                _buildTextField(
+                  label: l10n.firstNameLabel,
+                  controller: _firstNameController,
+                  isEditable: true,
+                ),
+                const SizedBox(height: 16),
+                
+                // Last Name field - always shown and editable
+                _buildTextField(
+                  label: l10n.lastNameLabel,
+                  controller: _lastNameController,
+                  isEditable: true,
+                ),
+                const SizedBox(height: 16),
+                
+                // Email field with edit functionality
+                _buildEmailField(l10n),
+                const SizedBox(height: 16),
+                
+                // Phone field
+                _buildPhoneField(l10n),
+              ],
+            ),
           ),
         ),
         

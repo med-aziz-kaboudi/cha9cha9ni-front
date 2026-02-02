@@ -11,6 +11,7 @@ import '../../core/theme/app_text_styles.dart';import '../../l10n/app_localizati
 import '../auth/screens/signin_screen.dart';
 import '../home/family_owner_home_screen.dart';
 import '../home/family_member_home_screen.dart';
+import '../topup/topup_service.dart';
 
 // Custom formatter for invite code (XXXX-XXXX format)
 class InviteCodeFormatter extends TextInputFormatter {
@@ -84,6 +85,9 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       
       // Clear security cache so unlock screen doesn't show on next login
       await BiometricService().clearSecurityCache();
+      
+      // Clear TopUp/balance cache
+      TopUpService.clearCache();
       
       // Sign out from Supabase (if there's a session)
       final session = Supabase.instance.client.auth.currentSession;

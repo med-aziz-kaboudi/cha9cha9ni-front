@@ -181,6 +181,7 @@ class RewardActivity {
   final int slotIndex;
   final ActivityType activityType;
   final DateTime createdAt;
+  final double? amount; // Amount in TND for topups
 
   RewardActivity({
     required this.id,
@@ -189,6 +190,7 @@ class RewardActivity {
     required this.slotIndex,
     required this.activityType,
     required this.createdAt,
+    this.amount,
   });
 
   factory RewardActivity.fromJson(Map<String, dynamic> json) {
@@ -201,6 +203,7 @@ class RewardActivity {
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
+      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
     );
   }
 }

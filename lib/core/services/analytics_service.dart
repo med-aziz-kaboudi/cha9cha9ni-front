@@ -120,6 +120,21 @@ class AnalyticsService {
     });
   }
 
+  /// Track scratch card redeemed
+  void trackScratchCardRedeemed({double? amount, int? points}) {
+    _trackEvent('scratch_card_redeemed', {
+      if (amount != null) 'amount': amount,
+      if (points != null) 'points': points,
+    });
+  }
+
+  /// Track scratch card redemption failed
+  void trackScratchCardFailed({String? error}) {
+    _trackEvent('scratch_card_failed', {
+      if (error != null) 'error': error,
+    });
+  }
+
   /// Generic event tracking
   void _trackEvent(String eventName, [Map<String, dynamic>? properties]) {
     if (!_initialized) {

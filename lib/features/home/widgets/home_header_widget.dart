@@ -1,22 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/number_formatter.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Format points with K/M suffix
-String _formatPoints(int points) {
-  if (points >= 1000000) {
-    final value = points / 1000000;
-    return value == value.truncate()
-        ? '${value.truncate()}M'
-        : '${value.toStringAsFixed(1)}M';
-  } else if (points >= 1000) {
-    final value = points / 1000;
-    return value == value.truncate()
-        ? '${value.truncate()}K'
-        : '${value.toStringAsFixed(1)}K';
-  }
-  return points.toString();
-}
+/// Format points with K/M suffix for display (uses shared formatter)
+String formatPoints(int points) => NumberFormatter.formatPoints(points);
+
+// Keep old function name for compatibility
+String _formatPoints(int points) => formatPoints(points);
 
 class HomeHeaderWidget extends StatelessWidget {
   final String balance;

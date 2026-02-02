@@ -196,6 +196,14 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
     }
   }
 
+  /// Format amount - show whole number if no decimals, otherwise show decimals
+  String _formatAmount(double amount) {
+    if (amount == amount.truncateToDouble()) {
+      return amount.toInt().toString();
+    }
+    return amount.toStringAsFixed(3);
+  }
+
   void _navigateToAllActivities() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const AllActivitiesScreen()),
@@ -338,6 +346,7 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
 
   Widget _buildActivityCard(RewardActivity activity, AppLocalizations l10n) {
     final color = _getActivityColor(activity.activityType);
+    final isTopUp = activity.activityType == ActivityType.topUp;
 
     return Container(
       decoration: BoxDecoration(
@@ -418,30 +427,87 @@ class _RecentActivitiesWidgetState extends State<RecentActivitiesWidget> {
               ),
             ),
 
-            // Points badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFFFFD700).withValues(alpha: 0.22),
-                    const Color(0xFFFFA500).withValues(alpha: 0.1),
-                  ],
+            // For topups: show amount + points, otherwise just points
+            if (isTopUp && activity.amount != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // Amount badge (primary - TND)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF10B981).withValues(alpha: 0.2),
+                          const Color(0xFF10B981).withValues(alpha: 0.1),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '+${_formatAmount(activity.amount!)} TND',
+                      style: const TextStyle(
+                        color: Color(0xFF059669),
+                        fontSize: 12,
+                        fontFamily: 'Nunito Sans',
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Points badge (secondary - smaller)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFFFFD700).withValues(alpha: 0.18),
+                          const Color(0xFFFFA500).withValues(alpha: 0.08),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '+${activity.pointsEarned} pts',
+                      style: const TextStyle(
+                        color: Color(0xFFD4900A),
+                        fontSize: 11,
+                        fontFamily: 'Nunito Sans',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              // Points badge only
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFFFD700).withValues(alpha: 0.22),
+                      const Color(0xFFFFA500).withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '+${activity.pointsEarned}',
-                style: const TextStyle(
-                  color: Color(0xFFD4900A),
-                  fontSize: 14,
-                  fontFamily: 'Nunito Sans',
-                  fontWeight: FontWeight.w700,
+                child: Text(
+                  '+${activity.pointsEarned}',
+                  style: const TextStyle(
+                    color: Color(0xFFD4900A),
+                    fontSize: 14,
+                    fontFamily: 'Nunito Sans',
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
