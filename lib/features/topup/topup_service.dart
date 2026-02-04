@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/token_storage_service.dart';
+import '../../core/services/retry_http_client.dart';
 import '../../core/config/api_config.dart';
 
 /// Cache keys for TopUp data
@@ -21,6 +22,7 @@ class _RateLimitConfig {
 
 class TopUpService {
   final _tokenStorage = TokenStorageService();
+  final http.Client _client = RetryHttpClient();
 
   // In-memory cache
   static BalanceInfo? _cachedBalance;
@@ -208,7 +210,7 @@ class TopUpService {
     // Normalize code: remove dashes, spaces, uppercase
     final normalizedCode = code.replaceAll(RegExp(r'[-\s]'), '').toUpperCase();
 
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('${ApiConfig.baseUrl}/topup/redeem'),
       headers: {
         'Content-Type': 'application/json',
@@ -217,7 +219,7 @@ class TopUpService {
       body: jsonEncode({'code': normalizedCode}),
     );
 
-    final data = jsonDecode(response.body);
+    final data = response.safeParseJson();
 
     if (response.statusCode == 200 && data['success'] == true) {
       final result = TopUpResult(
@@ -252,12 +254,12 @@ class TopUpService {
       throw Exception('Not authenticated');
     }
 
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('${ApiConfig.baseUrl}/topup/balance'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    final data = jsonDecode(response.body);
+    final data = response.safeParseJson();
 
     if (response.statusCode == 200 && data['success'] == true) {
       final balance = BalanceInfo(
@@ -286,12 +288,12 @@ class TopUpService {
     }
 
     try {
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('${ApiConfig.baseUrl}/topup/can-redeem-rewards'),
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      final data = jsonDecode(response.body);
+      final data = response.safeParseJson();
       return data['success'] == true && data['data']['canRedeem'] == true;
     } catch (e) {
       return false;
@@ -308,14 +310,14 @@ class TopUpService {
       throw Exception('Not authenticated');
     }
 
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse(
         '${ApiConfig.baseUrl}/topup/history?limit=$limit&offset=$offset',
       ),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    final data = jsonDecode(response.body);
+    final data = response.safeParseJson();
 
     if (response.statusCode == 200 && data['success'] == true) {
       return (data['data'] as List)

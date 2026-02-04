@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/session_manager.dart';
+import '../../../core/services/retry_http_client.dart';
 import '../../../core/config/api_config.dart';
 
 class UserProfile {
@@ -97,7 +98,12 @@ class ProfilePictureRateLimitStatus {
 class ProfileApiService {
   final _tokenStorage = TokenStorageService();
   final _sessionManager = SessionManager();
-  final _client = http.Client();
+  final http.Client _client = RetryHttpClient();
+
+  /// Safely parse JSON response, handling non-JSON error responses
+  Map<String, dynamic> _safeJsonDecode(http.Response response) {
+    return response.safeParseJson();
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     final accessToken = await _tokenStorage.getAccessToken();
@@ -127,7 +133,7 @@ class ProfileApiService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
+        final data = _safeJsonDecode(response);
         final newAccessToken = data['accessToken'];
         final newSessionToken = data['sessionToken'];
         
@@ -180,7 +186,7 @@ class ProfileApiService {
     }
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       final profile = UserProfile.fromJson(data);
       
       // Save profile data to storage for sidebar and other screens
@@ -197,7 +203,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to load profile');
     }
   }
@@ -238,7 +244,7 @@ class ProfileApiService {
     }
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       
       // Update local storage with new profile data
       await _tokenStorage.saveUserProfile(
@@ -253,7 +259,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to update profile');
     }
   }
@@ -272,7 +278,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to send verification code');
     }
   }
@@ -292,7 +298,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Invalid verification code');
     }
   }
@@ -312,7 +318,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to send verification code');
     }
   }
@@ -328,7 +334,7 @@ class ProfileApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       
       // Update local storage with new email
       await _tokenStorage.saveUserProfile(
@@ -343,7 +349,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to change email');
     }
   }
@@ -373,7 +379,7 @@ class ProfileApiService {
     }
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       
       // Update local storage with new profile picture
       await _tokenStorage.saveUserProfile(
@@ -388,7 +394,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to update profile picture');
     }
   }
@@ -416,7 +422,7 @@ class ProfileApiService {
     }
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       
       // Update local storage - clear profile picture
       await _tokenStorage.saveUserProfile(
@@ -431,7 +437,7 @@ class ProfileApiService {
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
-      final error = jsonDecode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to remove profile picture');
     }
   }
@@ -458,7 +464,7 @@ class ProfileApiService {
     }
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final data = _safeJsonDecode(response);
       return ProfilePictureRateLimitStatus.fromJson(data);
     } else if (response.statusCode == 401) {
       _handleSessionExpired();

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthResponse;
 import '../../../core/config/api_config.dart';
 import '../../../core/services/api_exception.dart';
+import '../../../core/services/retry_http_client.dart';
 import '../models/auth_request_models.dart';
 import '../models/auth_response_models.dart';
 
@@ -11,7 +12,8 @@ import '../models/auth_response_models.dart';
 class AuthApiService {
   final http.Client _client;
 
-  AuthApiService({http.Client? client}) : _client = client ?? http.Client();
+  AuthApiService({http.Client? client}) 
+      : _client = client ?? RetryHttpClient();
 
   /// Register a new user
   Future<RegisterResponse> register(RegisterRequest request) async {
@@ -234,14 +236,8 @@ class AuthApiService {
   }
 
   Map<String, dynamic> _parseResponse(http.Response response) {
-    try {
-      return jsonDecode(response.body) as Map<String, dynamic>;
-    } catch (e) {
-      throw ApiException(
-        message: 'Failed to parse response',
-        statusCode: response.statusCode,
-      );
-    }
+    // Use safe parsing that handles non-JSON responses (like "Service Unavailable")
+    return response.safeParseJson();
   }
 
   /// Request password reset - sends OTP to email

@@ -19,6 +19,8 @@ enum SocketEvent {
   balanceUpdated,
   profilePictureUpdated,
   profileUpdated,
+  removalInitiated,
+  removalCancelled,
   error,
 }
 
@@ -358,6 +360,58 @@ class ProfileUpdatedData {
   }
 }
 
+/// Data class for removal initiated event (owner confirmed member removal)
+class RemovalInitiatedData {
+  final String requestId;
+  final String ownerName;
+  final String familyId;
+  final DateTime timestamp;
+
+  RemovalInitiatedData({
+    required this.requestId,
+    required this.ownerName,
+    required this.familyId,
+    required this.timestamp,
+  });
+
+  factory RemovalInitiatedData.fromJson(Map<String, dynamic> json) {
+    return RemovalInitiatedData(
+      requestId: json['requestId'] ?? '',
+      ownerName: json['ownerName'] ?? '',
+      familyId: json['familyId'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
+/// Data class for removal cancelled event (owner cancelled removal request)
+class RemovalCancelledData {
+  final String requestId;
+  final String ownerName;
+  final String familyId;
+  final DateTime timestamp;
+
+  RemovalCancelledData({
+    required this.requestId,
+    required this.ownerName,
+    required this.familyId,
+    required this.timestamp,
+  });
+
+  factory RemovalCancelledData.fromJson(Map<String, dynamic> json) {
+    return RemovalCancelledData(
+      requestId: json['requestId'] ?? '',
+      ownerName: json['ownerName'] ?? '',
+      familyId: json['familyId'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -389,6 +443,10 @@ class SocketService {
       StreamController<ProfilePictureUpdatedData>.broadcast();
   final _profileUpdatedController =
       StreamController<ProfileUpdatedData>.broadcast();
+  final _removalInitiatedController =
+      StreamController<RemovalInitiatedData>.broadcast();
+  final _removalCancelledController =
+      StreamController<RemovalCancelledData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -430,6 +488,14 @@ class SocketService {
   /// Stream of profile updated events - listen to this to update member names/info
   Stream<ProfileUpdatedData> get onProfileUpdated =>
       _profileUpdatedController.stream;
+
+  /// Stream of removal initiated events - listen to this when owner confirms removal
+  Stream<RemovalInitiatedData> get onRemovalInitiated =>
+      _removalInitiatedController.stream;
+
+  /// Stream of removal cancelled events - listen to this when owner cancels removal
+  Stream<RemovalCancelledData> get onRemovalCancelled =>
+      _removalCancelledController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -625,6 +691,26 @@ class SocketService {
       }
     });
 
+    // Listen for removal initiated event (owner confirmed removal request)
+    _socket!.on('removal_initiated', (data) {
+      debugPrint('⚠️ Socket: Received removal_initiated event');
+      if (data is Map<String, dynamic>) {
+        final removalData = RemovalInitiatedData.fromJson(data);
+        _removalInitiatedController.add(removalData);
+        _eventController.add(SocketEvent.removalInitiated);
+      }
+    });
+
+    // Listen for removal cancelled event (owner cancelled removal request)
+    _socket!.on('removal_cancelled', (data) {
+      debugPrint('✅ Socket: Received removal_cancelled event');
+      if (data is Map<String, dynamic>) {
+        final cancellationData = RemovalCancelledData.fromJson(data);
+        _removalCancelledController.add(cancellationData);
+        _eventController.add(SocketEvent.removalCancelled);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -681,5 +767,7 @@ class SocketService {
     _balanceUpdatedController.close();
     _profilePictureUpdatedController.close();
     _profileUpdatedController.close();
+    _removalInitiatedController.close();
+    _removalCancelledController.close();
   }
 }

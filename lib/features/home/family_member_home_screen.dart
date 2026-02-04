@@ -17,7 +17,9 @@ import '../../core/services/socket_service.dart'
         SocketService,
         BalanceUpdatedData,
         ProfilePictureUpdatedData,
-        ProfileUpdatedData;
+        ProfileUpdatedData,
+        RemovalInitiatedData,
+        RemovalCancelledData;
 import '../../core/services/notification_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -125,6 +127,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   StreamSubscription<MemberLeftData>? _memberLeftSubscription;
   StreamSubscription<ProfilePictureUpdatedData>? _profilePictureSubscription;
   StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
+  StreamSubscription<RemovalInitiatedData>? _removalInitiatedSubscription;
+  StreamSubscription<RemovalCancelledData>? _removalCancelledSubscription;
 
   // Leave family rate limiting
   static const String _leaveAttemptKey = 'leave_family_attempts';
@@ -160,6 +164,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _listenToMemberLeft();
     _listenToProfilePictureUpdates();
     _listenToProfileUpdates();
+    _listenToRemovalInitiated();
+    _listenToRemovalCancelled();
     // Delay loading removal requests to avoid too many simultaneous API calls
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _loadRemovalRequests();
@@ -212,6 +218,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _memberLeftSubscription?.cancel();
     _profilePictureSubscription?.cancel();
     _profileUpdatedSubscription?.cancel();
+    _removalInitiatedSubscription?.cancel();
+    _removalCancelledSubscription?.cancel();
     _rateLimitTimer?.cancel();
     super.dispose();
   }
@@ -560,6 +568,42 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             }
           });
         }
+      }
+    });
+  }
+
+  /// Listen to real-time removal initiated events (when owner confirms removal)
+  void _listenToRemovalInitiated() {
+    _removalInitiatedSubscription =
+        _socketService.onRemovalInitiated.listen((data) {
+      if (mounted) {
+        debugPrint('⚠️ Removal initiated by owner: ${data.ownerName}');
+        // Reload removal requests to show the pending removal banner immediately
+        _loadRemovalRequests();
+        // Show a toast notification
+        final l10n = AppLocalizations.of(context);
+        final message = l10n?.ownerRequestedRemoval(data.ownerName) ??
+            '${data.ownerName} has requested to remove you from the family';
+        AppToast.warning(context, message);
+      }
+    });
+  }
+
+  /// Listen to real-time removal cancelled events (when owner cancels removal request)
+  void _listenToRemovalCancelled() {
+    _removalCancelledSubscription =
+        _socketService.onRemovalCancelled.listen((data) {
+      if (mounted) {
+        debugPrint('✅ Removal cancelled by owner: ${data.ownerName}');
+        // Clear the removal requests to hide the pending removal banner immediately
+        setState(() {
+          _removalRequests = [];
+        });
+        // Show a toast notification
+        final l10n = AppLocalizations.of(context);
+        final message = l10n?.removalCancelled ??
+            'The removal request has been cancelled';
+        AppToast.success(context, message);
       }
     });
   }

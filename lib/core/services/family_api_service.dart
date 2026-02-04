@@ -5,6 +5,7 @@ import '../config/api_config.dart';
 import '../models/family_model.dart';
 import '../services/token_storage_service.dart';
 import '../services/session_manager.dart';
+import '../services/retry_http_client.dart';
 
 /// Exception thrown when authentication fails and user should be logged out
 class AuthenticationException implements Exception {
@@ -19,6 +20,12 @@ class FamilyApiService {
   final _baseUrl = ApiConfig.baseUrl;
   final _tokenStorage = TokenStorageService();
   final _sessionManager = SessionManager();
+  final http.Client _client = RetryHttpClient();
+
+  /// Safely parse JSON response, handling non-JSON error responses
+  Map<String, dynamic> _safeJsonDecode(http.Response response) {
+    return response.safeParseJson();
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _tokenStorage.getAccessToken();
@@ -38,7 +45,7 @@ class FamilyApiService {
       }
 
       debugPrint('🔄 Refreshing token...');
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$_baseUrl${ApiConfig.refreshPath}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'sessionToken': sessionToken}),
@@ -47,7 +54,7 @@ class FamilyApiService {
       debugPrint('🔄 Refresh response: ${response.statusCode}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
+        final data = _safeJsonDecode(response);
         final newAccessToken = data['accessToken'];
         final newSessionToken = data['sessionToken'];
         
@@ -82,7 +89,7 @@ class FamilyApiService {
     
     debugPrint('🏠 API: Creating family...');
     
-    var response = await http.post(
+    var response = await _client.post(
       Uri.parse('$_baseUrl/family/create'),
       headers: headers,
       body: json.encode(request.toJson()),
@@ -96,7 +103,7 @@ class FamilyApiService {
         debugPrint('✅ Token refreshed, retrying createFamily request');
         // Retry with new token
         headers = await _getHeaders();
-        response = await http.post(
+        response = await _client.post(
           Uri.parse('$_baseUrl/family/create'),
           headers: headers,
           body: json.encode(request.toJson()),
@@ -116,10 +123,10 @@ class FamilyApiService {
     }
 
     if (response.statusCode == 201 || response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return FamilyModel.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to create family');
     }
   }
@@ -130,7 +137,7 @@ class FamilyApiService {
     
     debugPrint('🎫 API: Joining family...');
     
-    var response = await http.post(
+    var response = await _client.post(
       Uri.parse('$_baseUrl/family/join'),
       headers: headers,
       body: json.encode(request.toJson()),
@@ -144,7 +151,7 @@ class FamilyApiService {
         debugPrint('✅ Token refreshed, retrying joinFamily request');
         // Retry with new token
         headers = await _getHeaders();
-        response = await http.post(
+        response = await _client.post(
           Uri.parse('$_baseUrl/family/join'),
           headers: headers,
           body: json.encode(request.toJson()),
@@ -164,10 +171,10 @@ class FamilyApiService {
     }
 
     if (response.statusCode == 201 || response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return FamilyModel.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to join family');
     }
   }
@@ -178,7 +185,7 @@ class FamilyApiService {
     
     debugPrint('🔍 Calling GET /family/me');
     
-    var response = await http.get(
+    var response = await _client.get(
       Uri.parse('$_baseUrl/family/me'),
       headers: headers,
     );
@@ -194,7 +201,7 @@ class FamilyApiService {
         debugPrint('✅ Token refreshed, retrying request');
         // Retry with new token
         headers = await _getHeaders();
-        response = await http.get(
+        response = await _client.get(
           Uri.parse('$_baseUrl/family/me'),
           headers: headers,
         );
@@ -220,17 +227,17 @@ class FamilyApiService {
         return null;
       }
       
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       debugPrint('📊 Decoded data: $data');
       
       // Handle backend response format
-      if (data == null) {
-        debugPrint('ℹ️ Data is null');
+      if (data.isEmpty) {
+        debugPrint('ℹ️ Data is empty');
         return null;
       }
       
       // Check if backend returns { family: null } format
-      if (data is Map && data.containsKey('family')) {
+      if (data.containsKey('family')) {
         if (data['family'] == null) {
           debugPrint('ℹ️ Family property is null');
           return null;
@@ -257,13 +264,13 @@ class FamilyApiService {
   Future<void> leaveFamily() async {
     final headers = await _getHeaders();
     
-    final response = await http.delete(
+    final response = await _client.delete(
       Uri.parse('$_baseUrl/family/leave'),
       headers: headers,
     );
 
     if (response.statusCode != 200) {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to leave family');
     }
   }
@@ -274,16 +281,16 @@ class FamilyApiService {
   Future<Map<String, dynamic>> initiateRemoval(String memberId) async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/removal/initiate'),
       headers: headers,
       body: json.encode({'memberId': memberId}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to initiate removal');
     }
   }
@@ -292,16 +299,16 @@ class FamilyApiService {
   Future<Map<String, dynamic>> confirmOwnerRemoval(String requestId, String code) async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/removal/confirm-owner'),
       headers: headers,
       body: json.encode({'requestId': requestId, 'code': code}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to confirm removal');
     }
   }
@@ -310,14 +317,22 @@ class FamilyApiService {
   Future<List<Map<String, dynamic>>> getOwnerRemovalRequests() async {
     final headers = await _getHeaders();
     
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$_baseUrl/family/removal/owner-requests'),
       headers: headers,
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data);
+      if (response.body.isEmpty) return [];
+      try {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      return [];
     } else {
       return [];
     }
@@ -327,13 +342,13 @@ class FamilyApiService {
   Future<void> cancelRemoval(String requestId) async {
     final headers = await _getHeaders();
     
-    final response = await http.delete(
+    final response = await _client.delete(
       Uri.parse('$_baseUrl/family/removal/$requestId'),
       headers: headers,
     );
 
     if (response.statusCode != 200) {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to cancel removal');
     }
   }
@@ -342,14 +357,20 @@ class FamilyApiService {
   Future<List<RemovalRequest>> getMemberRemovalRequests() async {
     final headers = await _getHeaders();
     
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$_baseUrl/family/removal/member-requests'),
       headers: headers,
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body) as List;
-      return data.map((r) => RemovalRequest.fromJson(r)).toList();
+      final body = response.body;
+      if (body.isEmpty) return [];
+      try {
+        final data = json.decode(body) as List;
+        return data.map((r) => RemovalRequest.fromJson(r)).toList();
+      } catch (e) {
+        return [];
+      }
     } else {
       return [];
     }
@@ -359,16 +380,16 @@ class FamilyApiService {
   Future<Map<String, dynamic>> acceptRemoval(String requestId) async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/removal/accept'),
       headers: headers,
       body: json.encode({'requestId': requestId}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to accept removal');
     }
   }
@@ -377,16 +398,16 @@ class FamilyApiService {
   Future<Map<String, dynamic>> confirmMemberRemoval(String requestId, String code) async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/removal/confirm-member'),
       headers: headers,
       body: json.encode({'requestId': requestId, 'code': code}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to confirm removal');
     }
   }
@@ -397,15 +418,15 @@ class FamilyApiService {
   Future<Map<String, dynamic>> initiateSelfLeave() async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/leave/initiate'),
       headers: headers,
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to initiate leave request');
     }
   }
@@ -414,16 +435,16 @@ class FamilyApiService {
   Future<Map<String, dynamic>> confirmSelfLeave(String code) async {
     final headers = await _getHeaders();
     
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$_baseUrl/family/leave/confirm'),
       headers: headers,
       body: json.encode({'code': code}),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return json.decode(response.body);
+      return _safeJsonDecode(response);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to confirm leaving family');
     }
   }
@@ -436,7 +457,7 @@ class FamilyApiService {
     debugPrint('🔐 Validating session...');
     
     // Use GET /family/me as a lightweight session check
-    var response = await http.get(
+    var response = await _client.get(
       Uri.parse('$_baseUrl/family/me'),
       headers: headers,
     );
@@ -448,7 +469,7 @@ class FamilyApiService {
       if (refreshed) {
         // Retry with new token
         headers = await _getHeaders();
-        response = await http.get(
+        response = await _client.get(
           Uri.parse('$_baseUrl/family/me'),
           headers: headers,
         );

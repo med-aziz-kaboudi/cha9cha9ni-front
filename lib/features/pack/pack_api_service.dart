@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../core/config/api_config.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/api_exception.dart';
+import '../../core/services/retry_http_client.dart';
 import 'pack_models.dart';
 
 /// Service for pack-related API calls
@@ -11,7 +12,7 @@ class PackApiService {
   final http.Client _client;
   final _tokenStorage = TokenStorageService();
 
-  PackApiService({http.Client? client}) : _client = client ?? http.Client();
+  PackApiService({http.Client? client}) : _client = client ?? RetryHttpClient();
 
   /// Get current pack details
   Future<CurrentPackData> getCurrentPack() async {

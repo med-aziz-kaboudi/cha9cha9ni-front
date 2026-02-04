@@ -4,12 +4,19 @@ import 'package:http/http.dart' as http;
 import '../../core/config/api_config.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/session_manager.dart';
+import '../../core/services/retry_http_client.dart';
 import 'rewards_model.dart';
 
 class RewardsApiService {
   final _baseUrl = ApiConfig.baseUrl;
   final _tokenStorage = TokenStorageService();
   final _sessionManager = SessionManager();
+  final http.Client _client = RetryHttpClient();
+
+  /// Safely parse JSON response, handling non-JSON error responses
+  Map<String, dynamic> _safeJsonDecode(http.Response response) {
+    return response.safeParseJson();
+  }
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _tokenStorage.getAccessToken();
@@ -24,14 +31,14 @@ class RewardsApiService {
       final sessionToken = await _tokenStorage.getSessionToken();
       if (sessionToken == null) return false;
 
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$_baseUrl${ApiConfig.refreshPath}'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'sessionToken': sessionToken}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
+        final data = _safeJsonDecode(response);
         final newAccessToken = data['accessToken'];
         final newSessionToken = data['sessionToken'];
 
@@ -61,9 +68,9 @@ class RewardsApiService {
 
     http.Response response;
     if (method == 'GET') {
-      response = await http.get(uri, headers: headers);
+      response = await _client.get(uri, headers: headers);
     } else {
-      response = await http.post(
+      response = await _client.post(
         uri,
         headers: headers,
         body: body != null ? json.encode(body) : null,
@@ -76,9 +83,9 @@ class RewardsApiService {
       if (refreshed) {
         headers = await _getHeaders();
         if (method == 'GET') {
-          response = await http.get(uri, headers: headers);
+          response = await _client.get(uri, headers: headers);
         } else {
-          response = await http.post(
+          response = await _client.post(
             uri,
             headers: headers,
             body: body != null ? json.encode(body) : null,
@@ -100,10 +107,10 @@ class RewardsApiService {
     final response = await _makeRequest('GET', '/rewards');
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return RewardsData.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to fetch rewards data');
     }
   }
@@ -117,10 +124,10 @@ class RewardsApiService {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return ClaimRewardResult.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to claim reward');
     }
   }
@@ -130,10 +137,10 @@ class RewardsApiService {
     final response = await _makeRequest('GET', '/rewards/checkin/status');
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return DailyCheckInStatus.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to get check-in status');
     }
   }
@@ -143,10 +150,10 @@ class RewardsApiService {
     final response = await _makeRequest('POST', '/rewards/checkin');
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = json.decode(response.body);
+      final data = _safeJsonDecode(response);
       return DailyCheckInResult.fromJson(data);
     } else {
-      final error = json.decode(response.body);
+      final error = _safeJsonDecode(response);
       throw Exception(error['message'] ?? 'Failed to check in');
     }
   }
