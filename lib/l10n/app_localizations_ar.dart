@@ -570,6 +570,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'تم تحديث الملف الشخصي بنجاح!';
 
   @override
+  String get takePhoto => 'التقاط صورة';
+
+  @override
+  String get chooseFromGallery => 'اختيار من المعرض';
+
+  @override
+  String get removePhoto => 'حذف الصورة';
+
+  @override
+  String get changeProfilePhoto => 'تغيير صورة الملف الشخصي';
+
+  @override
+  String get tapOptionToChange => 'اضغط على خيار أدناه لتحديث صورتك';
+
+  @override
+  String get addPhotoDescription => 'أضف صورة لتخصيص ملفك الشخصي';
+
+  @override
+  String get useCamera => 'التقط صورة جديدة الآن';
+
+  @override
+  String get browsePhotos => 'اختر من مكتبة الصور';
+
+  @override
+  String get deleteCurrentPhoto => 'احذف صورة ملفك الشخصي الحالية';
+
+  @override
+  String get profilePictureUpdated => 'تم تحديث صورة الملف الشخصي بنجاح!';
+
+  @override
+  String get cannotRemoveProfilePicture =>
+      'لحذف صورة ملفك الشخصي، يرجى التواصل مع الدعم';
+
+  @override
+  String get photoPermissionDenied =>
+      'تم رفض الوصول للصور. يرجى تفعيله في الإعدادات.';
+
+  @override
+  String get uploadFailed => 'فشل رفع الصورة. يرجى المحاولة مرة أخرى.';
+
+  @override
   String get fullName => 'الاسم الكامل';
 
   @override

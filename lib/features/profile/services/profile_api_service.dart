@@ -12,6 +12,7 @@ class UserProfile {
   final String? lastName;
   final String? fullName;
   final String? phone;
+  final String? profilePictureUrl;
   final String? familyId;
   final bool isOwner;
   final DateTime createdAt;
@@ -24,6 +25,7 @@ class UserProfile {
     this.lastName,
     this.fullName,
     this.phone,
+    this.profilePictureUrl,
     this.familyId,
     required this.isOwner,
     required this.createdAt,
@@ -38,6 +40,7 @@ class UserProfile {
       lastName: json['lastName'],
       fullName: json['fullName'],
       phone: json['phone'],
+      profilePictureUrl: json['profilePictureUrl'],
       familyId: json['familyId'],
       isOwner: json['isOwner'] ?? false,
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
@@ -205,6 +208,7 @@ class ProfileApiService {
         lastName: data['lastName'],
         fullName: data['fullName'],
         email: data['email'],
+        profilePictureUrl: data['profilePictureUrl'],
       );
       
       return UserProfile.fromJson(data);
@@ -294,6 +298,7 @@ class ProfileApiService {
         lastName: data['lastName'],
         fullName: data['fullName'],
         email: data['email'],
+        profilePictureUrl: data['profilePictureUrl'],
       );
       
       return UserProfile.fromJson(data);
@@ -302,6 +307,51 @@ class ProfileApiService {
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['message'] ?? 'Failed to change email');
+    }
+  }
+
+  /// Update profile picture URL (rate limited: 1 per day)
+  Future<UserProfile> updateProfilePicture(String profilePictureUrl) async {
+    var headers = await _getHeaders();
+    
+    var response = await _client.put(
+      Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture'),
+      headers: headers,
+      body: jsonEncode({'profilePictureUrl': profilePictureUrl}),
+    );
+
+    // Handle 401 - try to refresh token once
+    if (response.statusCode == 401) {
+      debugPrint('🔄 ProfileAPI: 401 received on profile picture update, attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        headers = await _getHeaders();
+        response = await _client.put(
+          Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture'),
+          headers: headers,
+          body: jsonEncode({'profilePictureUrl': profilePictureUrl}),
+        );
+      }
+    }
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      
+      // Update local storage with new profile picture
+      await _tokenStorage.saveUserProfile(
+        firstName: data['firstName'],
+        lastName: data['lastName'],
+        fullName: data['fullName'],
+        email: data['email'],
+        profilePictureUrl: data['profilePictureUrl'],
+      );
+      
+      return UserProfile.fromJson(data);
+    } else if (response.statusCode == 401) {
+      _handleSessionExpired();
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['message'] ?? 'Failed to update profile picture');
     }
   }
 

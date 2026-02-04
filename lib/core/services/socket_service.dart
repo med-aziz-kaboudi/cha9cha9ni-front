@@ -17,6 +17,7 @@ enum SocketEvent {
   aidRemoved,
   packUpdated,
   balanceUpdated,
+  profilePictureUpdated,
   error,
 }
 
@@ -284,6 +285,32 @@ class AdsStatsUpdatedData {
   }
 }
 
+/// Data class for profile picture updated event
+class ProfilePictureUpdatedData {
+  final String memberId;
+  final String memberName;
+  final String profilePictureUrl;
+  final DateTime timestamp;
+
+  ProfilePictureUpdatedData({
+    required this.memberId,
+    required this.memberName,
+    required this.profilePictureUrl,
+    required this.timestamp,
+  });
+
+  factory ProfilePictureUpdatedData.fromJson(Map<String, dynamic> json) {
+    return ProfilePictureUpdatedData(
+      memberId: json['memberId'] ?? '',
+      memberName: json['memberName'] ?? '',
+      profilePictureUrl: json['profilePictureUrl'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -311,6 +338,8 @@ class SocketService {
   final _memberLeftController = StreamController<MemberLeftData>.broadcast();
   final _balanceUpdatedController =
       StreamController<BalanceUpdatedData>.broadcast();
+  final _profilePictureUpdatedController =
+      StreamController<ProfilePictureUpdatedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -344,6 +373,10 @@ class SocketService {
   /// Stream of balance updated events - listen to this to update balance display
   Stream<BalanceUpdatedData> get onBalanceUpdated =>
       _balanceUpdatedController.stream;
+
+  /// Stream of profile picture updated events - listen to this to update UI
+  Stream<ProfilePictureUpdatedData> get onProfilePictureUpdated =>
+      _profilePictureUpdatedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -516,6 +549,16 @@ class SocketService {
         final balanceData = BalanceUpdatedData.fromJson(data);
         _balanceUpdatedController.add(balanceData);
         _eventController.add(SocketEvent.balanceUpdated);
+      }
+    });
+
+    // Listen for profile picture updated event (family member changed their picture)
+    _socket!.on('profile_picture_updated', (data) {
+      debugPrint('📸 Socket: Received profile_picture_updated event');
+      if (data is Map<String, dynamic>) {
+        final pictureData = ProfilePictureUpdatedData.fromJson(data);
+        _profilePictureUpdatedController.add(pictureData);
+        _eventController.add(SocketEvent.profilePictureUpdated);
       }
     });
 

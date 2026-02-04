@@ -572,6 +572,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'Profile updated successfully!';
 
   @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from Gallery';
+
+  @override
+  String get removePhoto => 'Remove Photo';
+
+  @override
+  String get changeProfilePhoto => 'Change Profile Photo';
+
+  @override
+  String get tapOptionToChange => 'Tap an option below to update your photo';
+
+  @override
+  String get addPhotoDescription => 'Add a photo to personalize your profile';
+
+  @override
+  String get useCamera => 'Take a new photo now';
+
+  @override
+  String get browsePhotos => 'Select from your photo library';
+
+  @override
+  String get deleteCurrentPhoto => 'Remove your current profile photo';
+
+  @override
+  String get profilePictureUpdated => 'Profile picture updated successfully!';
+
+  @override
+  String get cannotRemoveProfilePicture =>
+      'To remove your profile picture, please contact support';
+
+  @override
+  String get photoPermissionDenied =>
+      'Photo access permission denied. Please enable it in Settings.';
+
+  @override
+  String get uploadFailed => 'Failed to upload image. Please try again.';
+
+  @override
   String get fullName => 'Full name';
 
   @override

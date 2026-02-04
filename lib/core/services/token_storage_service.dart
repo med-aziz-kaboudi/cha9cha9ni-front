@@ -13,6 +13,7 @@ class TokenStorageService {
   static const String _fullNameKey = 'user_full_name';
   static const String _userEmailKey = 'user_email';
   static const String _userPhoneKey = 'user_phone';
+  static const String _profilePictureUrlKey = 'user_profile_picture_url';
   static const String _profileLastFetchedKey = 'profile_last_fetched';
   
   // Family info cache keys
@@ -53,6 +54,7 @@ class TokenStorageService {
     String? fullName,
     String? email,
     String? phone,
+    String? profilePictureUrl,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     
@@ -71,6 +73,9 @@ class TokenStorageService {
     if (phone != null) {
       await prefs.setString(_userPhoneKey, phone);
     }
+    if (profilePictureUrl != null) {
+      await prefs.setString(_profilePictureUrlKey, profilePictureUrl);
+    }
     // Save timestamp of when profile was fetched/saved
     await prefs.setInt(_profileLastFetchedKey, DateTime.now().millisecondsSinceEpoch);
   }
@@ -84,7 +89,14 @@ class TokenStorageService {
       'fullName': prefs.getString(_fullNameKey),
       'email': prefs.getString(_userEmailKey),
       'phone': prefs.getString(_userPhoneKey),
+      'profilePictureUrl': prefs.getString(_profilePictureUrlKey),
     };
+  }
+
+  /// Get cached profile picture URL
+  Future<String?> getProfilePictureUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_profilePictureUrlKey);
   }
 
   /// Check if profile data was fetched recently (within threshold seconds)

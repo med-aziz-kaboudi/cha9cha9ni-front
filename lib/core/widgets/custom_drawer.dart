@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../services/token_storage_service.dart';
 import '../theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
@@ -35,6 +36,7 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderStateMixin {
   String _userName = '';
+  String? _profilePictureUrl;
   final _tokenStorage = TokenStorageService();
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -43,7 +45,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUserInfo();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -64,13 +66,24 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
     super.dispose();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadUserInfo() async {
     final name = await _tokenStorage.getUserDisplayName();
+    final profilePicture = await _tokenStorage.getProfilePictureUrl();
     if (mounted) {
       setState(() {
         _userName = name;
+        _profilePictureUrl = profilePicture;
       });
     }
+  }
+
+  String _getInitials() {
+    if (_userName.isEmpty) return 'U';
+    final parts = _userName.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return _userName[0].toUpperCase();
   }
 
   void _closeDrawer() {
@@ -164,19 +177,50 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                           ],
                         ),
                         SizedBox(height: avatarTopSpacing),
-                        // Avatar
+                        // Avatar with profile picture
                         Container(
                           width: avatarSize,
                           height: avatarSize,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CC3C7),
+                            color: _profilePictureUrl == null ? const Color(0xFF4CC3C7) : null,
                             borderRadius: BorderRadius.circular(avatarSize),
                           ),
-                          child: Icon(
-                            Icons.person_outline,
-                            color: Colors.white,
-                            size: avatarIconSize,
-                          ),
+                          child: _profilePictureUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(avatarSize),
+                                  child: CachedNetworkImage(
+                                    imageUrl: _profilePictureUrl!,
+                                    fit: BoxFit.cover,
+                                    width: avatarSize,
+                                    height: avatarSize,
+                                    placeholder: (context, url) => Container(
+                                      color: const Color(0xFF4CC3C7),
+                                      child: Icon(
+                                        Icons.person_outline,
+                                        color: Colors.white,
+                                        size: avatarIconSize,
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) => Container(
+                                      color: const Color(0xFF4CC3C7),
+                                      child: Center(
+                                        child: Text(
+                                          _getInitials(),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: avatarIconSize * 0.7,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.person_outline,
+                                  color: Colors.white,
+                                  size: avatarIconSize,
+                                ),
                         ),
                         SizedBox(height: nameTopSpacing),
                         // User name

@@ -48,7 +48,9 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID is used to unlock the app securely and protect your family data.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Camera access is required to scan QR codes and invite codes to join or manage your family.</string>
+	<string>Camera access is required to scan QR codes, take profile photos, and manage your family.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to select a profile picture for your account.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

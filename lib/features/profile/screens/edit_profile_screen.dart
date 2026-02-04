@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -31,6 +34,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isSaving = false;
   UserProfile? _profile;
   String? _errorMessage;
+
+  // Profile picture state
+  final _imagePicker = ImagePicker();
+  bool _isUploadingPicture = false;
+  String? _profilePictureUrl;
 
   // Email change flow states
   bool _isEditingEmail = false;
@@ -153,6 +161,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _firstNameController.text = cachedProfile['firstName'] ?? '';
         _lastNameController.text = cachedProfile['lastName'] ?? '';
         _emailController.text = cachedProfile['email'] ?? '';
+        _profilePictureUrl = cachedProfile['profilePictureUrl'];
         
         // Handle phone - strip +216 prefix if present
         String phone = cachedProfile['phone'] ?? '';
@@ -162,6 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _phoneController.text = phone;
         
         debugPrint('📱 Phone from cache: ${cachedProfile['phone']}');
+        debugPrint('📸 Profile picture from cache: ${cachedProfile['profilePictureUrl']}');
       });
     }
 
@@ -186,6 +196,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final profile = await _profileApiService.getProfile();
       
       debugPrint('📱 Phone from API: ${profile.phone}');
+      debugPrint('📸 Profile picture from API: ${profile.profilePictureUrl}');
       
       // Save to cache for next time
       await _tokenStorage.saveUserProfile(
@@ -194,12 +205,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         fullName: profile.fullName,
         email: profile.email,
         phone: profile.phone,
+        profilePictureUrl: profile.profilePictureUrl,
       );
       
       if (mounted) {
         setState(() {
           _profile = profile;
           _isLoading = false;
+          _profilePictureUrl = profile.profilePictureUrl;
           
           // Fill all name fields with their values (empty if null)
           _fullNameController.text = profile.fullName ?? '';
@@ -628,68 +641,407 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final initials = _getInitials();
     
     return Center(
-      child: Stack(
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.centerRight,
-                end: Alignment.centerLeft,
-                colors: [AppColors.secondary, AppColors.secondary],
-              ),
-              borderRadius: BorderRadius.circular(50),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 34,
-              height: 34,
+      child: GestureDetector(
+        onTap: _isUploadingPicture ? null : _showImagePickerOptions,
+        child: Stack(
+          children: [
+            // Avatar container with profile picture or initials
+            Container(
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: _profilePictureUrl == null ? const LinearGradient(
                   begin: Alignment.centerRight,
                   end: Alignment.centerLeft,
-                  colors: [AppColors.primary, AppColors.primary],
-                ),
-                borderRadius: BorderRadius.circular(17),
+                  colors: [AppColors.secondary, AppColors.secondary],
+                ) : null,
+                borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    color: AppColors.secondary.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.camera_alt_rounded,
-                color: Colors.white,
-                size: 18,
+              child: _profilePictureUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: CachedNetworkImage(
+                        imageUrl: _profilePictureUrl!,
+                        fit: BoxFit.cover,
+                        width: 100,
+                        height: 100,
+                        placeholder: (context, url) => Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                          ),
+                          child: Center(
+                            child: Text(
+                              initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                          ),
+                          child: Center(
+                            child: Text(
+                              initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+            ),
+            // Camera button or loading indicator
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: [AppColors.primary, AppColors.primary],
+                  ),
+                  borderRadius: BorderRadius.circular(17),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _isUploadingPicture
+                    ? const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.camera_alt_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  void _showImagePickerOptions() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Title
+                Text(
+                  l10n.changeProfilePhoto,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.secondary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Camera option
+                _buildPhotoOptionTile(
+                  icon: Icons.camera_alt_rounded,
+                  title: l10n.takePhoto,
+                  subtitle: l10n.useCamera,
+                  color: AppColors.primary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                const SizedBox(height: 10),
+                
+                // Gallery option
+                _buildPhotoOptionTile(
+                  icon: Icons.photo_library_rounded,
+                  title: l10n.chooseFromGallery,
+                  subtitle: l10n.browsePhotos,
+                  color: AppColors.secondary,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                
+                // Remove option (if has photo)
+                if (_profilePictureUrl != null) ...[
+                  const SizedBox(height: 10),
+                  _buildPhotoOptionTile(
+                    icon: Icons.delete_outline_rounded,
+                    title: l10n.removePhoto,
+                    subtitle: l10n.deleteCurrentPhoto,
+                    color: const Color(0xFFE53935),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _removeProfilePicture();
+                    },
+                  ),
+                ],
+                
+                const SizedBox(height: 16),
+                
+                // Cancel button
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.cancel,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoOptionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: color.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: color.withValues(alpha: 0.5),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    try {
+      // Pick image with proper error handling
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+        requestFullMetadata: false, // Helps with simulator issues
+      );
+
+      // User cancelled the picker
+      if (pickedFile == null) {
+        debugPrint('📸 Image picker: User cancelled');
+        return;
+      }
+
+      debugPrint('📸 Image picked: ${pickedFile.path}');
+
+      // Check if widget is still mounted before setState
+      if (!mounted) return;
+      
+      setState(() => _isUploadingPicture = true);
+
+      // Read the file bytes for upload
+      final bytes = await pickedFile.readAsBytes();
+      
+      if (bytes.isEmpty) {
+        throw Exception('Failed to read image file');
+      }
+
+      debugPrint('📸 Image size: ${bytes.length} bytes');
+
+      final userId = await _tokenStorage.getUserId();
+      final fileName = 'profile_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      
+      final supabase = Supabase.instance.client;
+      
+      // Upload to the profile-pictures bucket using bytes
+      final uploadPath = 'public/$fileName';
+      await supabase.storage
+          .from('profile-pictures')
+          .uploadBinary(
+            uploadPath, 
+            bytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              cacheControl: '3600',
+              upsert: true,
+            ),
+          );
+
+      debugPrint('📸 Upload successful: $uploadPath');
+
+      // Get the public URL
+      final publicUrl = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(uploadPath);
+
+      debugPrint('📸 Public URL: $publicUrl');
+
+      // Update the profile picture URL in backend
+      final updatedProfile = await _profileApiService.updateProfilePicture(publicUrl);
+
+      if (mounted) {
+        setState(() {
+          _profilePictureUrl = updatedProfile.profilePictureUrl;
+          _isUploadingPicture = false;
+        });
+        
+        AppToast.success(context, l10n.profilePictureUpdated);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('📸 Error picking/uploading image: $e');
+      debugPrint('📸 Stack trace: $stackTrace');
+      
+      if (mounted) {
+        setState(() => _isUploadingPicture = false);
+        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        
+        // Provide user-friendly error messages
+        if (errorMessage.contains('permission') || errorMessage.contains('denied')) {
+          errorMessage = l10n.photoPermissionDenied;
+        } else if (errorMessage.contains('storage') || errorMessage.contains('bucket')) {
+          errorMessage = l10n.uploadFailed;
+        }
+        
+        AppToast.error(context, errorMessage);
+      }
+    }
+  }
+
+  Future<void> _removeProfilePicture() async {
+    // For now, we can't remove - just show a message
+    // To properly remove, we'd need a backend endpoint
+    final l10n = AppLocalizations.of(context)!;
+    AppToast.warning(context, l10n.cannotRemoveProfilePicture);
   }
 
   String _getInitials() {

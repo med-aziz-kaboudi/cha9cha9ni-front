@@ -1150,6 +1150,84 @@ abstract class AppLocalizations {
   /// **'Profile updated successfully!'**
   String get profileUpdatedSuccessfully;
 
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Photo'**
+  String get removePhoto;
+
+  /// No description provided for @changeProfilePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Profile Photo'**
+  String get changeProfilePhoto;
+
+  /// No description provided for @tapOptionToChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an option below to update your photo'**
+  String get tapOptionToChange;
+
+  /// No description provided for @addPhotoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo to personalize your profile'**
+  String get addPhotoDescription;
+
+  /// No description provided for @useCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a new photo now'**
+  String get useCamera;
+
+  /// No description provided for @browsePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Select from your photo library'**
+  String get browsePhotos;
+
+  /// No description provided for @deleteCurrentPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove your current profile photo'**
+  String get deleteCurrentPhoto;
+
+  /// No description provided for @profilePictureUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile picture updated successfully!'**
+  String get profilePictureUpdated;
+
+  /// No description provided for @cannotRemoveProfilePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'To remove your profile picture, please contact support'**
+  String get cannotRemoveProfilePicture;
+
+  /// No description provided for @photoPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo access permission denied. Please enable it in Settings.'**
+  String get photoPermissionDenied;
+
+  /// No description provided for @uploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload image. Please try again.'**
+  String get uploadFailed;
+
   /// No description provided for @fullName.
   ///
   /// In en, this message translates to:
