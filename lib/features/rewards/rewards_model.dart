@@ -176,6 +176,7 @@ enum ActivityType {
 /// Recent reward activity entry
 class RewardActivity {
   final String id;
+  final String? memberId;
   final String memberName;
   final int pointsEarned;
   final int slotIndex;
@@ -185,6 +186,7 @@ class RewardActivity {
 
   RewardActivity({
     required this.id,
+    this.memberId,
     required this.memberName,
     required this.pointsEarned,
     required this.slotIndex,
@@ -196,6 +198,7 @@ class RewardActivity {
   factory RewardActivity.fromJson(Map<String, dynamic> json) {
     return RewardActivity(
       id: json['id'] ?? '',
+      memberId: json['memberId'],
       memberName: json['memberName'] ?? 'Unknown',
       pointsEarned: json['pointsEarned'] ?? 0,
       slotIndex: json['slotIndex'] ?? 0,

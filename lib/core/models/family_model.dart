@@ -6,6 +6,7 @@ class FamilyMember {
   final bool hasPendingRemoval;
   final String? pendingRemovalRequestId;
   final String? pendingRemovalStatus;
+  final String? profilePictureUrl;
 
   FamilyMember({
     required this.id,
@@ -15,6 +16,7 @@ class FamilyMember {
     this.hasPendingRemoval = false,
     this.pendingRemovalRequestId,
     this.pendingRemovalStatus,
+    this.profilePictureUrl,
   });
 
   factory FamilyMember.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class FamilyMember {
       hasPendingRemoval: json['hasPendingRemoval'] as bool? ?? false,
       pendingRemovalRequestId: json['pendingRemovalRequestId'] as String?,
       pendingRemovalStatus: json['pendingRemovalStatus'] as String?,
+      profilePictureUrl: json['profilePictureUrl'] as String?,
     );
   }
 
@@ -38,7 +41,22 @@ class FamilyMember {
       'hasPendingRemoval': hasPendingRemoval,
       'pendingRemovalRequestId': pendingRemovalRequestId,
       'pendingRemovalStatus': pendingRemovalStatus,
+      'profilePictureUrl': profilePictureUrl,
     };
+  }
+
+  /// Create a copy with updated profile picture and/or name
+  FamilyMember copyWith({String? profilePictureUrl, String? name}) {
+    return FamilyMember(
+      id: id,
+      name: name ?? this.name,
+      email: email,
+      isOwner: isOwner,
+      hasPendingRemoval: hasPendingRemoval,
+      pendingRemovalRequestId: pendingRemovalRequestId,
+      pendingRemovalStatus: pendingRemovalStatus,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+    );
   }
 }
 

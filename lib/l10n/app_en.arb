@@ -227,6 +227,19 @@
   "browsePhotos": "Select from your photo library",
   "deleteCurrentPhoto": "Remove your current profile photo",
   "profilePictureUpdated": "Profile picture updated successfully!",
+  "profilePictureRemoved": "Profile picture removed successfully!",
+  "removeProfilePictureConfirmation": "Are you sure you want to remove your profile picture? You can add a new one after 24 hours.",
+  "profilePictureRateLimitWarning": "You can change your photo again in {time}",
+  "@profilePictureRateLimitWarning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "Remove",
+  "cropPhoto": "Crop Photo",
+  "done": "Done",
   "cannotRemoveProfilePicture": "To remove your profile picture, please contact support",
   "photoPermissionDenied": "Photo access permission denied. Please enable it in Settings.",
   "uploadFailed": "Failed to upload image. Please try again.",

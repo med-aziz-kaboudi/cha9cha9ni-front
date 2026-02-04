@@ -600,6 +600,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profilePictureUpdated => 'تم تحديث صورة الملف الشخصي بنجاح!';
 
   @override
+  String get profilePictureRemoved => 'تم حذف صورة الملف الشخصي بنجاح!';
+
+  @override
+  String get removeProfilePictureConfirmation =>
+      'هل أنت متأكد من حذف صورة ملفك الشخصي؟ يمكنك إضافة صورة جديدة بعد 24 ساعة.';
+
+  @override
+  String profilePictureRateLimitWarning(String time) {
+    return 'يمكنك تغيير صورتك بعد $time';
+  }
+
+  @override
+  String get remove => 'حذف';
+
+  @override
+  String get cropPhoto => 'قص الصورة';
+
+  @override
+  String get done => 'تم';
+
+  @override
   String get cannotRemoveProfilePicture =>
       'لحذف صورة ملفك الشخصي، يرجى التواصل مع الدعم';
 
@@ -676,9 +697,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String removeMemberConfirm(String name) {
     return 'هل أنت متأكد أنك تريد إزالة $name من العائلة؟';
   }
-
-  @override
-  String get remove => 'حذف';
 
   @override
   String get confirmRemoval => 'تأكيد الإزالة';

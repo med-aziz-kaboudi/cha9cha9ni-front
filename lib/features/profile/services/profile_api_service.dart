@@ -68,6 +68,32 @@ class UserProfile {
   }
 }
 
+/// Profile picture rate limit status
+class ProfilePictureRateLimitStatus {
+  final bool canUpdate;
+  final int hoursRemaining;
+  final DateTime? nextAllowedUpdate;
+  final bool hasProfilePicture;
+
+  ProfilePictureRateLimitStatus({
+    required this.canUpdate,
+    required this.hoursRemaining,
+    this.nextAllowedUpdate,
+    required this.hasProfilePicture,
+  });
+
+  factory ProfilePictureRateLimitStatus.fromJson(Map<String, dynamic> json) {
+    return ProfilePictureRateLimitStatus(
+      canUpdate: json['canUpdate'] ?? true,
+      hoursRemaining: json['hoursRemaining'] ?? 0,
+      nextAllowedUpdate: json['nextAllowedUpdate'] != null 
+          ? DateTime.parse(json['nextAllowedUpdate']) 
+          : null,
+      hasProfilePicture: json['hasProfilePicture'] ?? false,
+    );
+  }
+}
+
 class ProfileApiService {
   final _tokenStorage = TokenStorageService();
   final _sessionManager = SessionManager();
@@ -155,7 +181,19 @@ class ProfileApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return UserProfile.fromJson(data);
+      final profile = UserProfile.fromJson(data);
+      
+      // Save profile data to storage for sidebar and other screens
+      await _tokenStorage.saveUserProfile(
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        fullName: profile.fullName,
+        email: profile.email,
+        phone: profile.phone,
+        profilePictureUrl: profile.profilePictureUrl,
+      );
+      
+      return profile;
     } else if (response.statusCode == 401) {
       _handleSessionExpired();
     } else {
@@ -352,6 +390,80 @@ class ProfileApiService {
     } else {
       final error = jsonDecode(response.body);
       throw Exception(error['message'] ?? 'Failed to update profile picture');
+    }
+  }
+
+  /// Remove profile picture (rate limited: 1 per day)
+  Future<UserProfile> removeProfilePicture() async {
+    var headers = await _getHeaders();
+    
+    var response = await _client.delete(
+      Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture'),
+      headers: headers,
+    );
+
+    // Handle 401 - try to refresh token once
+    if (response.statusCode == 401) {
+      debugPrint('🔄 ProfileAPI: 401 received on profile picture remove, attempting token refresh');
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        headers = await _getHeaders();
+        response = await _client.delete(
+          Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture'),
+          headers: headers,
+        );
+      }
+    }
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      
+      // Update local storage - clear profile picture
+      await _tokenStorage.saveUserProfile(
+        firstName: data['firstName'],
+        lastName: data['lastName'],
+        fullName: data['fullName'],
+        email: data['email'],
+        profilePictureUrl: null,
+      );
+      
+      return UserProfile.fromJson(data);
+    } else if (response.statusCode == 401) {
+      _handleSessionExpired();
+    } else {
+      final error = jsonDecode(response.body);
+      throw Exception(error['message'] ?? 'Failed to remove profile picture');
+    }
+  }
+
+  /// Get profile picture rate limit status
+  Future<ProfilePictureRateLimitStatus> getProfilePictureRateLimitStatus() async {
+    var headers = await _getHeaders();
+    
+    var response = await _client.get(
+      Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture/rate-limit'),
+      headers: headers,
+    );
+
+    // Handle 401 - try to refresh token once
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshToken();
+      if (refreshed) {
+        headers = await _getHeaders();
+        response = await _client.get(
+          Uri.parse('${ApiConfig.baseUrl}/users/me/profile-picture/rate-limit'),
+          headers: headers,
+        );
+      }
+    }
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return ProfilePictureRateLimitStatus.fromJson(data);
+    } else if (response.statusCode == 401) {
+      _handleSessionExpired();
+    } else {
+      throw Exception('Failed to get rate limit status');
     }
   }
 

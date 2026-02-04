@@ -9,6 +9,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'screens/splash_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/family/family_selection_screen.dart';
@@ -340,6 +341,11 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     await PackService().clearCache();
     TopUpService.clearCache();
     PackService().reset();
+    // Clear cached images (profile pictures, etc.) to prevent showing old user's data
+    await DefaultCacheManager().emptyCache();
+    // Also clear Flutter's in-memory image cache
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
     await Supabase.instance.client.auth.signOut();
     SessionManager().resetHandlingFlag();
     if (mounted) {
@@ -891,6 +897,10 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
     await _tokenStorage.clearAll();
     await ActivityService().clearCache();
     TopUpService.clearCache();
+    // Clear cached images (profile pictures, etc.) to prevent showing old user's data
+    await DefaultCacheManager().emptyCache();
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
     await Supabase.instance.client.auth.signOut();
     if (mounted) {
       setState(() {

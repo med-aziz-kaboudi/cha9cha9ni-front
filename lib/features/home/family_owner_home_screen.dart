@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/models/family_model.dart';
 import '../../core/services/token_storage_service.dart';
 import '../../core/services/family_api_service.dart'
@@ -16,6 +17,8 @@ import '../../core/services/socket_service.dart'
         AidSelectedData,
         MemberLeftData,
         BalanceUpdatedData,
+        ProfilePictureUpdatedData,
+        ProfileUpdatedData,
         SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -32,6 +35,7 @@ import '../activity/widgets/recent_activities_widget.dart';
 import '../topup/topup_service.dart';
 import '../auth/screens/signin_screen.dart';
 import '../profile/screens/edit_profile_screen.dart';
+import '../profile/services/profile_api_service.dart';
 import '../rewards/rewards_service.dart';
 import '../rewards/screens/rewards_screen.dart';
 import '../settings/screens/language_screen.dart';
@@ -69,6 +73,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription<String>? _sessionExpiredSubscription;
   StreamSubscription<FamilyMemberJoinedData>? _familyMemberJoinedSubscription;
   StreamSubscription<MemberLeftData>? _memberLeftSubscription;
+  StreamSubscription<ProfilePictureUpdatedData>? _profilePictureSubscription;
+  StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
   final _socketService = SocketService();
 
   // Family members state
@@ -132,15 +138,38 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _listenToPointsUpdates();
     _listenToBalanceUpdates();
     _loadCachedDataFirst();
+    _fetchProfileForSidebar(); // Fetch profile to ensure sidebar has profile picture
     _listenToSessionExpired();
     _listenToFamilyMemberJoined();
     _listenToMemberLeft();
+    _listenToProfilePictureUpdates();
+    _listenToProfileUpdates();
     _initializeNotifications();
     _loadSelectedAid();
     _listenToPackUpdates();
     _listenToAidSelectedSocket();
     // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
+  }
+
+  /// Fetch user profile to ensure sidebar has profile picture
+  Future<void> _fetchProfileForSidebar() async {
+    try {
+      // Check if profile data is fresh
+      final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 300);
+      if (isFresh) {
+        debugPrint('📦 Profile data is fresh, skipping API fetch for sidebar');
+        return;
+      }
+      
+      // Fetch profile in background - this will save profilePictureUrl to storage
+      final profileService = ProfileApiService();
+      await profileService.getProfile();
+      debugPrint('✅ Profile fetched for sidebar');
+    } catch (e) {
+      debugPrint('⚠️ Failed to fetch profile for sidebar: $e');
+      // Non-critical, don't show error to user
+    }
   }
 
   Future<void> _checkTutorialStatus() async {
@@ -162,6 +191,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _sessionExpiredSubscription?.cancel();
     _familyMemberJoinedSubscription?.cancel();
     _memberLeftSubscription?.cancel();
+    _profilePictureSubscription?.cancel();
+    _profileUpdatedSubscription?.cancel();
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
@@ -526,6 +557,55 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     });
   }
 
+  /// Listen to profile picture updates from family members
+  void _listenToProfilePictureUpdates() {
+    _profilePictureSubscription = _socketService.onProfilePictureUpdated.listen((data) {
+      if (mounted) {
+        debugPrint('📸 Profile picture updated for member: ${data.memberId}');
+
+        // Update the member's profile picture in the list
+        setState(() {
+          final index = _familyMembers.indexWhere((m) => m.id == data.memberId);
+          if (index != -1) {
+            _familyMembers[index] = _familyMembers[index].copyWith(
+              profilePictureUrl: data.profilePictureUrl,
+            );
+          }
+        });
+
+        // Update cached data
+        _tokenStorage.saveFamilyMembers(
+          _familyMembers.map((m) => m.toJson()).toList(),
+        );
+      }
+    });
+  }
+
+  /// Listen to profile updates from family members (name, phone, etc.)
+  void _listenToProfileUpdates() {
+    _profileUpdatedSubscription = _socketService.onProfileUpdated.listen((data) {
+      if (mounted) {
+        debugPrint('👤 Profile updated for member: ${data.memberId}');
+
+        // Update the member's info in the list
+        setState(() {
+          final index = _familyMembers.indexWhere((m) => m.id == data.memberId);
+          if (index != -1) {
+            _familyMembers[index] = _familyMembers[index].copyWith(
+              name: data.displayName,
+              profilePictureUrl: data.profilePictureUrl ?? _familyMembers[index].profilePictureUrl,
+            );
+          }
+        });
+
+        // Update cached data
+        _tokenStorage.saveFamilyMembers(
+          _familyMembers.map((m) => m.toJson()).toList(),
+        );
+      }
+    });
+  }
+
   /// Validate session once (called when app resumes from background)
   Future<void> _validateSessionOnce() async {
     try {
@@ -821,6 +901,18 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           await _tokenStorage.saveFamilyMembers(
             family.members!.map((m) => m.toJson()).toList(),
           );
+          
+          // Extract and save current user's profile picture
+          final currentUserId = await _tokenStorage.getUserId();
+          if (currentUserId != null) {
+            final currentUser = family.members!.where((m) => m.id == currentUserId).firstOrNull;
+            if (currentUser != null && currentUser.profilePictureUrl != null) {
+              await _tokenStorage.saveUserProfile(
+                profilePictureUrl: currentUser.profilePictureUrl,
+              );
+              debugPrint('📸 Saved current user profile picture from family data');
+            }
+          }
         }
 
         setState(() {
@@ -1217,26 +1309,61 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.secondary.withValues(alpha: 0.2),
-                            AppColors.primary.withValues(alpha: 0.2),
-                          ],
-                        ),
+                        gradient: member.profilePictureUrl == null
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.secondary.withValues(alpha: 0.2),
+                                  AppColors.primary.withValues(alpha: 0.2),
+                                ],
+                              )
+                            : null,
                         shape: BoxShape.circle,
                       ),
-                      child: Center(
-                        child: Text(
-                          member.name.isNotEmpty
-                              ? member.name[0].toUpperCase()
-                              : '?',
-                          style: TextStyle(
-                            color: AppColors.secondary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      child: member.profilePictureUrl != null
+                          ? ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: member.profilePictureUrl!,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Center(
+                                  child: Text(
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
+                                        : '?',
+                                    style: TextStyle(
+                                      color: AppColors.secondary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Center(
+                                  child: Text(
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
+                                        : '?',
+                                    style: TextStyle(
+                                      color: AppColors.secondary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                member.name.isNotEmpty
+                                    ? member.name[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  color: AppColors.secondary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 12),
                     Flexible(
@@ -2344,29 +2471,60 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.secondary.withValues(alpha: 0.15),
-                    AppColors.secondary.withValues(alpha: 0.25),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                gradient: owner.profilePictureUrl == null
+                    ? LinearGradient(
+                        colors: [
+                          AppColors.secondary.withValues(alpha: 0.15),
+                          AppColors.secondary.withValues(alpha: 0.25),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
                 border: Border.all(
                   color: AppColors.secondary,
                   width: 3,
                 ),
               ),
-              child: Center(
-                child: Text(
-                  owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                    color: AppColors.secondary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              child: owner.profilePictureUrl != null
+                  ? ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: owner.profilePictureUrl!,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(
+                          child: Text(
+                            owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Center(
+                          child: Text(
+                            owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              color: AppColors.secondary,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                        style: const TextStyle(
+                          color: AppColors.secondary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
             ),
             // Star badge for owner
             Positioned(
@@ -2446,19 +2604,21 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: hasPendingRemoval
-                        ? [
-                            AppColors.primary.withValues(alpha: 0.2),
-                            AppColors.primary.withValues(alpha: 0.3),
-                          ]
-                        : [
-                            AppColors.secondary.withValues(alpha: 0.1),
-                            AppColors.primary.withValues(alpha: 0.1),
-                          ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: member.profilePictureUrl == null
+                      ? LinearGradient(
+                          colors: hasPendingRemoval
+                              ? [
+                                  AppColors.primary.withValues(alpha: 0.2),
+                                  AppColors.primary.withValues(alpha: 0.3),
+                                ]
+                              : [
+                                  AppColors.secondary.withValues(alpha: 0.1),
+                                  AppColors.primary.withValues(alpha: 0.1),
+                                ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
                   border: Border.all(
                     color: hasPendingRemoval
                         ? AppColors.primary
@@ -2466,18 +2626,51 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                     width: hasPendingRemoval ? 3 : 2,
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      color: hasPendingRemoval
-                          ? AppColors.primary
-                          : AppColors.secondary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                child: member.profilePictureUrl != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: member.profilePictureUrl!,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Center(
+                            child: Text(
+                              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                color: hasPendingRemoval
+                                    ? AppColors.primary
+                                    : AppColors.secondary,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Center(
+                            child: Text(
+                              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                color: hasPendingRemoval
+                                    ? AppColors.primary
+                                    : AppColors.secondary,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                          style: TextStyle(
+                            color: hasPendingRemoval
+                                ? AppColors.primary
+                                : AppColors.secondary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
               ),
               // Badge - X for remove, check for cancel
               Positioned(
@@ -2674,26 +2867,61 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.2),
-                            AppColors.secondary.withValues(alpha: 0.2),
-                          ],
-                        ),
+                        gradient: member.profilePictureUrl == null
+                            ? LinearGradient(
+                                colors: [
+                                  AppColors.primary.withValues(alpha: 0.2),
+                                  AppColors.secondary.withValues(alpha: 0.2),
+                                ],
+                              )
+                            : null,
                         shape: BoxShape.circle,
                       ),
-                      child: Center(
-                        child: Text(
-                          member.name.isNotEmpty
-                              ? member.name[0].toUpperCase()
-                              : '?',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                      child: member.profilePictureUrl != null
+                          ? ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: member.profilePictureUrl!,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Center(
+                                  child: Text(
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
+                                        : '?',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Center(
+                                  child: Text(
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
+                                        : '?',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                member.name.isNotEmpty
+                                    ? member.name[0].toUpperCase()
+                                    : '?',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 12),
                     Column(

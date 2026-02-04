@@ -18,6 +18,7 @@ enum SocketEvent {
   packUpdated,
   balanceUpdated,
   profilePictureUpdated,
+  profileUpdated,
   error,
 }
 
@@ -311,6 +312,52 @@ class ProfilePictureUpdatedData {
   }
 }
 
+/// Data class for profile updated event (name, phone, etc.)
+class ProfileUpdatedData {
+  final String memberId;
+  final String? firstName;
+  final String? lastName;
+  final String? fullName;
+  final String? phone;
+  final String? profilePictureUrl;
+  final DateTime timestamp;
+
+  ProfileUpdatedData({
+    required this.memberId,
+    this.firstName,
+    this.lastName,
+    this.fullName,
+    this.phone,
+    this.profilePictureUrl,
+    required this.timestamp,
+  });
+
+  factory ProfileUpdatedData.fromJson(Map<String, dynamic> json) {
+    return ProfileUpdatedData(
+      memberId: json['memberId'] ?? '',
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      fullName: json['fullName'],
+      phone: json['phone'],
+      profilePictureUrl: json['profilePictureUrl'],
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+
+  /// Get the display name from the profile data
+  String get displayName {
+    if (fullName != null && fullName!.isNotEmpty) {
+      return fullName!;
+    }
+    final first = firstName ?? '';
+    final last = lastName ?? '';
+    final combined = '$first $last'.trim();
+    return combined.isNotEmpty ? combined : 'Unknown';
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -340,6 +387,8 @@ class SocketService {
       StreamController<BalanceUpdatedData>.broadcast();
   final _profilePictureUpdatedController =
       StreamController<ProfilePictureUpdatedData>.broadcast();
+  final _profileUpdatedController =
+      StreamController<ProfileUpdatedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -377,6 +426,10 @@ class SocketService {
   /// Stream of profile picture updated events - listen to this to update UI
   Stream<ProfilePictureUpdatedData> get onProfilePictureUpdated =>
       _profilePictureUpdatedController.stream;
+
+  /// Stream of profile updated events - listen to this to update member names/info
+  Stream<ProfileUpdatedData> get onProfileUpdated =>
+      _profileUpdatedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -562,6 +615,16 @@ class SocketService {
       }
     });
 
+    // Listen for profile updated event (family member changed name, phone, etc.)
+    _socket!.on('profile_updated', (data) {
+      debugPrint('👤 Socket: Received profile_updated event');
+      if (data is Map<String, dynamic>) {
+        final profileData = ProfileUpdatedData.fromJson(data);
+        _profileUpdatedController.add(profileData);
+        _eventController.add(SocketEvent.profileUpdated);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -616,5 +679,7 @@ class SocketService {
     _packUpdatedController.close();
     _memberLeftController.close();
     _balanceUpdatedController.close();
+    _profilePictureUpdatedController.close();
+    _profileUpdatedController.close();
   }
 }

@@ -334,6 +334,9 @@ class TokenStorageService {
     await prefs.remove(_lastNameKey);
     await prefs.remove(_fullNameKey);
     await prefs.remove(_userEmailKey);
+    await prefs.remove(_userPhoneKey);
+    await prefs.remove(_profilePictureUrlKey);
+    await prefs.remove(_profileLastFetchedKey);
     // Also clear family info on logout
     await clearFamilyInfo();
   }

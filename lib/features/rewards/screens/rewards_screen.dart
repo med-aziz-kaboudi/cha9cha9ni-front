@@ -788,7 +788,8 @@ class _RewardsContentState extends State<RewardsContent>
   }
 
   String _formatPoints(int points) {
-    return NumberFormatter.formatPoints(points);
+    // Show full number with thousand separators on rewards screen
+    return NumberFormatter.formatWithCommas(points);
   }
 
   Widget _buildDailyCheckIn(AppLocalizations l10n) {

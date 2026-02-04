@@ -1210,6 +1210,42 @@ abstract class AppLocalizations {
   /// **'Profile picture updated successfully!'**
   String get profilePictureUpdated;
 
+  /// No description provided for @profilePictureRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile picture removed successfully!'**
+  String get profilePictureRemoved;
+
+  /// No description provided for @removeProfilePictureConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove your profile picture? You can add a new one after 24 hours.'**
+  String get removeProfilePictureConfirmation;
+
+  /// No description provided for @profilePictureRateLimitWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change your photo again in {time}'**
+  String profilePictureRateLimitWarning(String time);
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @cropPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop Photo'**
+  String get cropPhoto;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
   /// No description provided for @cannotRemoveProfilePicture.
   ///
   /// In en, this message translates to:
@@ -1347,12 +1383,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to remove {name} from the family?'**
   String removeMemberConfirm(String name);
-
-  /// No description provided for @remove.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get remove;
 
   /// No description provided for @confirmRemoval.
   ///

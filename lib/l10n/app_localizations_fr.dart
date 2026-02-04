@@ -610,6 +610,27 @@ class AppLocalizationsFr extends AppLocalizations {
       'Photo de profil mise à jour avec succès!';
 
   @override
+  String get profilePictureRemoved => 'Photo de profil supprimée avec succès!';
+
+  @override
+  String get removeProfilePictureConfirmation =>
+      'Êtes-vous sûr de vouloir supprimer votre photo de profil? Vous pourrez en ajouter une nouvelle après 24 heures.';
+
+  @override
+  String profilePictureRateLimitWarning(String time) {
+    return 'Vous pouvez changer votre photo dans $time';
+  }
+
+  @override
+  String get remove => 'Supprimer';
+
+  @override
+  String get cropPhoto => 'Recadrer la photo';
+
+  @override
+  String get done => 'Terminé';
+
+  @override
   String get cannotRemoveProfilePicture =>
       'Pour supprimer votre photo de profil, veuillez contacter le support';
 
@@ -688,9 +709,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String removeMemberConfirm(String name) {
     return 'Êtes-vous sûr de vouloir supprimer $name de la famille ?';
   }
-
-  @override
-  String get remove => 'Supprimer';
 
   @override
   String get confirmRemoval => 'Confirmer la Suppression';

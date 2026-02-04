@@ -213,6 +213,19 @@
   "browsePhotos": "Sélectionner depuis votre galerie",
   "deleteCurrentPhoto": "Supprimer votre photo de profil actuelle",
   "profilePictureUpdated": "Photo de profil mise à jour avec succès!",
+  "profilePictureRemoved": "Photo de profil supprimée avec succès!",
+  "removeProfilePictureConfirmation": "Êtes-vous sûr de vouloir supprimer votre photo de profil? Vous pourrez en ajouter une nouvelle après 24 heures.",
+  "profilePictureRateLimitWarning": "Vous pouvez changer votre photo dans {time}",
+  "@profilePictureRateLimitWarning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "Supprimer",
+  "cropPhoto": "Recadrer la photo",
+  "done": "Terminé",
   "cannotRemoveProfilePicture": "Pour supprimer votre photo de profil, veuillez contacter le support",
   "photoPermissionDenied": "Accès aux photos refusé. Veuillez l'activer dans les Paramètres.",
   "uploadFailed": "Échec du téléchargement. Veuillez réessayer.",

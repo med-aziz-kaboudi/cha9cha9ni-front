@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/token_storage_service.dart';
@@ -39,6 +40,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _imagePicker = ImagePicker();
   bool _isUploadingPicture = false;
   String? _profilePictureUrl;
+  
+  // Profile picture rate limiting (1 change per day)
+  bool _canUpdateProfilePicture = true;
+  DateTime? _nextAllowedProfilePictureUpdate;
+  Timer? _profilePictureRateLimitTimer;
 
   // Email change flow states
   bool _isEditingEmail = false;
@@ -60,6 +66,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void initState() {
     super.initState();
     _loadProfile();
+    _loadProfilePictureRateLimitStatus();
   }
 
   @override
@@ -73,8 +80,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _verificationCodeController.dispose();
     _countdownTimer?.cancel();
     _rateLimitTimer?.cancel();
+    _profilePictureRateLimitTimer?.cancel();
     _profileApiService.dispose();
     super.dispose();
+  }
+
+  /// Load profile picture rate limit status from API
+  Future<void> _loadProfilePictureRateLimitStatus() async {
+    try {
+      final status = await _profileApiService.getProfilePictureRateLimitStatus();
+      if (mounted) {
+        setState(() {
+          _canUpdateProfilePicture = status.canUpdate;
+          _nextAllowedProfilePictureUpdate = status.nextAllowedUpdate;
+        });
+        
+        // Start timer to update UI if rate limited
+        if (!status.canUpdate && status.nextAllowedUpdate != null) {
+          _startProfilePictureRateLimitTimer();
+        }
+      }
+    } catch (e) {
+      debugPrint('📸 Error loading rate limit status: $e');
+    }
+  }
+
+  /// Start timer to update remaining time for profile picture rate limit
+  void _startProfilePictureRateLimitTimer() {
+    _profilePictureRateLimitTimer?.cancel();
+    _profilePictureRateLimitTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) {
+        if (_nextAllowedProfilePictureUpdate != null &&
+            DateTime.now().isAfter(_nextAllowedProfilePictureUpdate!)) {
+          // Rate limit expired
+          setState(() {
+            _canUpdateProfilePicture = true;
+            _nextAllowedProfilePictureUpdate = null;
+          });
+          _profilePictureRateLimitTimer?.cancel();
+        } else {
+          setState(() {}); // Refresh UI to update remaining time
+        }
+      }
+    });
+  }
+
+  /// Get remaining time string for profile picture rate limit
+  String get _profilePictureRateLimitRemainingTime {
+    if (_nextAllowedProfilePictureUpdate == null) return '';
+    final remaining = _nextAllowedProfilePictureUpdate!.difference(DateTime.now());
+    if (remaining.isNegative) return '';
+    final hours = remaining.inHours;
+    final mins = remaining.inMinutes % 60;
+    if (hours > 0) {
+      return '${hours}h ${mins}m';
+    }
+    return '${mins}m';
   }
 
   // Rate limiting helpers for pull-to-refresh
@@ -760,6 +821,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _showImagePickerOptions() {
     final l10n = AppLocalizations.of(context)!;
+    final hasPhoto = _profilePictureUrl != null;
     
     showModalBottomSheet(
       context: context,
@@ -796,36 +858,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: AppColors.secondary,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
                 
-                // Camera option
-                _buildPhotoOptionTile(
-                  icon: Icons.camera_alt_rounded,
-                  title: l10n.takePhoto,
-                  subtitle: l10n.useCamera,
-                  color: AppColors.primary,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                const SizedBox(height: 10),
+                // Rate limit warning if applicable
+                if (!_canUpdateProfilePicture) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer_outlined, color: Colors.orange.shade700, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            l10n.profilePictureRateLimitWarning(_profilePictureRateLimitRemainingTime),
+                            style: TextStyle(
+                              color: Colors.orange.shade800,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 
-                // Gallery option
-                _buildPhotoOptionTile(
-                  icon: Icons.photo_library_rounded,
-                  title: l10n.chooseFromGallery,
-                  subtitle: l10n.browsePhotos,
-                  color: AppColors.secondary,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
+                if (!_canUpdateProfilePicture) ...[
+                  const SizedBox(height: 8),
+                ] else ...[
+                  const SizedBox(height: 12),
+                ],
                 
-                // Remove option (if has photo)
-                if (_profilePictureUrl != null) ...[
+                // Show add photo options only if no photo OR if can update
+                if (!hasPhoto && _canUpdateProfilePicture) ...[
+                  // Camera option
+                  _buildPhotoOptionTile(
+                    icon: Icons.camera_alt_rounded,
+                    title: l10n.takePhoto,
+                    subtitle: l10n.useCamera,
+                    color: AppColors.primary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.camera);
+                    },
+                  ),
                   const SizedBox(height: 10),
+                  
+                  // Gallery option
+                  _buildPhotoOptionTile(
+                    icon: Icons.photo_library_rounded,
+                    title: l10n.chooseFromGallery,
+                    subtitle: l10n.browsePhotos,
+                    color: AppColors.secondary,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.gallery);
+                    },
+                  ),
+                ],
+                
+                // Show remove option if has photo AND can update
+                if (hasPhoto && _canUpdateProfilePicture) ...[
                   _buildPhotoOptionTile(
                     icon: Icons.delete_outline_rounded,
                     title: l10n.removePhoto,
@@ -833,7 +932,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: const Color(0xFFE53935),
                     onTap: () {
                       Navigator.pop(context);
-                      _removeProfilePicture();
+                      _confirmRemoveProfilePicture();
                     },
                   ),
                 ],
@@ -866,6 +965,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Show confirmation dialog before removing profile picture
+  void _confirmRemoveProfilePicture() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(l10n.removePhoto),
+        content: Text(l10n.removeProfilePictureConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _removeProfilePicture();
+            },
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFE53935)),
+            child: Text(l10n.remove),
+          ),
+        ],
       ),
     );
   }
@@ -950,9 +1077,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Pick image with proper error handling
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 80,
+        maxWidth: 1024,  // Allow larger size for better cropping
+        maxHeight: 1024,
+        imageQuality: 90,
         requestFullMetadata: false, // Helps with simulator issues
       );
 
@@ -964,13 +1091,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       debugPrint('📸 Image picked: ${pickedFile.path}');
 
+      // Crop the image
+      final croppedFile = await _cropImage(pickedFile.path);
+      
+      // User cancelled cropping
+      if (croppedFile == null) {
+        debugPrint('📸 Image cropper: User cancelled');
+        return;
+      }
+
+      debugPrint('📸 Image cropped: ${croppedFile.path}');
+
       // Check if widget is still mounted before setState
       if (!mounted) return;
       
       setState(() => _isUploadingPicture = true);
 
       // Read the file bytes for upload
-      final bytes = await pickedFile.readAsBytes();
+      final bytes = await croppedFile.readAsBytes();
       
       if (bytes.isEmpty) {
         throw Exception('Failed to read image file');
@@ -1006,6 +1144,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       debugPrint('📸 Public URL: $publicUrl');
 
+      // Delete old profile picture from Supabase if exists
+      final oldUrl = _profilePictureUrl;
+      if (oldUrl != null && oldUrl.contains('supabase.co/storage')) {
+        try {
+          final uri = Uri.parse(oldUrl);
+          final pathSegments = uri.pathSegments;
+          final bucketIndex = pathSegments.indexOf('profile-pictures');
+          if (bucketIndex != -1 && bucketIndex + 1 < pathSegments.length) {
+            final filePath = pathSegments.sublist(bucketIndex + 1).join('/');
+            await supabase.storage.from('profile-pictures').remove([filePath]);
+            debugPrint('📸 Deleted old profile picture: $filePath');
+          }
+        } catch (e) {
+          debugPrint('📸 Warning: Could not delete old image: $e');
+        }
+      }
+
       // Update the profile picture URL in backend
       final updatedProfile = await _profileApiService.updateProfilePicture(publicUrl);
 
@@ -1013,7 +1168,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _profilePictureUrl = updatedProfile.profilePictureUrl;
           _isUploadingPicture = false;
+          // Update rate limit status - can't change again for 24h
+          _canUpdateProfilePicture = false;
+          _nextAllowedProfilePictureUpdate = DateTime.now().add(const Duration(hours: 24));
         });
+        _startProfilePictureRateLimitTimer();
         
         AppToast.success(context, l10n.profilePictureUpdated);
       }
@@ -1037,11 +1196,94 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  /// Crop the selected image with a circular preview
+  Future<CroppedFile?> _cropImage(String imagePath) async {
+    return await ImageCropper().cropImage(
+      sourcePath: imagePath,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      compressQuality: 80,
+      maxWidth: 512,
+      maxHeight: 512,
+      compressFormat: ImageCompressFormat.jpg,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: AppLocalizations.of(context)?.cropPhoto ?? 'Crop Photo',
+          toolbarColor: AppColors.primary,
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: AppColors.secondary,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true,
+          hideBottomControls: false,
+          cropStyle: CropStyle.circle,
+        ),
+        IOSUiSettings(
+          title: AppLocalizations.of(context)?.cropPhoto ?? 'Crop Photo',
+          doneButtonTitle: AppLocalizations.of(context)?.done ?? 'Done',
+          cancelButtonTitle: AppLocalizations.of(context)?.cancel ?? 'Cancel',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+          aspectRatioPickerButtonHidden: true,
+          cropStyle: CropStyle.circle,
+        ),
+      ],
+    );
+  }
+
   Future<void> _removeProfilePicture() async {
-    // For now, we can't remove - just show a message
-    // To properly remove, we'd need a backend endpoint
     final l10n = AppLocalizations.of(context)!;
-    AppToast.warning(context, l10n.cannotRemoveProfilePicture);
+    
+    if (!mounted) return;
+    setState(() => _isUploadingPicture = true);
+    
+    try {
+      // Get the current profile picture URL before removal (to delete from Supabase)
+      final oldUrl = _profilePictureUrl;
+      
+      // Call API to remove profile picture
+      final updatedProfile = await _profileApiService.removeProfilePicture();
+      
+      // Try to delete the old image from Supabase storage
+      if (oldUrl != null && oldUrl.contains('supabase.co/storage')) {
+        try {
+          // Extract the file path from the URL
+          final uri = Uri.parse(oldUrl);
+          final pathSegments = uri.pathSegments;
+          // Path format: storage/v1/object/public/profile-pictures/public/filename.jpg
+          final bucketIndex = pathSegments.indexOf('profile-pictures');
+          if (bucketIndex != -1 && bucketIndex + 1 < pathSegments.length) {
+            final filePath = pathSegments.sublist(bucketIndex + 1).join('/');
+            await Supabase.instance.client.storage
+                .from('profile-pictures')
+                .remove([filePath]);
+            debugPrint('📸 Deleted old profile picture from storage: $filePath');
+          }
+        } catch (e) {
+          // Ignore storage deletion errors - the main operation succeeded
+          debugPrint('📸 Warning: Could not delete old image from storage: $e');
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _profilePictureUrl = updatedProfile.profilePictureUrl;
+          _isUploadingPicture = false;
+          // Update rate limit status - can't change again for 24h
+          _canUpdateProfilePicture = false;
+          _nextAllowedProfilePictureUpdate = DateTime.now().add(const Duration(hours: 24));
+        });
+        _startProfilePictureRateLimitTimer();
+        
+        AppToast.success(context, l10n.profilePictureRemoved);
+      }
+    } catch (e) {
+      debugPrint('📸 Error removing profile picture: $e');
+      
+      if (mounted) {
+        setState(() => _isUploadingPicture = false);
+        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        AppToast.error(context, errorMessage);
+      }
+    }
   }
 
   String _getInitials() {

@@ -213,6 +213,19 @@
   "browsePhotos": "اختر من مكتبة الصور",
   "deleteCurrentPhoto": "احذف صورة ملفك الشخصي الحالية",
   "profilePictureUpdated": "تم تحديث صورة الملف الشخصي بنجاح!",
+  "profilePictureRemoved": "تم حذف صورة الملف الشخصي بنجاح!",
+  "removeProfilePictureConfirmation": "هل أنت متأكد من حذف صورة ملفك الشخصي؟ يمكنك إضافة صورة جديدة بعد 24 ساعة.",
+  "profilePictureRateLimitWarning": "يمكنك تغيير صورتك بعد {time}",
+  "@profilePictureRateLimitWarning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "remove": "حذف",
+  "cropPhoto": "قص الصورة",
+  "done": "تم",
   "cannotRemoveProfilePicture": "لحذف صورة ملفك الشخصي، يرجى التواصل مع الدعم",
   "photoPermissionDenied": "تم رفض الوصول للصور. يرجى تفعيله في الإعدادات.",
   "uploadFailed": "فشل رفع الصورة. يرجى المحاولة مرة أخرى.",

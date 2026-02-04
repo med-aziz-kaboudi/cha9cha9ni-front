@@ -103,20 +103,20 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
     
     // Responsive values
     final drawerWidth = screenWidth * 0.75;
-    final headerHeight = (screenHeight * 0.25).clamp(180.0, 240.0);
+    final headerHeight = (screenHeight * 0.28).clamp(200.0, 260.0); // Increased for bigger avatar
     final logoWidth = (drawerWidth * 0.50).clamp(120.0, 170.0);
-    final avatarSize = (screenHeight * 0.05).clamp(36.0, 50.0);
+    final avatarSize = (screenHeight * 0.09).clamp(65.0, 85.0); // Bigger avatar
     final closeButtonSize = (screenHeight * 0.04).clamp(28.0, 36.0);
     final closeIconSize = (closeButtonSize * 0.5).clamp(12.0, 16.0);
-    final avatarIconSize = (avatarSize * 0.52).clamp(18.0, 26.0);
+    final avatarIconSize = (avatarSize * 0.45).clamp(24.0, 34.0);
     final userNameFontSize = (screenHeight * 0.017).clamp(13.0, 16.0);
     final logoutFontSize = (screenHeight * 0.020).clamp(15.0, 19.0);
     final logoutIconSize = (screenHeight * 0.022).clamp(16.0, 20.0);
     final menuItemFontSize = (screenHeight * 0.016).clamp(13.0, 15.0);
     final menuIconSize = (screenHeight * 0.022).clamp(18.0, 22.0);
     final headerPadding = (screenWidth * 0.035).clamp(10.0, 16.0);
-    final avatarTopSpacing = (screenHeight * 0.015).clamp(8.0, 16.0);
-    final nameTopSpacing = (screenHeight * 0.008).clamp(4.0, 10.0);
+    final avatarTopSpacing = (screenHeight * 0.018).clamp(12.0, 20.0); // More space above avatar
+    final nameTopSpacing = (screenHeight * 0.012).clamp(8.0, 14.0); // More space above name
     final menuItemPaddingV = (screenHeight * 0.014).clamp(10.0, 14.0);
     final menuItemPaddingH = (screenWidth * 0.04).clamp(14.0, 20.0);
     
@@ -139,8 +139,14 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                 SafeArea(
                   bottom: false,
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: headerPadding, vertical: headerPadding * 0.75),
+                    padding: EdgeInsets.only(
+                      left: headerPadding,
+                      right: headerPadding,
+                      top: headerPadding * 0.5,
+                      bottom: headerPadding,
+                    ),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Logo and close button row
                         Row(

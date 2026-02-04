@@ -48,6 +48,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   ActivityTimeFilter _timeFilter = ActivityTimeFilter.last10Days;
   ActivityType? _typeFilter;
   bool _showOnlyMyActivities = false;
+  String? _currentUserId;
   String? _currentUserName;
 
   late AnimationController _animController;
@@ -62,8 +63,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
 
-    _loadCurrentUserName();
-    _loadActivities();
+    _initializeScreen();
 
     _subscription = _activityService.activitiesStream.listen((activities) {
       if (mounted) {
@@ -75,11 +75,19 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     });
   }
 
-  Future<void> _loadCurrentUserName() async {
+  Future<void> _initializeScreen() async {
+    // Load user info first, then activities
+    await _loadCurrentUserInfo();
+    await _loadActivities();
+  }
+
+  Future<void> _loadCurrentUserInfo() async {
     final tokenStorage = TokenStorageService();
     final profile = await tokenStorage.getCachedUserProfile();
     _currentUserName = profile['fullName'] ?? 
                       '${profile['firstName'] ?? ''} ${profile['lastName'] ?? ''}'.trim();
+    _currentUserId = await tokenStorage.getUserId();
+    debugPrint('📋 Current user ID: $_currentUserId, Name: $_currentUserName');
   }
 
   Future<void> _loadActivities() async {
@@ -162,8 +170,15 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     }
 
     // Apply member filter (show only my activities)
-    if (_showOnlyMyActivities && _currentUserName != null) {
-      result = result.where((a) => a.memberName == _currentUserName).toList();
+    if (_showOnlyMyActivities && _currentUserId != null) {
+      // Filter by memberId if available, fallback to name comparison
+      result = result.where((a) {
+        if (a.memberId != null) {
+          return a.memberId == _currentUserId;
+        }
+        // Fallback: case-insensitive name comparison
+        return a.memberName.toLowerCase() == (_currentUserName ?? '').toLowerCase();
+      }).toList();
     }
 
     _filteredActivities = result;
