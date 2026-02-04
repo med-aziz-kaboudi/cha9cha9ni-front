@@ -1552,6 +1552,42 @@ class AppLocalizationsFr extends AppLocalizations {
       'La pub n\'a pas pu s\'afficher. Veuillez réessayer.';
 
   @override
+  String get rewardsConfirmRedeem => 'Confirmer l\'échange';
+
+  @override
+  String get rewardsCurrentPoints => 'Points actuels';
+
+  @override
+  String get rewardsPointsToSpend => 'Points à dépenser';
+
+  @override
+  String get rewardsRemainingPoints => 'Points restants';
+
+  @override
+  String get rewardsToBalance => 'vers le solde';
+
+  @override
+  String get rewardsCongratulations => 'Félicitations! 🎉';
+
+  @override
+  String get rewardsAddedToBalance => 'Ajouté à votre solde';
+
+  @override
+  String get rewardsNewBalance => 'Nouveau solde';
+
+  @override
+  String rewardsRedemptionSuccess(String points, String amount) {
+    return 'Échange réussi de $points points pour $amount TND';
+  }
+
+  @override
+  String get rewardsRedemptionFailed =>
+      'Échec de l\'échange. Veuillez réessayer.';
+
+  @override
+  String get tapToDismiss => 'Appuyez pour fermer';
+
+  @override
   String get allActivities => 'Toutes les activités';
 
   @override
@@ -1582,6 +1618,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String activityReferral(String name) {
     return 'Bonus de parrainage de $name';
+  }
+
+  @override
+  String activityRedemption(String name) {
+    return '$name a échangé des points';
   }
 
   @override
@@ -1633,6 +1674,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterReferral => 'Parrainage';
+
+  @override
+  String get filterRedemption => 'Échange';
 
   @override
   String get filterOther => 'Autre';

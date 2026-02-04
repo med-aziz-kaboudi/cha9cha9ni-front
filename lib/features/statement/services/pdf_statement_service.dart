@@ -636,6 +636,8 @@ class PdfStatementService {
         return 'Recharge';
       case ActivityType.referral:
         return 'Bonus Parrainage';
+      case ActivityType.redemption:
+        return 'Échange Points';
       case ActivityType.unknown:
         return 'Points Gagnés';
     }
@@ -651,6 +653,8 @@ class PdfStatementService {
         return primaryColor;
       case ActivityType.referral:
         return const PdfColor.fromInt(0xFF3B82F6);
+      case ActivityType.redemption:
+        return const PdfColor.fromInt(0xFF8B5CF6);
       case ActivityType.unknown:
         return goldColor;
     }

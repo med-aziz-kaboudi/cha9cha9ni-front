@@ -692,6 +692,27 @@
   "rewardsCheckInFailed": "Échec de la connexion. Veuillez réessayer.",
   "rewardsClaimFailed": "Échec de la réclamation. Veuillez réessayer.",
   "rewardsAdFailed": "La pub n'a pas pu s'afficher. Veuillez réessayer.",
+  "rewardsConfirmRedeem": "Confirmer l'échange",
+  "rewardsCurrentPoints": "Points actuels",
+  "rewardsPointsToSpend": "Points à dépenser",
+  "rewardsRemainingPoints": "Points restants",
+  "rewardsToBalance": "vers le solde",
+  "rewardsCongratulations": "Félicitations! 🎉",
+  "rewardsAddedToBalance": "Ajouté à votre solde",
+  "rewardsNewBalance": "Nouveau solde",
+  "rewardsRedemptionSuccess": "Échange réussi de {points} points pour {amount} TND",
+  "@rewardsRedemptionSuccess": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsRedemptionFailed": "Échec de l'échange. Veuillez réessayer.",
+  "tapToDismiss": "Appuyez pour fermer",
 
   "allActivities": "Toutes les activités",
   "activitiesWillAppearHere": "Les activités familiales apparaîtront ici quand les membres gagnent des points",
@@ -729,6 +750,14 @@
       }
     }
   },
+  "activityRedemption": "{name} a échangé des points",
+  "@activityRedemption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "activityEarnedPoints": "{name} a gagné des points",
   "@activityEarnedPoints": {
     "placeholders": {
@@ -753,6 +782,7 @@
   "filterCheckIn": "Check-in",
   "filterTopUp": "Recharge",
   "filterReferral": "Parrainage",
+  "filterRedemption": "Échange",
   "filterOther": "Autre",
   "applyFilters": "Appliquer",
   "clearFilters": "Effacer les filtres",

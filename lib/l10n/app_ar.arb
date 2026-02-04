@@ -692,6 +692,27 @@
   "rewardsCheckInFailed": "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
   "rewardsClaimFailed": "فشل في الحصول على المكافأة. يرجى المحاولة مرة أخرى.",
   "rewardsAdFailed": "فشل في عرض الإعلان. يرجى المحاولة مرة أخرى.",
+  "rewardsConfirmRedeem": "تأكيد الاستبدال",
+  "rewardsCurrentPoints": "النقاط الحالية",
+  "rewardsPointsToSpend": "النقاط للاستبدال",
+  "rewardsRemainingPoints": "النقاط المتبقية",
+  "rewardsToBalance": "إلى الرصيد",
+  "rewardsCongratulations": "تهانينا! 🎉",
+  "rewardsAddedToBalance": "تمت إضافتها إلى رصيدك",
+  "rewardsNewBalance": "الرصيد الجديد",
+  "rewardsRedemptionSuccess": "تم استبدال {points} نقطة بـ {amount} دينار بنجاح",
+  "@rewardsRedemptionSuccess": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsRedemptionFailed": "فشل الاستبدال. يرجى المحاولة مرة أخرى.",
+  "tapToDismiss": "اضغط للإغلاق",
 
   "allActivities": "جميع الأنشطة",
   "activitiesWillAppearHere": "ستظهر أنشطة العائلة هنا عندما يكسب الأعضاء نقاط",
@@ -729,6 +750,14 @@
       }
     }
   },
+  "activityRedemption": "{name} استبدل النقاط",
+  "@activityRedemption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "activityEarnedPoints": "{name} كسب نقاط",
   "@activityEarnedPoints": {
     "placeholders": {
@@ -753,6 +782,7 @@
   "filterCheckIn": "تسجيل الدخول اليومي",
   "filterTopUp": "الشحن",
   "filterReferral": "الإحالة",
+  "filterRedemption": "الاستبدال",
   "filterOther": "أخرى",
   "applyFilters": "تطبيق الفلاتر",
   "clearFilters": "مسح الفلاتر",

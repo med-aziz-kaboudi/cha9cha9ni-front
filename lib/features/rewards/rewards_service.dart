@@ -18,12 +18,17 @@ class RewardsService {
 
   RewardsData? _currentData;
   final _dataController = StreamController<RewardsData>.broadcast();
+  final _redemptionController = StreamController<RewardsRedeemedData>.broadcast();
   StreamSubscription<PointsEarnedData>? _socketSubscription;
+  StreamSubscription<RewardsRedeemedData>? _redemptionSubscription;
   bool _isWatchingAd = false;
   String? _pendingEventId;
 
   /// Stream of rewards data updates
   Stream<RewardsData> get dataStream => _dataController.stream;
+
+  /// Stream of redemption events (for showing congrats to all family members)
+  Stream<RewardsRedeemedData> get redemptionStream => _redemptionController.stream;
 
   /// Current rewards data
   RewardsData? get currentData => _currentData;
@@ -57,6 +62,13 @@ class RewardsService {
         'source': data.source,
         'amount': data.amount, // Include amount for topups
       });
+    });
+
+    // Listen for rewards_redeemed events from the socket
+    _redemptionSubscription?.cancel();
+    _redemptionSubscription = _socketService.onRewardsRedeemed.listen((data) {
+      debugPrint('🎁 RewardsService: Rewards redeemed - ${data.pointsSpent} pts by ${data.memberName} for ${data.amountCredited} TND');
+      _handleRewardsRedeemed(data);
     });
   }
 
@@ -180,9 +192,118 @@ class RewardsService {
     }
   }
 
+  /// Handle realtime rewards redeemed update from socket
+  void _handleRewardsRedeemed(RewardsRedeemedData data) {
+    debugPrint('📊 RewardsService: Handling rewards_redeemed event from ${data.memberName} (earnerId: ${data.earnerId})');
+    
+    // Update the total points in current data
+    if (_currentData != null) {
+      // Check if we already have a redemption activity with similar params (within 1 minute)
+      // to avoid duplicates from local add + socket event
+      final hasSimilarActivity = _currentData!.recentActivity.any((a) =>
+          a.activityType == ActivityType.redemption &&
+          a.memberName == data.memberName &&
+          a.pointsEarned == -data.pointsSpent &&
+          a.createdAt.difference(data.timestamp).inMinutes.abs() < 1);
+
+      if (!hasSimilarActivity) {
+        // Create redemption activity entry with memberId for proper filtering
+        final redemptionActivity = RewardActivity(
+          id: _uuid.v4(),
+          memberId: data.earnerId, // Include memberId for "show only my activities" filter
+          memberName: data.memberName,
+          pointsEarned: -data.pointsSpent, // Negative to show points spent
+          slotIndex: 0,
+          activityType: ActivityType.redemption,
+          createdAt: data.timestamp,
+          amount: data.amountCredited,
+        );
+
+        // Add to activities list
+        final updatedActivities = [redemptionActivity, ..._currentData!.recentActivity];
+        if (updatedActivities.length > 10) {
+          updatedActivities.removeLast();
+        }
+
+        _currentData = _currentData!.copyWith(
+          totalPoints: data.newTotalPoints,
+          tndValue: data.newTotalPoints / 10000,
+          recentActivity: updatedActivities,
+        );
+        debugPrint('📊 RewardsService: Added redemption activity for ${data.memberName}');
+      } else {
+        // Just update the points without adding duplicate activity
+        _currentData = _currentData!.copyWith(
+          totalPoints: data.newTotalPoints,
+          tndValue: data.newTotalPoints / 10000,
+        );
+        debugPrint('📊 RewardsService: Skipped duplicate redemption activity');
+      }
+      _dataController.add(_currentData!);
+    }
+
+    // Emit redemption event for congrats animation
+    _redemptionController.add(data);
+    debugPrint('📊 RewardsService: Emitted redemption event - ${data.memberName} redeemed ${data.pointsSpent} pts for ${data.amountCredited} TND');
+  }
+
+  /// Check if the family can redeem rewards
+  Future<CanRedeemResult> canRedeem() async {
+    return await _apiService.canRedeem();
+  }
+
+  /// Redeem points to balance
+  /// Returns the result with new balance and points
+  Future<RedeemPointsResult> redeemPoints(int points) async {
+    try {
+      final result = await _apiService.redeemPoints(points);
+
+      // Track redemption
+      AnalyticsService().trackRewardEarned(
+        rewardType: 'redemption',
+        points: -points, // Negative to indicate spent
+      );
+
+      // Update local data immediately with the redemption activity
+      if (_currentData != null) {
+        // Create redemption activity entry for immediate display
+        final redemptionActivity = RewardActivity(
+          id: _uuid.v4(),
+          memberId: result.memberId, // Include memberId for proper filtering
+          memberName: result.memberName,
+          pointsEarned: -points, // Negative to show points spent
+          slotIndex: 0,
+          activityType: ActivityType.redemption,
+          createdAt: DateTime.now(),
+          amount: result.amountCredited,
+        );
+
+        // Add to activities list
+        final updatedActivities = [redemptionActivity, ..._currentData!.recentActivity];
+        if (updatedActivities.length > 10) {
+          updatedActivities.removeLast();
+        }
+
+        _currentData = _currentData!.copyWith(
+          totalPoints: result.newTotalPoints,
+          tndValue: result.newTotalPoints / 10000,
+          recentActivity: updatedActivities,
+        );
+        _dataController.add(_currentData!);
+      }
+
+      return result;
+    } catch (e) {
+      debugPrint('❌ Failed to redeem points: $e');
+      rethrow;
+    }
+  }
+
   /// Dispose resources
   void dispose() {
     _socketSubscription?.cancel();
+    _redemptionSubscription?.cancel();
     _dataController.close();
+    _redemptionController.close();
   }
 }

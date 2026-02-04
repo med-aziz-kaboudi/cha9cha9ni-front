@@ -157,4 +157,35 @@ class RewardsApiService {
       throw Exception(error['message'] ?? 'Failed to check in');
     }
   }
+
+  /// Redeem points to add to family balance
+  /// Conversion: 10,000 points = 1 TND
+  Future<RedeemPointsResult> redeemPoints(int points) async {
+    final response = await _makeRequest(
+      'POST',
+      '/rewards/redeem',
+      body: {'points': points},
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = _safeJsonDecode(response);
+      return RedeemPointsResult.fromJson(data);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to redeem points');
+    }
+  }
+
+  /// Check if user can redeem rewards
+  Future<CanRedeemResult> canRedeem() async {
+    final response = await _makeRequest('GET', '/rewards/can-redeem');
+
+    if (response.statusCode == 200) {
+      final data = _safeJsonDecode(response);
+      return CanRedeemResult.fromJson(data);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to check redeem status');
+    }
+  }
 }

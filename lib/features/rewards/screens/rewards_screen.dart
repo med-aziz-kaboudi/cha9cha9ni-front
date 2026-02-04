@@ -1449,78 +1449,91 @@ class _RewardsContentState extends State<RewardsContent>
   void _showRedeemDialog(RedeemableReward reward) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        contentPadding: const EdgeInsets.all(24),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                _getRewardImage(reward.tndValue),
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${reward.tndValue}',
-                      style: TextStyle(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              AppLocalizations.of(context)!.rewardsComingSoon,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A2E),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              AppLocalizations.of(context)!.rewardsRedeemingFor(reward.name, _formatPoints(reward.pointsCost)),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, color: Color(0xFF666680)),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  AppLocalizations.of(context)!.rewardsGotIt,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ],
-        ),
+      barrierDismissible: false,
+      builder: (dialogContext) => _RedeemConfirmDialog(
+        reward: reward,
+        currentPoints: _data?.totalPoints ?? 0,
+        onConfirm: () => _performRedemption(reward, dialogContext),
+        getRewardImage: _getRewardImage,
+        formatPoints: _formatPoints,
       ),
+    );
+  }
+
+  Future<void> _performRedemption(RedeemableReward reward, BuildContext dialogContext) async {
+    // Close the confirm dialog
+    Navigator.of(dialogContext).pop();
+
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(color: AppColors.secondary),
+      ),
+    );
+
+    try {
+      // Check if can redeem first
+      final canRedeemResult = await _rewardsApiService.canRedeem();
+      if (!canRedeemResult.canRedeem) {
+        if (mounted) Navigator.of(context).pop(); // Close loading
+        if (mounted) {
+          AppToast.error(context, canRedeemResult.reason ?? 'Cannot redeem at this time');
+        }
+        return;
+      }
+
+      // Perform redemption
+      final result = await _rewardsService.redeemPoints(reward.pointsCost);
+
+      if (mounted) Navigator.of(context).pop(); // Close loading
+
+      if (mounted && result.success) {
+        // Show congrats animation
+        _showCongratsAnimation(
+          amountCredited: result.amountCredited,
+          pointsSpent: result.pointsSpent,
+          newBalance: result.newBalance,
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop(); // Close loading
+      if (mounted) {
+        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+      }
+    }
+  }
+
+  void _showCongratsAnimation({
+    required double amountCredited,
+    required int pointsSpent,
+    required double newBalance,
+  }) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.8),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return _CongratsOverlay(
+          amountCredited: amountCredited,
+          pointsSpent: pointsSpent,
+          newBalance: newBalance,
+          onDismiss: () => Navigator.of(context).pop(),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+            ),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
@@ -1746,5 +1759,460 @@ class RewardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // This shouldn't be used anymore, but if called, just show the content
     return const Scaffold(body: RewardsContent());
+  }
+}
+
+/// Confirmation dialog for redeeming rewards
+class _RedeemConfirmDialog extends StatelessWidget {
+  final RedeemableReward reward;
+  final int currentPoints;
+  final VoidCallback onConfirm;
+  final String Function(int) getRewardImage;
+  final String Function(int) formatPoints;
+
+  const _RedeemConfirmDialog({
+    required this.reward,
+    required this.currentPoints,
+    required this.onConfirm,
+    required this.getRewardImage,
+    required this.formatPoints,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final remainingPoints = currentPoints - reward.pointsCost;
+
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      contentPadding: const EdgeInsets.all(24),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Reward image
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.secondary.withValues(alpha: 0.2),
+                  AppColors.secondary.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '${reward.tndValue}',
+                style: TextStyle(
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            l10n.rewardsConfirmRedeem,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Points breakdown
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                _buildInfoRow(
+                  l10n.rewardsCurrentPoints,
+                  formatPoints(currentPoints),
+                  Colors.grey.shade700,
+                ),
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  l10n.rewardsPointsToSpend,
+                  '-${formatPoints(reward.pointsCost)}',
+                  Colors.red.shade600,
+                ),
+                const Divider(height: 16),
+                _buildInfoRow(
+                  l10n.rewardsRemainingPoints,
+                  formatPoints(remainingPoints),
+                  AppColors.secondary,
+                  isBold: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Amount to receive
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                  const Color(0xFF4CAF50).withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.add_circle_outline, color: Color(0xFF4CAF50)),
+                const SizedBox(width: 8),
+                Text(
+                  '${reward.tndValue} TND',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4CAF50),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.rewardsToBalance,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.grey.shade700,
+                    side: BorderSide(color: Colors.grey.shade300),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(l10n.cancel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onConfirm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.rewardsRedeem,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, Color valueColor, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey.shade600,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontSize: 16,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Congrats animation overlay after successful redemption
+class _CongratsOverlay extends StatefulWidget {
+  final double amountCredited;
+  final int pointsSpent;
+  final double newBalance;
+  final VoidCallback onDismiss;
+
+  const _CongratsOverlay({
+    required this.amountCredited,
+    required this.pointsSpent,
+    required this.newBalance,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_CongratsOverlay> createState() => _CongratsOverlayState();
+}
+
+class _CongratsOverlayState extends State<_CongratsOverlay>
+    with TickerProviderStateMixin {
+  late AnimationController _confettiController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  bool _isDismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..forward();
+
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Auto dismiss after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && !_isDismissed) {
+        _isDismissed = true;
+        widget.onDismiss();
+      }
+    });
+  }
+
+  void _handleDismiss() {
+    if (_isDismissed) return;
+    _isDismissed = true;
+    widget.onDismiss();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Material(
+      color: Colors.transparent,
+      child: GestureDetector(
+        onTap: _handleDismiss,
+        child: Stack(
+          children: [
+            // Confetti particles
+            ...List.generate(30, (index) => _buildConfettiParticle(index)),
+            // Main content
+            Center(
+              child: ScaleTransition(
+                scale: _pulseAnimation,
+                child: Container(
+                  margin: const EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.secondary.withValues(alpha: 0.3),
+                        blurRadius: 30,
+                        spreadRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Success icon
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF4CAF50),
+                              const Color(0xFF81C784),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.celebration_rounded,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Title
+                      Text(
+                        l10n.rewardsCongratulations,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Amount
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.secondary.withValues(alpha: 0.2),
+                              AppColors.secondary.withValues(alpha: 0.1),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.monetization_on,
+                              color: AppColors.secondary,
+                              size: 32,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '+${widget.amountCredited.toStringAsFixed(0)} TND',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Details
+                      Text(
+                        l10n.rewardsAddedToBalance,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${l10n.rewardsNewBalance}: ${widget.newBalance.toStringAsFixed(2)} TND',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Tap to dismiss hint
+                      Text(
+                        l10n.tapToDismiss,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfettiParticle(int index) {
+    final colors = [
+      const Color(0xFFFFD700),
+      const Color(0xFF4CAF50),
+      const Color(0xFF2196F3),
+      const Color(0xFFE91E63),
+      const Color(0xFF9C27B0),
+      AppColors.secondary,
+    ];
+
+    final random = index * 37 % 100;
+    final startX = (random / 100) * MediaQuery.of(context).size.width;
+    final delay = (index % 10) * 0.1;
+
+    return AnimatedBuilder(
+      animation: _confettiController,
+      builder: (context, child) {
+        final progress = (_confettiController.value - delay).clamp(0.0, 1.0);
+        final y = progress * MediaQuery.of(context).size.height * 1.2;
+        final rotation = progress * 6 * 3.14159;
+        final opacity = (1 - progress).clamp(0.0, 1.0);
+
+        return Positioned(
+          left: startX + (index % 3 == 0 ? 50 * progress : -50 * progress),
+          top: y - 50,
+          child: Opacity(
+            opacity: opacity,
+            child: Transform.rotate(
+              angle: rotation,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: colors[index % colors.length],
+                  borderRadius: BorderRadius.circular(index % 2 == 0 ? 2 : 6),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }

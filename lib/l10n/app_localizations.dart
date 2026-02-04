@@ -2884,6 +2884,72 @@ abstract class AppLocalizations {
   /// **'Ad failed to show. Please try again.'**
   String get rewardsAdFailed;
 
+  /// No description provided for @rewardsConfirmRedeem.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Redemption'**
+  String get rewardsConfirmRedeem;
+
+  /// No description provided for @rewardsCurrentPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Points'**
+  String get rewardsCurrentPoints;
+
+  /// No description provided for @rewardsPointsToSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'Points to Spend'**
+  String get rewardsPointsToSpend;
+
+  /// No description provided for @rewardsRemainingPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining Points'**
+  String get rewardsRemainingPoints;
+
+  /// No description provided for @rewardsToBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'to balance'**
+  String get rewardsToBalance;
+
+  /// No description provided for @rewardsCongratulations.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations! 🎉'**
+  String get rewardsCongratulations;
+
+  /// No description provided for @rewardsAddedToBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your balance'**
+  String get rewardsAddedToBalance;
+
+  /// No description provided for @rewardsNewBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'New Balance'**
+  String get rewardsNewBalance;
+
+  /// No description provided for @rewardsRedemptionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully redeemed {points} points for {amount} TND'**
+  String rewardsRedemptionSuccess(String points, String amount);
+
+  /// No description provided for @rewardsRedemptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Redemption failed. Please try again.'**
+  String get rewardsRedemptionFailed;
+
+  /// No description provided for @tapToDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to dismiss'**
+  String get tapToDismiss;
+
   /// No description provided for @allActivities.
   ///
   /// In en, this message translates to:
@@ -2931,6 +2997,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} referral bonus'**
   String activityReferral(String name);
+
+  /// No description provided for @activityRedemption.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} redeemed points'**
+  String activityRedemption(String name);
 
   /// No description provided for @activityEarnedPoints.
   ///
@@ -3027,6 +3099,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Referral'**
   String get filterReferral;
+
+  /// No description provided for @filterRedemption.
+  ///
+  /// In en, this message translates to:
+  /// **'Redemption'**
+  String get filterRedemption;
 
   /// No description provided for @filterOther.
   ///

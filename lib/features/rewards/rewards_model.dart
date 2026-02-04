@@ -122,6 +122,7 @@ enum ActivityType {
   dailyCheckIn,
   topUp,
   referral,
+  redemption,
   unknown;
 
   static ActivityType fromString(String? source) {
@@ -137,6 +138,9 @@ enum ActivityType {
         return ActivityType.topUp;
       case 'referral':
         return ActivityType.referral;
+      case 'redemption':
+      case 'redeem':
+        return ActivityType.redemption;
       default:
         return ActivityType.unknown;
     }
@@ -152,6 +156,8 @@ enum ActivityType {
         return 'activityTopUp';
       case ActivityType.referral:
         return 'activityReferral';
+      case ActivityType.redemption:
+        return 'activityRedemption';
       case ActivityType.unknown:
         return 'activityEarnedPoints';
     }
@@ -167,6 +173,8 @@ enum ActivityType {
         return '💰';
       case ActivityType.referral:
         return '🎁';
+      case ActivityType.redemption:
+        return '🎉';
       case ActivityType.unknown:
         return '⭐';
     }
@@ -315,6 +323,57 @@ class DailyCheckInResult {
       currentStreak: json['currentStreak'] ?? 0,
       totalCheckIns: json['totalCheckIns'] ?? 0,
       newTotalPoints: json['newTotalPoints'] ?? 0,
+    );
+  }
+}
+
+/// Result of points redemption
+class RedeemPointsResult {
+  final bool success;
+  final int pointsSpent;
+  final double amountCredited;
+  final double newBalance;
+  final int newTotalPoints;
+  final String? memberId;
+  final String memberName;
+
+  RedeemPointsResult({
+    required this.success,
+    required this.pointsSpent,
+    required this.amountCredited,
+    required this.newBalance,
+    required this.newTotalPoints,
+    this.memberId,
+    required this.memberName,
+  });
+
+  factory RedeemPointsResult.fromJson(Map<String, dynamic> json) {
+    return RedeemPointsResult(
+      success: json['success'] ?? false,
+      pointsSpent: json['pointsSpent'] ?? 0,
+      amountCredited: (json['amountCredited'] ?? 0).toDouble(),
+      newBalance: (json['newBalance'] ?? 0).toDouble(),
+      newTotalPoints: json['newTotalPoints'] ?? 0,
+      memberId: json['memberId'],
+      memberName: json['memberName'] ?? 'You',
+    );
+  }
+}
+
+/// Can redeem check result
+class CanRedeemResult {
+  final bool canRedeem;
+  final String? reason;
+
+  CanRedeemResult({
+    required this.canRedeem,
+    this.reason,
+  });
+
+  factory CanRedeemResult.fromJson(Map<String, dynamic> json) {
+    return CanRedeemResult(
+      canRedeem: json['canRedeem'] ?? false,
+      reason: json['reason'],
     );
   }
 }

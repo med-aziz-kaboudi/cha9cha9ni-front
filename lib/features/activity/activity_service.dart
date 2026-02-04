@@ -89,6 +89,7 @@ class ActivityService {
           .map(
             (a) => {
               'id': a.id,
+              'memberId': a.memberId,
               'memberName': a.memberName,
               'pointsEarned': a.pointsEarned,
               'slotIndex': a.slotIndex,
@@ -100,6 +101,8 @@ class ActivityService {
                   ? 'topup'
                   : a.activityType == ActivityType.referral
                   ? 'referral'
+                  : a.activityType == ActivityType.redemption
+                  ? 'redemption'
                   : 'unknown',
               'createdAt': a.createdAt.toIso8601String(),
               'amount': a.amount,

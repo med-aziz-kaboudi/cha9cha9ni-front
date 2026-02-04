@@ -1522,6 +1522,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rewardsAdFailed => 'فشل في عرض الإعلان. يرجى المحاولة مرة أخرى.';
 
   @override
+  String get rewardsConfirmRedeem => 'تأكيد الاستبدال';
+
+  @override
+  String get rewardsCurrentPoints => 'النقاط الحالية';
+
+  @override
+  String get rewardsPointsToSpend => 'النقاط للاستبدال';
+
+  @override
+  String get rewardsRemainingPoints => 'النقاط المتبقية';
+
+  @override
+  String get rewardsToBalance => 'إلى الرصيد';
+
+  @override
+  String get rewardsCongratulations => 'تهانينا! 🎉';
+
+  @override
+  String get rewardsAddedToBalance => 'تمت إضافتها إلى رصيدك';
+
+  @override
+  String get rewardsNewBalance => 'الرصيد الجديد';
+
+  @override
+  String rewardsRedemptionSuccess(String points, String amount) {
+    return 'تم استبدال $points نقطة بـ $amount دينار بنجاح';
+  }
+
+  @override
+  String get rewardsRedemptionFailed =>
+      'فشل الاستبدال. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get tapToDismiss => 'اضغط للإغلاق';
+
+  @override
   String get allActivities => 'جميع الأنشطة';
 
   @override
@@ -1552,6 +1588,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String activityReferral(String name) {
     return 'مكافأة إحالة $name';
+  }
+
+  @override
+  String activityRedemption(String name) {
+    return '$name استبدل النقاط';
   }
 
   @override
@@ -1603,6 +1644,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filterReferral => 'الإحالة';
+
+  @override
+  String get filterRedemption => 'الاستبدال';
 
   @override
   String get filterOther => 'أخرى';

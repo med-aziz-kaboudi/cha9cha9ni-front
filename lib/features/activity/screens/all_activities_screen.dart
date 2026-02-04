@@ -84,8 +84,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   Future<void> _loadCurrentUserInfo() async {
     final tokenStorage = TokenStorageService();
     final profile = await tokenStorage.getCachedUserProfile();
-    _currentUserName = profile['fullName'] ?? 
-                      '${profile['firstName'] ?? ''} ${profile['lastName'] ?? ''}'.trim();
+    // Priority: firstName + lastName (matches backend format) > fullName > fallback
+    final firstName = profile['firstName'] ?? '';
+    final lastName = profile['lastName'] ?? '';
+    final fullName = '$firstName $lastName'.trim();
+    _currentUserName = fullName.isNotEmpty 
+        ? fullName 
+        : (profile['fullName'] ?? '');
     _currentUserId = await tokenStorage.getUserId();
     debugPrint('📋 Current user ID: $_currentUserId, Name: $_currentUserName');
   }
@@ -214,6 +219,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         return l10n.filterTopUp;
       case ActivityType.referral:
         return l10n.filterReferral;
+      case ActivityType.redemption:
+        return l10n.filterRedemption;
       case ActivityType.unknown:
         return l10n.filterOther;
     }
@@ -248,6 +255,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         return l10n.activityTopUp(name);
       case ActivityType.referral:
         return l10n.activityReferral(name);
+      case ActivityType.redemption:
+        return l10n.activityRedemption(name);
       case ActivityType.unknown:
         return l10n.activityEarnedPoints(name);
     }
@@ -263,6 +272,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         return l10n.filterTopUp;
       case ActivityType.referral:
         return l10n.filterReferral;
+      case ActivityType.redemption:
+        return l10n.filterRedemption;
       case ActivityType.unknown:
         return l10n.filterOther;
     }
@@ -278,6 +289,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         return const Color(0xFF10B981); // Emerald
       case ActivityType.referral:
         return const Color(0xFFEC4899); // Pink
+      case ActivityType.redemption:
+        return const Color(0xFF8B5CF6); // Purple
       case ActivityType.unknown:
         return const Color(0xFF8B5CF6); // Purple
     }
@@ -946,6 +959,7 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   Widget _buildActivityCard(RewardActivity activity, AppLocalizations l10n) {
     final color = _getActivityColor(activity.activityType);
     final isTopUp = activity.activityType == ActivityType.topUp;
+    final isRedemption = activity.activityType == ActivityType.redemption;
 
     return Container(
       decoration: BoxDecoration(
@@ -1047,8 +1061,64 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                   ),
                 ),
 
-                // For topups: show amount + points, otherwise just points
-                if (isTopUp && activity.amount != null)
+                // For redemptions: show TND amount + points spent
+                if (isRedemption && activity.amount != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      // Amount badge (primary - TND added)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFF10B981).withValues(alpha: 0.2),
+                              const Color(0xFF10B981).withValues(alpha: 0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '+${_formatAmount(activity.amount!)} TND',
+                          style: const TextStyle(
+                            color: Color(0xFF059669),
+                            fontSize: 13,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Points badge (secondary - points spent, shown as negative)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFFEF4444).withValues(alpha: 0.2),
+                              const Color(0xFFEF4444).withValues(alpha: 0.1),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${activity.pointsEarned} pts',
+                          style: const TextStyle(
+                            color: Color(0xFFDC2626),
+                            fontSize: 11,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                // For topups: show amount + points
+                else if (isTopUp && activity.amount != null)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -1166,6 +1236,9 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         break;
       case ActivityType.referral:
         iconData = Icons.group_add_rounded;
+        break;
+      case ActivityType.redemption:
+        iconData = Icons.redeem_rounded;
         break;
       case ActivityType.unknown:
         iconData = Icons.auto_awesome_rounded;

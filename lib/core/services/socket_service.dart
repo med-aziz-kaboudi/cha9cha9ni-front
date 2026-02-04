@@ -21,6 +21,7 @@ enum SocketEvent {
   profileUpdated,
   removalInitiated,
   removalCancelled,
+  rewardsRedeemed,
   error,
 }
 
@@ -412,6 +413,41 @@ class RemovalCancelledData {
   }
 }
 
+/// Data class for rewards redeemed event (points converted to balance)
+class RewardsRedeemedData {
+  final String earnerId;
+  final String memberName;
+  final int pointsSpent;
+  final double amountCredited;
+  final double newBalance;
+  final int newTotalPoints;
+  final DateTime timestamp;
+
+  RewardsRedeemedData({
+    required this.earnerId,
+    required this.memberName,
+    required this.pointsSpent,
+    required this.amountCredited,
+    required this.newBalance,
+    required this.newTotalPoints,
+    required this.timestamp,
+  });
+
+  factory RewardsRedeemedData.fromJson(Map<String, dynamic> json) {
+    return RewardsRedeemedData(
+      earnerId: json['earnerId'] ?? '',
+      memberName: json['memberName'] ?? '',
+      pointsSpent: json['pointsSpent'] ?? 0,
+      amountCredited: (json['amountCredited'] ?? 0).toDouble(),
+      newBalance: (json['newBalance'] ?? 0).toDouble(),
+      newTotalPoints: json['newTotalPoints'] ?? 0,
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -447,6 +483,8 @@ class SocketService {
       StreamController<RemovalInitiatedData>.broadcast();
   final _removalCancelledController =
       StreamController<RemovalCancelledData>.broadcast();
+  final _rewardsRedeemedController =
+      StreamController<RewardsRedeemedData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -496,6 +534,10 @@ class SocketService {
   /// Stream of removal cancelled events - listen to this when owner cancels removal
   Stream<RemovalCancelledData> get onRemovalCancelled =>
       _removalCancelledController.stream;
+
+  /// Stream of rewards redeemed events - listen to this when points are converted to balance
+  Stream<RewardsRedeemedData> get onRewardsRedeemed =>
+      _rewardsRedeemedController.stream;
 
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
@@ -711,6 +753,16 @@ class SocketService {
       }
     });
 
+    // Listen for rewards redeemed event (points converted to balance)
+    _socket!.on('rewards_redeemed', (data) {
+      debugPrint('🎁 Socket: Received rewards_redeemed event');
+      if (data is Map<String, dynamic>) {
+        final rewardsData = RewardsRedeemedData.fromJson(data);
+        _rewardsRedeemedController.add(rewardsData);
+        _eventController.add(SocketEvent.rewardsRedeemed);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -769,5 +821,6 @@ class SocketService {
     _profileUpdatedController.close();
     _removalInitiatedController.close();
     _removalCancelledController.close();
+    _rewardsRedeemedController.close();
   }
 }

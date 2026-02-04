@@ -707,6 +707,27 @@
   "rewardsCheckInFailed": "Check-in failed. Please try again.",
   "rewardsClaimFailed": "Failed to claim reward. Please try again.",
   "rewardsAdFailed": "Ad failed to show. Please try again.",
+  "rewardsConfirmRedeem": "Confirm Redemption",
+  "rewardsCurrentPoints": "Current Points",
+  "rewardsPointsToSpend": "Points to Spend",
+  "rewardsRemainingPoints": "Remaining Points",
+  "rewardsToBalance": "to balance",
+  "rewardsCongratulations": "Congratulations! 🎉",
+  "rewardsAddedToBalance": "Added to your balance",
+  "rewardsNewBalance": "New Balance",
+  "rewardsRedemptionSuccess": "Successfully redeemed {points} points for {amount} TND",
+  "@rewardsRedemptionSuccess": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardsRedemptionFailed": "Redemption failed. Please try again.",
+  "tapToDismiss": "Tap to dismiss",
 
   "allActivities": "All Activities",
   "activitiesWillAppearHere": "Family activities will appear here when members earn points",
@@ -744,6 +765,14 @@
       }
     }
   },
+  "activityRedemption": "{name} redeemed points",
+  "@activityRedemption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "activityEarnedPoints": "{name} earned points",
   "@activityEarnedPoints": {
     "placeholders": {
@@ -768,6 +797,7 @@
   "filterCheckIn": "Check-in",
   "filterTopUp": "Top Up",
   "filterReferral": "Referral",
+  "filterRedemption": "Redemption",
   "filterOther": "Other",
   "applyFilters": "Apply Filters",
   "clearFilters": "Clear Filters",

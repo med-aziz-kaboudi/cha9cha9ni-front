@@ -1527,6 +1527,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardsAdFailed => 'Ad failed to show. Please try again.';
 
   @override
+  String get rewardsConfirmRedeem => 'Confirm Redemption';
+
+  @override
+  String get rewardsCurrentPoints => 'Current Points';
+
+  @override
+  String get rewardsPointsToSpend => 'Points to Spend';
+
+  @override
+  String get rewardsRemainingPoints => 'Remaining Points';
+
+  @override
+  String get rewardsToBalance => 'to balance';
+
+  @override
+  String get rewardsCongratulations => 'Congratulations! 🎉';
+
+  @override
+  String get rewardsAddedToBalance => 'Added to your balance';
+
+  @override
+  String get rewardsNewBalance => 'New Balance';
+
+  @override
+  String rewardsRedemptionSuccess(String points, String amount) {
+    return 'Successfully redeemed $points points for $amount TND';
+  }
+
+  @override
+  String get rewardsRedemptionFailed => 'Redemption failed. Please try again.';
+
+  @override
+  String get tapToDismiss => 'Tap to dismiss';
+
+  @override
   String get allActivities => 'All Activities';
 
   @override
@@ -1557,6 +1592,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String activityReferral(String name) {
     return '$name referral bonus';
+  }
+
+  @override
+  String activityRedemption(String name) {
+    return '$name redeemed points';
   }
 
   @override
@@ -1608,6 +1648,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterReferral => 'Referral';
+
+  @override
+  String get filterRedemption => 'Redemption';
 
   @override
   String get filterOther => 'Other';
