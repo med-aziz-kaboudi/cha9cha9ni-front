@@ -1064,5 +1064,19 @@
       }
     }
   },
-  "statementGotIt": "Got it!"
+  "statementGotIt": "Got it!",
+
+  "transferOwnership": "Transfer Ownership",
+  "transferOwnershipBlocked": "Transfer Blocked",
+  "transferOwnershipBlockedDesc": "Ownership transfer is no longer available after a withdrawal",
+  "transferOwnershipWithdrawalNote": "Once a withdrawal is made, ownership transfer is permanently disabled for KYC compliance.",
+  "transferOwnershipWarning": "Warning: This action is irreversible. The new owner will have full control of the family.",
+  "selectNewOwner": "Select the new owner",
+  "noEligibleMembers": "No eligible members for transfer",
+  "continueButton": "Continue",
+  "verifyTransfer": "Verify Transfer",
+  "transferCodeSent": "A verification code has been sent to your email",
+  "transferringTo": "Transferring to",
+  "confirmTransfer": "Confirm Transfer",
+  "ownershipTransferredSuccess": "Ownership transferred successfully"
 }

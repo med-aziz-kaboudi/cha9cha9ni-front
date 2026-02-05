@@ -19,6 +19,7 @@ import '../../core/services/socket_service.dart'
         BalanceUpdatedData,
         ProfilePictureUpdatedData,
         ProfileUpdatedData,
+        OwnershipTransferredData,
         SocketService;
 import '../../core/services/notification_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -48,6 +49,8 @@ import '../pack/pack_service.dart';
 import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 import '../topup/screens/topup_screen.dart';
+import '../family/transfer_ownership_screen.dart';
+import 'family_member_home_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyOwnerHomeScreen extends StatefulWidget {
@@ -75,11 +78,13 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription<MemberLeftData>? _memberLeftSubscription;
   StreamSubscription<ProfilePictureUpdatedData>? _profilePictureSubscription;
   StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
+  StreamSubscription<OwnershipTransferredData>? _ownershipTransferredSubscription;
   final _socketService = SocketService();
 
   // Family members state
   List<FamilyMember> _familyMembers = [];
   bool _isLoadingMembers = true;
+  String? _currentUserId; // Track current user ID for ownership transfers
 
   // Removal state
   String? _pendingRemovalRequestId;
@@ -144,6 +149,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _listenToMemberLeft();
     _listenToProfilePictureUpdates();
     _listenToProfileUpdates();
+    _listenToOwnershipTransferred();
     _initializeNotifications();
     _loadSelectedAid();
     _listenToPackUpdates();
@@ -193,6 +199,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _memberLeftSubscription?.cancel();
     _profilePictureSubscription?.cancel();
     _profileUpdatedSubscription?.cancel();
+    _ownershipTransferredSubscription?.cancel();
     _unreadCountSubscription?.cancel();
     _rewardsSubscription?.cancel();
     _pointsEarnedSubscription?.cancel();
@@ -606,6 +613,30 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     });
   }
 
+  /// Listen to ownership transfer events (when someone becomes the new owner)
+  void _listenToOwnershipTransferred() {
+    _ownershipTransferredSubscription = _socketService.onOwnershipTransferred.listen((data) {
+      if (mounted) {
+        debugPrint('👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}');
+
+        // If current user is the OLD owner, they are no longer the owner
+        // Navigate them to the member home screen
+        if (data.oldOwnerId == _currentUserId) {
+          AppToast.info(
+            context,
+            'Vous avez transféré la propriété à ${data.newOwnerName}',
+          );
+
+          // Navigate to family member home screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const FamilyMemberHomeScreen()),
+            (route) => false,
+          );
+        }
+      }
+    });
+  }
+
   /// Validate session once (called when app resumes from background)
   Future<void> _validateSessionOnce() async {
     try {
@@ -625,6 +656,25 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
       context,
       MaterialPageRoute(builder: (context) => const TawkToChatScreen()),
     );
+  }
+
+  /// Open transfer ownership screen
+  void _openTransferOwnership() {
+    if (_familyMembers.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TransferOwnershipScreen(
+          members: _familyMembers,
+          currentUserId: _currentUserId ?? '',
+        ),
+      ),
+    ).then((result) {
+      if (result == true) {
+        // Ownership was transferred, refresh data
+        _refreshFamilyDataSilently();
+      }
+    });
   }
 
   /// Show dialog informing user another device logged in, then logout
@@ -842,6 +892,12 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   Future<void> _loadCachedDataFirst() async {
     // Load display name
     final name = await _tokenStorage.getUserDisplayName();
+
+    // Load current user ID for ownership transfers
+    final userId = await _tokenStorage.getUserId();
+    if (userId != null) {
+      _currentUserId = userId;
+    }
 
     // Load cached family info first for instant display
     final cachedFamily = await _tokenStorage.getCachedFamilyInfo();
@@ -1886,6 +1942,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
             onLegalAgreements: () {
               Navigator.pop(context);
             },
+            onTransferOwnership: () {
+              Navigator.pop(context);
+              _openTransferOwnership();
+            },
+            isOwner: true,
           ),
           body: IndexedStack(
             index: _currentNavIndex == 2 ? 1 : 0,

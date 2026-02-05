@@ -14,7 +14,9 @@ class CustomDrawer extends StatefulWidget {
   final VoidCallback? onHelp;
   final VoidCallback? onLegalAgreements;
   final VoidCallback? onLeaveFamily;
+  final VoidCallback? onTransferOwnership;
   final bool isOwner;
+  final bool canTransferOwnership;
 
   const CustomDrawer({
     super.key,
@@ -27,7 +29,9 @@ class CustomDrawer extends StatefulWidget {
     this.onHelp,
     this.onLegalAgreements,
     this.onLeaveFamily,
+    this.onTransferOwnership,
     this.isOwner = true,
+    this.canTransferOwnership = true,
   });
 
   @override
@@ -337,6 +341,22 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                     paddingV: menuItemPaddingV,
                     isRTL: isRTL,
                   ),
+                  // Transfer Ownership - only visible to owners
+                  if (widget.isOwner) ...[
+                    _buildDivider(),
+                    _buildMenuItem(
+                      icon: Icons.swap_horiz_rounded,
+                      title: l10n.transferOwnership,
+                      onTap: widget.onTransferOwnership,
+                      fontSize: menuItemFontSize,
+                      iconSize: menuIconSize,
+                      paddingH: menuItemPaddingH,
+                      paddingV: menuItemPaddingV,
+                      isRTL: isRTL,
+                      isDanger: false,
+                      isHighlighted: true,
+                    ),
+                  ],
                   const Spacer(),
                 ],
               ),
@@ -397,8 +417,16 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
     required double paddingV,
     bool isRTL = false,
     bool isDanger = false,
+    bool isHighlighted = false,
   }) {
-    final itemColor = isDanger ? AppColors.primary : Colors.black87;
+    final Color itemColor;
+    if (isDanger) {
+      itemColor = AppColors.primary;
+    } else if (isHighlighted) {
+      itemColor = const Color(0xFF4CC3C7); // Teal color for highlighted items
+    } else {
+      itemColor = Colors.black87;
+    }
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -418,7 +446,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                   color: itemColor,
                   fontSize: fontSize,
                   fontFamily: 'Nunito Sans',
-                  fontWeight: isDanger ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: (isDanger || isHighlighted) ? FontWeight.w700 : FontWeight.w600,
                   height: 1.50,
                   letterSpacing: 0.2,
                 ),
@@ -426,7 +454,7 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
             ),
             Icon(
               isRTL ? Icons.chevron_left : Icons.chevron_right,
-              color: isDanger ? itemColor.withValues(alpha: 0.7) : Colors.black45,
+              color: (isDanger || isHighlighted) ? itemColor.withValues(alpha: 0.7) : Colors.black45,
               size: iconSize,
             ),
           ],

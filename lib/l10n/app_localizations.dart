@@ -3729,6 +3729,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it!'**
   String get statementGotIt;
+
+  /// No description provided for @transferOwnership.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Ownership'**
+  String get transferOwnership;
+
+  /// No description provided for @transferOwnershipBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Blocked'**
+  String get transferOwnershipBlocked;
+
+  /// No description provided for @transferOwnershipBlockedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Ownership transfer is no longer available after a withdrawal'**
+  String get transferOwnershipBlockedDesc;
+
+  /// No description provided for @transferOwnershipWithdrawalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Once a withdrawal is made, ownership transfer is permanently disabled for KYC compliance.'**
+  String get transferOwnershipWithdrawalNote;
+
+  /// No description provided for @transferOwnershipWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: This action is irreversible. The new owner will have full control of the family.'**
+  String get transferOwnershipWarning;
+
+  /// No description provided for @selectNewOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the new owner'**
+  String get selectNewOwner;
+
+  /// No description provided for @noEligibleMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible members for transfer'**
+  String get noEligibleMembers;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// No description provided for @verifyTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Transfer'**
+  String get verifyTransfer;
+
+  /// No description provided for @transferCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification code has been sent to your email'**
+  String get transferCodeSent;
+
+  /// No description provided for @transferringTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Transferring to'**
+  String get transferringTo;
+
+  /// No description provided for @confirmTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Transfer'**
+  String get confirmTransfer;
+
+  /// No description provided for @ownershipTransferredSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Ownership transferred successfully'**
+  String get ownershipTransferredSuccess;
 }
 
 class _AppLocalizationsDelegate

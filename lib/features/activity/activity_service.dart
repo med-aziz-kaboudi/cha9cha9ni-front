@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
+import '../../core/services/socket_service.dart';
 import '../rewards/rewards_model.dart';
 import '../rewards/rewards_service.dart';
 
@@ -12,11 +14,15 @@ class ActivityService {
   ActivityService._internal();
 
   final _rewardsService = RewardsService();
+  final _socketService = SocketService();
+  final _uuid = const Uuid();
 
   List<RewardActivity> _activities = [];
   final _activitiesController =
       StreamController<List<RewardActivity>>.broadcast();
   StreamSubscription<RewardsData>? _rewardsSubscription;
+  StreamSubscription<RewardsRedeemedData>? _redemptionSubscription;
+  StreamSubscription<PointsEarnedData>? _pointsEarnedSubscription;
   bool _initialized = false;
   bool _isLoading = false;
 
@@ -51,6 +57,18 @@ class ActivityService {
       }
     });
 
+    // Also listen directly to socket events for real-time updates
+    // This ensures we get updates even if RewardsService._currentData is null
+    _redemptionSubscription = _socketService.onRewardsRedeemed.listen((data) {
+      debugPrint('📊 ActivityService: Received rewards_redeemed socket event from ${data.memberName}');
+      _handleRedemptionEvent(data);
+    });
+
+    _pointsEarnedSubscription = _socketService.onPointsEarned.listen((data) {
+      debugPrint('📊 ActivityService: Received points_earned socket event from ${data.memberName}');
+      _handlePointsEarnedEvent(data);
+    });
+
     // Load initial data if rewards service has it
     if (_rewardsService.currentData != null &&
         _rewardsService.currentData!.recentActivity.isNotEmpty) {
@@ -60,6 +78,74 @@ class ActivityService {
     debugPrint(
       '📊 ActivityService: Initialized with ${_activities.length} cached activities',
     );
+  }
+
+  /// Handle redemption event from socket directly
+  void _handleRedemptionEvent(RewardsRedeemedData data) {
+    // Check for duplicate (same member, points, within 1 minute)
+    final hasDuplicate = _activities.any((a) =>
+        a.activityType == ActivityType.redemption &&
+        a.memberName == data.memberName &&
+        a.pointsEarned == -data.pointsSpent &&
+        a.createdAt.difference(data.timestamp).inMinutes.abs() < 1);
+
+    if (hasDuplicate) {
+      debugPrint('📊 ActivityService: Skipping duplicate redemption from ${data.memberName}');
+      return;
+    }
+
+    final activity = RewardActivity(
+      id: _uuid.v4(),
+      memberId: data.earnerId,
+      memberName: data.memberName,
+      pointsEarned: -data.pointsSpent,
+      slotIndex: 0,
+      activityType: ActivityType.redemption,
+      createdAt: data.timestamp,
+      amount: data.amountCredited,
+    );
+
+    _activities.insert(0, activity);
+    if (_activities.length > 100) {
+      _activities = _activities.sublist(0, 100);
+    }
+    _activitiesController.add(_activities);
+    _saveToCache();
+    debugPrint('📊 ActivityService: Added redemption activity from socket for ${data.memberName}');
+  }
+
+  /// Handle points earned event from socket directly
+  void _handlePointsEarnedEvent(PointsEarnedData data) {
+    // Check for duplicate
+    final hasDuplicate = _activities.any((a) =>
+        a.memberName == data.memberName &&
+        a.pointsEarned == data.pointsEarned &&
+        a.activityType == ActivityType.fromString(data.source) &&
+        a.createdAt.difference(data.timestamp).inMinutes.abs() < 1);
+
+    if (hasDuplicate) {
+      debugPrint('📊 ActivityService: Skipping duplicate points_earned from ${data.memberName}');
+      return;
+    }
+
+    final activity = RewardActivity(
+      id: _uuid.v4(),
+      memberId: data.earnerId,
+      memberName: data.memberName,
+      pointsEarned: data.pointsEarned,
+      slotIndex: data.slotIndex,
+      activityType: ActivityType.fromString(data.source),
+      createdAt: data.timestamp,
+      amount: data.amount,
+    );
+
+    _activities.insert(0, activity);
+    if (_activities.length > 100) {
+      _activities = _activities.sublist(0, 100);
+    }
+    _activitiesController.add(_activities);
+    _saveToCache();
+    debugPrint('📊 ActivityService: Added ${data.source} activity from socket for ${data.memberName}');
   }
 
   /// Load activities from local cache
@@ -257,6 +343,8 @@ class ActivityService {
   /// Dispose resources
   void dispose() {
     _rewardsSubscription?.cancel();
+    _redemptionSubscription?.cancel();
+    _pointsEarnedSubscription?.cancel();
     _activitiesController.close();
     _initialized = false;
   }

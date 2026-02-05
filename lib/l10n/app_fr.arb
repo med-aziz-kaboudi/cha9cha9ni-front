@@ -1027,5 +1027,19 @@
       }
     }
   },
-  "statementGotIt": "Compris!"
+  "statementGotIt": "Compris!",
+
+  "transferOwnership": "Transférer la Propriété",
+  "transferOwnershipBlocked": "Transfert Bloqué",
+  "transferOwnershipBlockedDesc": "Le transfert de propriété n'est plus disponible après un retrait",
+  "transferOwnershipWithdrawalNote": "Une fois qu'un retrait est effectué, le transfert de propriété est définitivement désactivé pour des raisons de conformité KYC.",
+  "transferOwnershipWarning": "Attention: Cette action est irréversible. Le nouveau propriétaire aura le contrôle total de la famille.",
+  "selectNewOwner": "Sélectionnez le nouveau propriétaire",
+  "noEligibleMembers": "Aucun membre éligible pour le transfert",
+  "continueButton": "Continuer",
+  "verifyTransfer": "Vérifier le Transfert",
+  "transferCodeSent": "Un code de vérification a été envoyé à votre email",
+  "transferringTo": "Transfert à",
+  "confirmTransfer": "Confirmer le Transfert",
+  "ownershipTransferredSuccess": "Propriété transférée avec succès"
 }

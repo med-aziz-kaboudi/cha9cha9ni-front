@@ -1035,5 +1035,19 @@
       }
     }
   },
-  "statementGotIt": "حسناً!"
+  "statementGotIt": "حسناً!",
+
+  "transferOwnership": "نقل الملكية",
+  "transferOwnershipBlocked": "النقل محظور",
+  "transferOwnershipBlockedDesc": "نقل الملكية غير متاح بعد إجراء السحب",
+  "transferOwnershipWithdrawalNote": "بمجرد إجراء السحب، يتم تعطيل نقل الملكية بشكل دائم للامتثال لـ KYC.",
+  "transferOwnershipWarning": "تحذير: هذا الإجراء لا رجعة فيه. سيكون للمالك الجديد السيطرة الكاملة على العائلة.",
+  "selectNewOwner": "اختر المالك الجديد",
+  "noEligibleMembers": "لا يوجد أعضاء مؤهلون للنقل",
+  "continueButton": "متابعة",
+  "verifyTransfer": "التحقق من النقل",
+  "transferCodeSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
+  "transferringTo": "النقل إلى",
+  "confirmTransfer": "تأكيد النقل",
+  "ownershipTransferredSuccess": "تم نقل الملكية بنجاح"
 }

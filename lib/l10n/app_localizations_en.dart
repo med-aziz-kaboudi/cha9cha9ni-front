@@ -2023,4 +2023,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statementGotIt => 'Got it!';
+
+  @override
+  String get transferOwnership => 'Transfer Ownership';
+
+  @override
+  String get transferOwnershipBlocked => 'Transfer Blocked';
+
+  @override
+  String get transferOwnershipBlockedDesc =>
+      'Ownership transfer is no longer available after a withdrawal';
+
+  @override
+  String get transferOwnershipWithdrawalNote =>
+      'Once a withdrawal is made, ownership transfer is permanently disabled for KYC compliance.';
+
+  @override
+  String get transferOwnershipWarning =>
+      'Warning: This action is irreversible. The new owner will have full control of the family.';
+
+  @override
+  String get selectNewOwner => 'Select the new owner';
+
+  @override
+  String get noEligibleMembers => 'No eligible members for transfer';
+
+  @override
+  String get continueButton => 'Continue';
+
+  @override
+  String get verifyTransfer => 'Verify Transfer';
+
+  @override
+  String get transferCodeSent =>
+      'A verification code has been sent to your email';
+
+  @override
+  String get transferringTo => 'Transferring to';
+
+  @override
+  String get confirmTransfer => 'Confirm Transfer';
+
+  @override
+  String get ownershipTransferredSuccess =>
+      'Ownership transferred successfully';
 }

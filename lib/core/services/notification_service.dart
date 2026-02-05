@@ -264,11 +264,11 @@ class NotificationService {
     _socket = io.io(
       '$wsUrl/notifications',
       io.OptionBuilder()
-          .setTransports(['websocket'])
+          .setTransports(['websocket', 'polling']) // Add polling as fallback for Android
           .setAuth({'token': accessToken})
           .enableAutoConnect()
           .enableReconnection()
-          .setReconnectionAttempts(3)
+          .setReconnectionAttempts(5) // Increased retries
           .setReconnectionDelay(2000)
           .setReconnectionDelayMax(10000)
           .build(),

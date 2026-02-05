@@ -2052,4 +2052,47 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get statementGotIt => 'Compris!';
+
+  @override
+  String get transferOwnership => 'Transférer la Propriété';
+
+  @override
+  String get transferOwnershipBlocked => 'Transfert Bloqué';
+
+  @override
+  String get transferOwnershipBlockedDesc =>
+      'Le transfert de propriété n\'est plus disponible après un retrait';
+
+  @override
+  String get transferOwnershipWithdrawalNote =>
+      'Une fois qu\'un retrait est effectué, le transfert de propriété est définitivement désactivé pour des raisons de conformité KYC.';
+
+  @override
+  String get transferOwnershipWarning =>
+      'Attention: Cette action est irréversible. Le nouveau propriétaire aura le contrôle total de la famille.';
+
+  @override
+  String get selectNewOwner => 'Sélectionnez le nouveau propriétaire';
+
+  @override
+  String get noEligibleMembers => 'Aucun membre éligible pour le transfert';
+
+  @override
+  String get continueButton => 'Continuer';
+
+  @override
+  String get verifyTransfer => 'Vérifier le Transfert';
+
+  @override
+  String get transferCodeSent =>
+      'Un code de vérification a été envoyé à votre email';
+
+  @override
+  String get transferringTo => 'Transfert à';
+
+  @override
+  String get confirmTransfer => 'Confirmer le Transfert';
+
+  @override
+  String get ownershipTransferredSuccess => 'Propriété transférée avec succès';
 }

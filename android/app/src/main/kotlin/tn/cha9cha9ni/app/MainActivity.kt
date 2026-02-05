@@ -2,9 +2,10 @@ package tn.cha9cha9ni.app
 
 import android.os.Bundle
 import android.view.WindowManager
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity() {
+// Use FlutterFragmentActivity for biometrics (local_auth) support
+class MainActivity : FlutterFragmentActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         // Set FLAG_SECURE as early as possible

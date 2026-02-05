@@ -22,6 +22,7 @@ enum SocketEvent {
   removalInitiated,
   removalCancelled,
   rewardsRedeemed,
+  ownershipTransferred,
   error,
 }
 
@@ -448,6 +449,35 @@ class RewardsRedeemedData {
   }
 }
 
+/// Data class for ownership transferred event
+class OwnershipTransferredData {
+  final String oldOwnerId;
+  final String oldOwnerName;
+  final String newOwnerId;
+  final String newOwnerName;
+  final DateTime timestamp;
+
+  OwnershipTransferredData({
+    required this.oldOwnerId,
+    required this.oldOwnerName,
+    required this.newOwnerId,
+    required this.newOwnerName,
+    required this.timestamp,
+  });
+
+  factory OwnershipTransferredData.fromJson(Map<String, dynamic> json) {
+    return OwnershipTransferredData(
+      oldOwnerId: json['oldOwnerId'] ?? '',
+      oldOwnerName: json['oldOwnerName'] ?? '',
+      newOwnerId: json['newOwnerId'] ?? '',
+      newOwnerName: json['newOwnerName'] ?? '',
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'])
+          : DateTime.now(),
+    );
+  }
+}
+
 /// Service for managing WebSocket connection for real-time session monitoring
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -485,6 +515,8 @@ class SocketService {
       StreamController<RemovalCancelledData>.broadcast();
   final _rewardsRedeemedController =
       StreamController<RewardsRedeemedData>.broadcast();
+  final _ownershipTransferredController =
+      StreamController<OwnershipTransferredData>.broadcast();
 
   /// Stream of socket events
   Stream<SocketEvent> get events => _eventController.stream;
@@ -539,6 +571,10 @@ class SocketService {
   Stream<RewardsRedeemedData> get onRewardsRedeemed =>
       _rewardsRedeemedController.stream;
 
+  /// Stream of ownership transferred events - listen to this when family owner changes
+  Stream<OwnershipTransferredData> get onOwnershipTransferred =>
+      _ownershipTransferredController.stream;
+
   /// Whether the socket is currently connected
   bool get isConnected => _socket?.connected ?? false;
 
@@ -569,11 +605,11 @@ class SocketService {
     _socket = io.io(
       '$wsUrl/session',
       io.OptionBuilder()
-          .setTransports(['websocket'])
+          .setTransports(['websocket', 'polling']) // Add polling as fallback for Android
           .setAuth({'token': accessToken})
           .enableAutoConnect()
           .enableReconnection()
-          .setReconnectionAttempts(3) // Limit retries to avoid spam
+          .setReconnectionAttempts(5) // Increased retries
           .setReconnectionDelay(2000)
           .setReconnectionDelayMax(10000)
           .build(),
@@ -763,6 +799,16 @@ class SocketService {
       }
     });
 
+    // Listen for ownership transferred event (family owner changed)
+    _socket!.on('ownership_transferred', (data) {
+      debugPrint('👑 Socket: Received ownership_transferred event');
+      if (data is Map<String, dynamic>) {
+        final transferData = OwnershipTransferredData.fromJson(data);
+        _ownershipTransferredController.add(transferData);
+        _eventController.add(SocketEvent.ownershipTransferred);
+      }
+    });
+
     // Listen for connection acknowledgment
     _socket!.on('connected', (data) {
       debugPrint('🔌 Socket: Server acknowledged connection - $data');
@@ -822,5 +868,6 @@ class SocketService {
     _removalInitiatedController.close();
     _removalCancelledController.close();
     _rewardsRedeemedController.close();
+    _ownershipTransferredController.close();
   }
 }

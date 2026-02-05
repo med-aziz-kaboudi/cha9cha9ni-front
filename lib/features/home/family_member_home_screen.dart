@@ -19,7 +19,8 @@ import '../../core/services/socket_service.dart'
         ProfilePictureUpdatedData,
         ProfileUpdatedData,
         RemovalInitiatedData,
-        RemovalCancelledData;
+        RemovalCancelledData,
+        OwnershipTransferredData;
 import '../../core/services/notification_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -50,6 +51,7 @@ import '../pack/pack_service.dart';
 import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 import '../topup/screens/topup_screen.dart';
+import 'family_owner_home_screen.dart';
 import 'widgets/home_header_widget.dart';
 
 class FamilyMemberHomeScreen extends StatefulWidget {
@@ -129,6 +131,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
   StreamSubscription<RemovalInitiatedData>? _removalInitiatedSubscription;
   StreamSubscription<RemovalCancelledData>? _removalCancelledSubscription;
+  StreamSubscription<OwnershipTransferredData>? _ownershipTransferredSubscription;
 
   // Leave family rate limiting
   static const String _leaveAttemptKey = 'leave_family_attempts';
@@ -166,6 +169,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _listenToProfileUpdates();
     _listenToRemovalInitiated();
     _listenToRemovalCancelled();
+    _listenToOwnershipTransferred();
     // Delay loading removal requests to avoid too many simultaneous API calls
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _loadRemovalRequests();
@@ -220,6 +224,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _profileUpdatedSubscription?.cancel();
     _removalInitiatedSubscription?.cancel();
     _removalCancelledSubscription?.cancel();
+    _ownershipTransferredSubscription?.cancel();
     _rateLimitTimer?.cancel();
     super.dispose();
   }
@@ -604,6 +609,38 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         final message = l10n?.removalCancelled ??
             'The removal request has been cancelled';
         AppToast.success(context, message);
+      }
+    });
+  }
+
+  /// Listen to ownership transfer events (when current user becomes the new owner)
+  void _listenToOwnershipTransferred() {
+    _ownershipTransferredSubscription =
+        _socketService.onOwnershipTransferred.listen((data) {
+      if (mounted) {
+        debugPrint('👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}');
+
+        // If current user is the NEW owner, navigate to owner home screen
+        if (data.newOwnerId == _currentUserId) {
+          AppToast.success(
+            context,
+            'Vous êtes maintenant le propriétaire de la famille!',
+          );
+
+          // Navigate to family owner home screen
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const FamilyOwnerHomeScreen()),
+            (route) => false,
+          );
+        } else {
+          // Another member, just show info that ownership changed
+          AppToast.info(
+            context,
+            '${data.newOwnerName} est maintenant le propriétaire de la famille',
+          );
+          // Reload family data to update the owner info
+          _refreshFamilyDataSilently();
+        }
       }
     });
   }

@@ -2017,4 +2017,46 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get statementGotIt => 'حسناً!';
+
+  @override
+  String get transferOwnership => 'نقل الملكية';
+
+  @override
+  String get transferOwnershipBlocked => 'النقل محظور';
+
+  @override
+  String get transferOwnershipBlockedDesc =>
+      'نقل الملكية غير متاح بعد إجراء السحب';
+
+  @override
+  String get transferOwnershipWithdrawalNote =>
+      'بمجرد إجراء السحب، يتم تعطيل نقل الملكية بشكل دائم للامتثال لـ KYC.';
+
+  @override
+  String get transferOwnershipWarning =>
+      'تحذير: هذا الإجراء لا رجعة فيه. سيكون للمالك الجديد السيطرة الكاملة على العائلة.';
+
+  @override
+  String get selectNewOwner => 'اختر المالك الجديد';
+
+  @override
+  String get noEligibleMembers => 'لا يوجد أعضاء مؤهلون للنقل';
+
+  @override
+  String get continueButton => 'متابعة';
+
+  @override
+  String get verifyTransfer => 'التحقق من النقل';
+
+  @override
+  String get transferCodeSent => 'تم إرسال رمز التحقق إلى بريدك الإلكتروني';
+
+  @override
+  String get transferringTo => 'النقل إلى';
+
+  @override
+  String get confirmTransfer => 'تأكيد النقل';
+
+  @override
+  String get ownershipTransferredSuccess => 'تم نقل الملكية بنجاح';
 }

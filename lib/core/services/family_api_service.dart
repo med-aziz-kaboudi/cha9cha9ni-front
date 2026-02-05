@@ -449,6 +449,94 @@ class FamilyApiService {
     }
   }
 
+  // ==================== Ownership Transfer Methods ====================
+
+  /// Check if ownership can be transferred (not blocked by withdrawals)
+  Future<Map<String, dynamic>> canTransferOwnership() async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/family/transfer/can-transfer'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return _safeJsonDecode(response);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to check transfer eligibility');
+    }
+  }
+
+  /// Owner initiates ownership transfer to another member
+  Future<Map<String, dynamic>> initiateTransfer(String newOwnerId) async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/family/transfer/initiate'),
+      headers: headers,
+      body: json.encode({'newOwnerId': newOwnerId}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return _safeJsonDecode(response);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to initiate ownership transfer');
+    }
+  }
+
+  /// Owner confirms transfer with verification code
+  Future<Map<String, dynamic>> confirmTransfer(String requestId, String code) async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/family/transfer/confirm'),
+      headers: headers,
+      body: json.encode({'requestId': requestId, 'code': code}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return _safeJsonDecode(response);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to confirm ownership transfer');
+    }
+  }
+
+  /// Get pending transfer request
+  Future<Map<String, dynamic>?> getPendingTransfer() async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/family/transfer/pending'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final body = response.body;
+      if (body.isEmpty || body == 'null') return null;
+      return _safeJsonDecode(response);
+    } else {
+      return null;
+    }
+  }
+
+  /// Cancel a pending transfer request
+  Future<void> cancelTransfer(String requestId) async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.delete(
+      Uri.parse('$_baseUrl/family/transfer/$requestId'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to cancel transfer');
+    }
+  }
+
   /// Validate current session - lightweight API call to check if session is still valid
   /// Throws AuthenticationException if session is invalid
   Future<void> validateSession() async {
