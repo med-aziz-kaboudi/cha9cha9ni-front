@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/models/family_model.dart';
 import '../../core/services/family_api_service.dart';
-import '../../core/services/socket_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../l10n/app_localizations.dart';
@@ -21,18 +20,19 @@ class TransferOwnershipScreen extends StatefulWidget {
   });
 
   @override
-  State<TransferOwnershipScreen> createState() => _TransferOwnershipScreenState();
+  State<TransferOwnershipScreen> createState() =>
+      _TransferOwnershipScreenState();
 }
 
 class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   final _familyApi = FamilyApiService();
-  final _socketService = SocketService();
   final _codeController = TextEditingController();
   final _focusNode = FocusNode();
 
   // Rate limiting constants
   static const String _transferAttemptKey = 'transfer_ownership_attempts';
-  static const String _transferBlockedUntilKey = 'transfer_ownership_blocked_until';
+  static const String _transferBlockedUntilKey =
+      'transfer_ownership_blocked_until';
   static const int _maxTransferAttempts = 3;
   static const int _blockDurationMinutes = 15;
 
@@ -46,31 +46,19 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   String? _error;
   bool _isRateLimited = false;
   int _rateLimitRemainingMinutes = 0;
-  
-  StreamSubscription? _ownershipSubscription;
 
   @override
   void initState() {
     super.initState();
     _checkRateLimitAndCanTransfer();
-    _listenToOwnershipTransfer();
+    // Note: Don't listen to ownership transfer here - home screen handles the navigation
   }
 
   @override
   void dispose() {
     _codeController.dispose();
     _focusNode.dispose();
-    _ownershipSubscription?.cancel();
     super.dispose();
-  }
-
-  void _listenToOwnershipTransfer() {
-    _ownershipSubscription = _socketService.onOwnershipTransferred.listen((data) {
-      // Ownership was transferred successfully - refresh will happen via socket
-      if (mounted) {
-        Navigator.of(context).pop(true);
-      }
-    });
   }
 
   /// Check rate limiting first, then check if user can transfer
@@ -80,9 +68,11 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     // Check rate limit first
     final prefs = await SharedPreferences.getInstance();
     final blockedUntil = prefs.getInt(_transferBlockedUntilKey);
-    
+
     if (blockedUntil != null) {
-      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(blockedUntil);
+      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(
+        blockedUntil,
+      );
       if (DateTime.now().isBefore(blockedUntilTime)) {
         // Still blocked
         final remaining = blockedUntilTime.difference(DateTime.now()).inMinutes;
@@ -168,7 +158,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     final prefs = await SharedPreferences.getInstance();
     final blockedUntil = prefs.getInt(_transferBlockedUntilKey);
     if (blockedUntil != null) {
-      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(blockedUntil);
+      final blockedUntilTime = DateTime.fromMillisecondsSinceEpoch(
+        blockedUntil,
+      );
       if (DateTime.now().isBefore(blockedUntilTime)) {
         final remaining = blockedUntilTime.difference(DateTime.now()).inMinutes;
         if (mounted) {
@@ -177,7 +169,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             _rateLimitRemainingMinutes = remaining > 0 ? remaining + 1 : 1;
             _canTransfer = false;
           });
-          AppToast.error(context, 'Trop de tentatives. Réessayez dans $_rateLimitRemainingMinutes minutes.');
+          AppToast.error(
+            context,
+            'Trop de tentatives. Réessayez dans $_rateLimitRemainingMinutes minutes.',
+          );
         }
         return;
       }
@@ -190,10 +185,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
 
     try {
       final result = await _familyApi.initiateTransfer(_selectedMember!.id);
-      
+
       // Increment attempt counter
       final nowBlocked = await _incrementTransferAttempt();
-      
+
       if (mounted) {
         setState(() {
           _requestId = result['requestId'] as String?;
@@ -221,10 +216,13 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
 
   Future<void> _confirmTransfer() async {
     final code = _codeController.text.trim();
-    
+
     if (code.length != 6) {
-      setState(() => _error = AppLocalizations.of(context)?.enterAllDigits ?? 
-          'Please enter all 6 digits');
+      setState(
+        () => _error =
+            AppLocalizations.of(context)?.enterAllDigits ??
+            'Please enter all 6 digits',
+      );
       HapticFeedback.heavyImpact();
       return;
     }
@@ -236,10 +234,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
 
     try {
       await _familyApi.confirmTransfer(_requestId!, code);
-      
+
       // Reset rate limiting on successful transfer
       await _resetTransferAttempts();
-      
+
       if (mounted) {
         HapticFeedback.mediumImpact();
         AppToast.success(
@@ -312,19 +310,25 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : _isRateLimited
-                ? _buildRateLimitedView(l10n, screenHeight, screenWidth)
-                : !_canTransfer
-                    ? _buildBlockedView(l10n, screenHeight, screenWidth)
-                    : _isCodeStep
-                        ? _buildCodeStep(l10n, screenHeight, screenWidth)
-                        : _buildMemberSelection(l10n, screenHeight, screenWidth),
+            ? _buildRateLimitedView(l10n, screenHeight, screenWidth)
+            : !_canTransfer
+            ? _buildBlockedView(l10n, screenHeight, screenWidth)
+            : _isCodeStep
+            ? _buildCodeStep(l10n, screenHeight, screenWidth)
+            : _buildMemberSelection(l10n, screenHeight, screenWidth),
       ),
     );
   }
 
-  Widget _buildBlockedView(AppLocalizations l10n, double screenHeight, double screenWidth) {
+  Widget _buildBlockedView(
+    AppLocalizations l10n,
+    double screenHeight,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
       child: Column(
@@ -372,7 +376,11 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.amber[700], size: screenHeight * 0.025),
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.amber[700],
+                  size: screenHeight * 0.025,
+                ),
                 SizedBox(width: screenWidth * 0.03),
                 Expanded(
                   child: Text(
@@ -391,7 +399,11 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     );
   }
 
-  Widget _buildRateLimitedView(AppLocalizations l10n, double screenHeight, double screenWidth) {
+  Widget _buildRateLimitedView(
+    AppLocalizations l10n,
+    double screenHeight,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
       child: Column(
@@ -439,7 +451,11 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.orange[700], size: screenHeight * 0.025),
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.orange[700],
+                  size: screenHeight * 0.025,
+                ),
                 SizedBox(width: screenWidth * 0.03),
                 Expanded(
                   child: Text(
@@ -480,7 +496,11 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     );
   }
 
-  Widget _buildMemberSelection(AppLocalizations l10n, double screenHeight, double screenWidth) {
+  Widget _buildMemberSelection(
+    AppLocalizations l10n,
+    double screenHeight,
+    double screenWidth,
+  ) {
     final eligibleMembers = _eligibleMembers;
 
     return Padding(
@@ -494,11 +514,17 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: AppColors.primary, size: screenHeight * 0.03),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.primary,
+                  size: screenHeight * 0.03,
+                ),
                 SizedBox(width: screenWidth * 0.03),
                 Expanded(
                   child: Text(
@@ -513,9 +539,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
               ],
             ),
           ),
-          
+
           SizedBox(height: screenHeight * 0.03),
-          
+
           Text(
             l10n.selectNewOwner,
             style: TextStyle(
@@ -524,7 +550,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
               color: AppColors.secondary,
             ),
           ),
-          
+
           SizedBox(height: screenHeight * 0.015),
 
           if (eligibleMembers.isEmpty)
@@ -555,24 +581,25 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             Expanded(
               child: ListView.separated(
                 itemCount: eligibleMembers.length,
-                separatorBuilder: (_, __) => SizedBox(height: screenHeight * 0.01),
+                separatorBuilder: (_, __) =>
+                    SizedBox(height: screenHeight * 0.01),
                 itemBuilder: (context, index) {
                   final member = eligibleMembers[index];
                   final isSelected = _selectedMember?.id == member.id;
-                  
+
                   return InkWell(
                     onTap: () => setState(() => _selectedMember = member),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: EdgeInsets.all(screenWidth * 0.04),
                       decoration: BoxDecoration(
-                        color: isSelected 
+                        color: isSelected
                             ? AppColors.primary.withValues(alpha: 0.1)
                             : Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected 
-                              ? AppColors.primary 
+                          color: isSelected
+                              ? AppColors.primary
                               : Colors.transparent,
                           width: 2,
                         ),
@@ -581,14 +608,16 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                         children: [
                           CircleAvatar(
                             radius: screenHeight * 0.028,
-                            backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
+                            backgroundColor: AppColors.secondary.withValues(
+                              alpha: 0.1,
+                            ),
                             backgroundImage: member.profilePictureUrl != null
                                 ? NetworkImage(member.profilePictureUrl!)
                                 : null,
                             child: member.profilePictureUrl == null
                                 ? Text(
-                                    member.name.isNotEmpty 
-                                        ? member.name[0].toUpperCase() 
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
                                         : '?',
                                     style: TextStyle(
                                       color: AppColors.secondary,
@@ -652,8 +681,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             width: double.infinity,
             height: screenHeight * 0.06,
             child: ElevatedButton(
-              onPressed: _selectedMember != null && !_isProcessing 
-                  ? _initiateTransfer 
+              onPressed: _selectedMember != null && !_isProcessing
+                  ? _initiateTransfer
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -686,22 +715,26 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     );
   }
 
-  Widget _buildCodeStep(AppLocalizations l10n, double screenHeight, double screenWidth) {
+  Widget _buildCodeStep(
+    AppLocalizations l10n,
+    double screenHeight,
+    double screenWidth,
+  ) {
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: screenHeight * 0.03),
-          
+
           Icon(
             Icons.email_outlined,
             size: screenHeight * 0.08,
             color: AppColors.primary,
           ),
-          
+
           SizedBox(height: screenHeight * 0.02),
-          
+
           Text(
             l10n.verifyTransfer,
             style: TextStyle(
@@ -711,9 +744,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           SizedBox(height: screenHeight * 0.015),
-          
+
           Text(
             l10n.transferCodeSent,
             style: TextStyle(
@@ -753,16 +786,17 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 2,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Colors.red),
               ),
             ),
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-            ],
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             onChanged: (value) {
               if (value.length == 6) {
                 _confirmTransfer();
@@ -784,7 +818,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             ),
 
           SizedBox(height: screenHeight * 0.015),
-          
+
           Text(
             l10n.codeExpiresInfo,
             style: TextStyle(
