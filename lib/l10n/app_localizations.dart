@@ -3807,6 +3807,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ownership transferred successfully'**
   String get ownershipTransferredSuccess;
+
+  /// No description provided for @withdrawWindowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw from {startDate} to {endDate}'**
+  String withdrawWindowLabel(String startDate, String endDate);
+
+  /// No description provided for @aidDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Aid date: {date}'**
+  String aidDateLabel(String date);
+
+  /// No description provided for @selectionDeadlineLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select before {date}'**
+  String selectionDeadlineLabel(String date);
+
+  /// No description provided for @maxWithdrawAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Max: {amount} DT'**
+  String maxWithdrawAmount(int amount);
+
+  /// No description provided for @withdrawWindowOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal window open!'**
+  String get withdrawWindowOpen;
+
+  /// No description provided for @daysUntilWithdrawOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days until withdrawal opens'**
+  String daysUntilWithdrawOpen(int days);
 }
 
 class _AppLocalizationsDelegate

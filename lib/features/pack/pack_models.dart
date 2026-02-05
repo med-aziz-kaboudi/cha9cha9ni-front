@@ -53,13 +53,22 @@ class AidModel {
   final String displayName;
   final String? displayNameAr;
   final int maxWithdrawal;
-  final String? windowStart; // MM-DD
-  final String? windowEnd; // MM-DD
   final String? description;
+  final String? descriptionAr;
   final String? icon;
   final bool isWithinWindow;
+  final bool canSelect; // Whether user can still select (based on minDaysBeforeSelection)
   final DateTime? windowStartDate;
   final DateTime? windowEndDate;
+  // New date fields
+  final String? aidStartDate; // YYYY-MM-DD
+  final String? aidEndDate;
+  final String? withdrawalStartDate;
+  final String? withdrawalEndDate;
+  final int minDaysBeforeSelection;
+  final int? daysUntilAid;
+  final int? daysUntilWithdrawalOpen;
+  final String? selectionDeadline; // YYYY-MM-DD
 
   AidModel({
     required this.id,
@@ -67,13 +76,21 @@ class AidModel {
     required this.displayName,
     this.displayNameAr,
     required this.maxWithdrawal,
-    this.windowStart,
-    this.windowEnd,
     this.description,
+    this.descriptionAr,
     this.icon,
     required this.isWithinWindow,
+    this.canSelect = true,
     this.windowStartDate,
     this.windowEndDate,
+    this.aidStartDate,
+    this.aidEndDate,
+    this.withdrawalStartDate,
+    this.withdrawalEndDate,
+    this.minDaysBeforeSelection = 7,
+    this.daysUntilAid,
+    this.daysUntilWithdrawalOpen,
+    this.selectionDeadline,
   });
 
   factory AidModel.fromJson(Map<String, dynamic> json) {
@@ -96,15 +113,30 @@ class AidModel {
       displayName: json['displayName'] ?? '',
       displayNameAr: json['displayNameAr'],
       maxWithdrawal: json['maxWithdrawal'] ?? 0,
-      windowStart: json['windowStart'],
-      windowEnd: json['windowEnd'],
       description: json['description'],
+      descriptionAr: json['descriptionAr'],
       icon: json['icon'],
       isWithinWindow: json['isWithinWindow'] ?? false,
+      canSelect: json['canSelect'] ?? true,
       windowStartDate: startDate,
       windowEndDate: endDate,
+      aidStartDate: json['aidStartDate'],
+      aidEndDate: json['aidEndDate'],
+      withdrawalStartDate: json['withdrawalStartDate'],
+      withdrawalEndDate: json['withdrawalEndDate'],
+      minDaysBeforeSelection: json['minDaysBeforeSelection'] ?? 7,
+      daysUntilAid: json['daysUntilAid'],
+      daysUntilWithdrawalOpen: json['daysUntilWithdrawalOpen'],
+      selectionDeadline: json['selectionDeadline'],
     );
   }
+
+  /// Get aid date as DateTime
+  DateTime? get aidStart => aidStartDate != null ? DateTime.parse(aidStartDate!) : null;
+  DateTime? get aidEnd => aidEndDate != null ? DateTime.parse(aidEndDate!) : null;
+  DateTime? get withdrawalStart => withdrawalStartDate != null ? DateTime.parse(withdrawalStartDate!) : null;
+  DateTime? get withdrawalEnd => withdrawalEndDate != null ? DateTime.parse(withdrawalEndDate!) : null;
+  DateTime? get selectionDeadlineDate => selectionDeadline != null ? DateTime.parse(selectionDeadline!) : null;
 
   /// Get window display string (e.g., "Jun 17 - Jun 24")
   String getWindowDisplay() {
@@ -119,6 +151,67 @@ class AidModel {
     
     return '${months[windowStartDate!.month - 1]} ${windowStartDate!.day} - ${months[windowEndDate!.month - 1]} ${windowEndDate!.day}';
   }
+
+  /// Get aid dates display (e.g., "May 26 - May 28, 2026")
+  String getAidDatesDisplay() {
+    if (aidStart == null) return 'Date TBD';
+    
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    if (aidEnd == null || aidStart!.day == aidEnd!.day) {
+      return '${months[aidStart!.month - 1]} ${aidStart!.day}, ${aidStart!.year}';
+    }
+    
+    if (aidStart!.month == aidEnd!.month) {
+      return '${months[aidStart!.month - 1]} ${aidStart!.day}-${aidEnd!.day}, ${aidStart!.year}';
+    }
+    
+    return '${months[aidStart!.month - 1]} ${aidStart!.day} - ${months[aidEnd!.month - 1]} ${aidEnd!.day}, ${aidStart!.year}';
+  }
+
+  /// Get withdrawal window display
+  String getWithdrawalWindowDisplay() {
+    if (withdrawalStart == null || withdrawalEnd == null) return 'Anytime';
+    
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    return '${months[withdrawalStart!.month - 1]} ${withdrawalStart!.day} - ${months[withdrawalEnd!.month - 1]} ${withdrawalEnd!.day}';
+  }
+
+  /// Get selection deadline display
+  String getSelectionDeadlineDisplay() {
+    if (selectionDeadlineDate == null) return 'Anytime';
+    
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    return '${months[selectionDeadlineDate!.month - 1]} ${selectionDeadlineDate!.day}, ${selectionDeadlineDate!.year}';
+  }
+
+  /// Get days until aid display
+  String getDaysUntilAidDisplay() {
+    if (daysUntilAid == null) return '';
+    if (daysUntilAid == 0) return 'Today!';
+    if (daysUntilAid == 1) return 'Tomorrow';
+    return 'In $daysUntilAid days';
+  }
+
+  /// Check if selection deadline has passed
+  bool get isSelectionDeadlinePassed => !canSelect;
+
+  /// Get the number of days in the withdrawal window
+  int? get withdrawalWindowDays {
+    if (withdrawalStart == null || withdrawalEnd == null) return null;
+    return withdrawalEnd!.difference(withdrawalStart!).inDays + 1;
+  }
 }
 
 /// Selected aid with status
@@ -128,8 +221,10 @@ class SelectedAidModel {
   final String aidName;
   final String aidDisplayName;
   final int maxWithdrawal;
-  final String? windowStart;
-  final String? windowEnd;
+  final String? aidStartDate;
+  final String? aidEndDate;
+  final String? withdrawalStartDate;
+  final String? withdrawalEndDate;
   final String status; // 'selected', 'withdrawn', 'expired'
   final int? withdrawnAmount;
   final DateTime? withdrawnAt;
@@ -140,8 +235,10 @@ class SelectedAidModel {
     required this.aidName,
     required this.aidDisplayName,
     required this.maxWithdrawal,
-    this.windowStart,
-    this.windowEnd,
+    this.aidStartDate,
+    this.aidEndDate,
+    this.withdrawalStartDate,
+    this.withdrawalEndDate,
     required this.status,
     this.withdrawnAmount,
     this.withdrawnAt,
@@ -154,8 +251,10 @@ class SelectedAidModel {
       aidName: json['aidName'] ?? '',
       aidDisplayName: json['aidDisplayName'] ?? '',
       maxWithdrawal: json['maxWithdrawal'] ?? 0,
-      windowStart: json['windowStart'],
-      windowEnd: json['windowEnd'],
+      aidStartDate: json['aidStartDate'],
+      aidEndDate: json['aidEndDate'],
+      withdrawalStartDate: json['withdrawalStartDate'],
+      withdrawalEndDate: json['withdrawalEndDate'],
       status: json['status'] ?? 'selected',
       withdrawnAmount: json['withdrawnAmount'],
       withdrawnAt: json['withdrawnAt'] != null 
@@ -164,8 +263,33 @@ class SelectedAidModel {
     );
   }
 
+  /// Get aid date as DateTime
+  DateTime? get aidStart => aidStartDate != null ? DateTime.parse(aidStartDate!) : null;
+  DateTime? get aidEnd => aidEndDate != null ? DateTime.parse(aidEndDate!) : null;
+  DateTime? get withdrawalStart => withdrawalStartDate != null ? DateTime.parse(withdrawalStartDate!) : null;
+  DateTime? get withdrawalEnd => withdrawalEndDate != null ? DateTime.parse(withdrawalEndDate!) : null;
+
   bool get isWithdrawn => status == 'withdrawn';
   bool get isExpired => status == 'expired';
+
+  /// Check if we're currently in the withdrawal window
+  bool get isWithinWithdrawalWindow {
+    if (withdrawalStart == null || withdrawalEnd == null) return true;
+    final now = DateTime.now();
+    return now.isAfter(withdrawalStart!) && now.isBefore(withdrawalEnd!.add(const Duration(days: 1)));
+  }
+
+  /// Get withdrawal window display
+  String getWithdrawalWindowDisplay() {
+    if (withdrawalStart == null || withdrawalEnd == null) return 'Anytime';
+    
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    return '${months[withdrawalStart!.month - 1]} ${withdrawalStart!.day} - ${months[withdrawalEnd!.month - 1]} ${withdrawalEnd!.day}';
+  }
 }
 
 /// Family ads statistics for real-time display

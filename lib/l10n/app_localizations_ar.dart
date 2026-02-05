@@ -2059,4 +2059,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ownershipTransferredSuccess => 'تم نقل الملكية بنجاح';
+
+  @override
+  String withdrawWindowLabel(String startDate, String endDate) {
+    return 'السحب من $startDate إلى $endDate';
+  }
+
+  @override
+  String aidDateLabel(String date) {
+    return 'تاريخ المناسبة: $date';
+  }
+
+  @override
+  String selectionDeadlineLabel(String date) {
+    return 'اختر قبل $date';
+  }
+
+  @override
+  String maxWithdrawAmount(int amount) {
+    return 'الحد الأقصى: $amount دت';
+  }
+
+  @override
+  String get withdrawWindowOpen => 'نافذة السحب مفتوحة!';
+
+  @override
+  String daysUntilWithdrawOpen(int days) {
+    return '$days أيام حتى فتح السحب';
+  }
 }

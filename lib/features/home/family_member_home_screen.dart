@@ -436,8 +436,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           aidName: aidData.aidName,
           aidDisplayName: aidData.aidDisplayName,
           maxWithdrawal: aidData.maxWithdrawal,
-          windowStart: aidData.windowStart,
-          windowEnd: aidData.windowEnd,
+          aidStartDate: aidData.aidStartDate,
+          aidEndDate: aidData.aidEndDate,
+          withdrawalStartDate: aidData.withdrawalStartDate,
+          withdrawalEndDate: aidData.withdrawalEndDate,
           status: 'selected',
         );
         _updateSelectedAid(aid);
@@ -458,10 +460,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       return;
     }
 
-    // Parse window start date (format: MM-DD)
+    // Use new date fields
     final now = DateTime.now();
-    final windowStart = aid.windowStart;
-    if (windowStart == null) {
+    final aidStart = aid.aidStart;
+
+    if (aidStart == null) {
       setState(() {
         _selectedAid = aid;
         _daysUntilAid = null;
@@ -470,54 +473,27 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       return;
     }
 
-    final parts = windowStart.split('-');
-    if (parts.length == 2) {
-      final month = int.tryParse(parts[0]) ?? 1;
-      final day = int.tryParse(parts[1]) ?? 1;
-
-      // Calculate target date (this year or next)
-      var targetDate = DateTime(now.year, month, day);
-      if (targetDate.isBefore(now)) {
-        // Check if we're in the window (before window end)
-        final windowEnd = aid.windowEnd;
-        if (windowEnd != null) {
-          final endParts = windowEnd.split('-');
-          if (endParts.length == 2) {
-            final endMonth = int.tryParse(endParts[0]) ?? 1;
-            final endDay = int.tryParse(endParts[1]) ?? 1;
-            var endDate = DateTime(now.year, endMonth, endDay);
-            if (endDate.isBefore(targetDate)) {
-              endDate = DateTime(now.year + 1, endMonth, endDay);
-            }
-
-            if (now.isBefore(endDate) || now.isAtSameMomentAs(endDate)) {
-              // Window is open
-              setState(() {
-                _selectedAid = aid;
-                _daysUntilAid = 0;
-                _aidWindowOpen = true;
-              });
-              return;
-            }
-          }
-        }
-        // Window passed, next year
-        targetDate = DateTime(now.year + 1, month, day);
+    if (aidStart.isBefore(now)) {
+      // Aid date has passed, check if we're in withdrawal window
+      final withdrawalEnd = aid.withdrawalEnd;
+      if (withdrawalEnd != null &&
+          now.isBefore(withdrawalEnd.add(const Duration(days: 1)))) {
+        setState(() {
+          _selectedAid = aid;
+          _daysUntilAid = 0;
+          _aidWindowOpen = true;
+        });
+        return;
       }
-
-      final daysUntil = targetDate.difference(now).inDays;
-      setState(() {
-        _selectedAid = aid;
-        _daysUntilAid = daysUntil;
-        _aidWindowOpen = false;
-      });
-    } else {
-      setState(() {
-        _selectedAid = aid;
-        _daysUntilAid = null;
-        _aidWindowOpen = false;
-      });
     }
+
+    // Aid is upcoming
+    final daysUntil = aidStart.difference(now).inDays;
+    setState(() {
+      _selectedAid = aid;
+      _daysUntilAid = daysUntil;
+      _aidWindowOpen = false;
+    });
   }
 
   /// Listen to member_left socket events (when another member leaves)
@@ -2267,6 +2243,10 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       }
     }
 
+    final aidEmoji = _selectedAid != null
+        ? getAidEmoji(_selectedAid!.aidName)
+        : '📅';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GestureDetector(
@@ -2279,106 +2259,194 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         },
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: _aidWindowOpen
-                ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
-                : const Color(0xFFEE3764).withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(15),
-            border: _aidWindowOpen
-                ? Border.all(
-                    color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
-                  )
-                : null,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _aidWindowOpen
-                      ? const Color(0xFF4CAF50).withValues(alpha: 0.2)
-                      : const Color(0xFFEE3764).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text(
-                    _selectedAid != null
-                        ? getAidEmoji(_selectedAid!.aidName)
-                        : '📅',
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                ),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _aidWindowOpen
+                  ? const Color(0xFF00C853).withValues(alpha: 0.5)
+                  : const Color(0xFFEE3764).withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _aidWindowOpen
+                    ? const Color(0xFF00C853).withValues(alpha: 0.15)
+                    : const Color(0xFFEE3764).withValues(alpha: 0.12),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.nextWithdrawal,
-                      style: const TextStyle(
-                        color: Color(0xFF13123A),
-                        fontSize: 12,
-                        fontFamily: 'Nunito Sans',
-                        fontWeight: FontWeight.w700,
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Emoji container
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _aidWindowOpen
+                          ? const Color(0xFF00C853).withValues(alpha: 0.1)
+                          : const Color(0xFFEE3764).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        aidEmoji,
+                        style: const TextStyle(fontSize: 24),
                       ),
                     ),
-                    if (_selectedAid != null) ...[
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_selectedAid != null) ...[
+                          // Title
+                          Text(
+                            _selectedAid!.aidDisplayName,
+                            style: const TextStyle(
+                              color: Color(0xFF1A1A2E),
+                              fontSize: 15,
+                              fontFamily: 'Nunito Sans',
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Amount and days inline
+                          Row(
+                            children: [
+                              Text(
+                                '${_selectedAid!.maxWithdrawal.toStringAsFixed(0)} DT',
+                                style: const TextStyle(
+                                  color: Color(0xFFEE3764),
+                                  fontSize: 14,
+                                  fontFamily: 'Nunito Sans',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (_daysUntilAid != null && !_aidWindowOpen) ...[
+                                const SizedBox(width: 10),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.secondary.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '$_daysUntilAid days',
+                                    style: const TextStyle(
+                                      color: AppColors.secondary,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (_aidWindowOpen) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF00C853),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Text(
+                                    'OPEN',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ] else ...[
+                          Text(
+                            l10n.noAidSelected,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                              fontFamily: 'Nunito Sans',
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left_rounded
+                        : Icons.chevron_right_rounded,
+                    color: _aidWindowOpen
+                        ? const Color(0xFF00C853)
+                        : const Color(0xFFEE3764),
+                    size: 24,
+                  ),
+                ],
+              ),
+              // Date row at bottom
+              if (_selectedAid != null &&
+                  _selectedAid!.withdrawalStartDate != null &&
+                  _selectedAid!.withdrawalEndDate != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _aidWindowOpen
+                        ? const Color(0xFF00C853).withValues(alpha: 0.06)
+                        : Colors.grey.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event_rounded,
+                        size: 14,
+                        color: _aidWindowOpen
+                            ? const Color(0xFF00C853)
+                            : const Color(0xFFEE3764),
+                      ),
+                      const SizedBox(width: 8),
                       Text(
-                        '${getAidEmoji(_selectedAid!.aidName)} ${_selectedAid!.aidDisplayName} - ${_selectedAid!.maxWithdrawal.toStringAsFixed(0)} DT',
-                        style: const TextStyle(
-                          color: Color(0xFF13123A),
+                        l10n.withdrawWindowLabel(
+                          _selectedAid!
+                              .getWithdrawalWindowDisplay()
+                              .split(' - ')
+                              .first,
+                          _selectedAid!
+                              .getWithdrawalWindowDisplay()
+                              .split(' - ')
+                              .last,
+                        ),
+                        style: TextStyle(
+                          color: Colors.grey[700],
                           fontSize: 12,
                           fontFamily: 'Nunito Sans',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      Opacity(
-                        opacity: 0.6,
-                        child: Text(
-                          _aidWindowOpen
-                              ? l10n.aidWindowOpen
-                              : (_daysUntilAid != null
-                                    ? l10n.daysUntilAid(
-                                        _daysUntilAid!,
-                                        _selectedAid!.aidDisplayName,
-                                      )
-                                    : l10n.availableInDays(0)),
-                          style: TextStyle(
-                            color: _aidWindowOpen
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFF13123A),
-                            fontSize: 11,
-                            fontFamily: 'Nunito Sans',
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ] else ...[
-                      Opacity(
-                        opacity: 0.6,
-                        child: Text(
-                          l10n.noAidSelected,
-                          style: const TextStyle(
-                            color: Color(0xFF13123A),
-                            fontSize: 12,
-                            fontFamily: 'Nunito Sans',
-                            fontWeight: FontWeight.w600,
-                          ),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.chevron_left
-                    : Icons.chevron_right,
-                color: const Color(0xFF13123A),
-              ),
+              ],
             ],
           ),
         ),

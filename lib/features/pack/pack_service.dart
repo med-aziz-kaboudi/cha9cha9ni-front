@@ -29,10 +29,10 @@ class PackService {
   FamilyAdsStats? _adsStats;
   SelectedAidModel? _selectedAid;
   String? _currentUserId;
-  
+
   final _dataController = StreamController<CurrentPackData>.broadcast();
   final _adsStatsController = StreamController<FamilyAdsStats>.broadcast();
-  
+
   StreamSubscription<AdsStatsUpdatedData>? _adsStatsSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
   StreamSubscription<AidRemovedData>? _aidRemovedSubscription;
@@ -65,33 +65,33 @@ class PackService {
 
     // Get current user ID for matching socket events
     _currentUserId = await _tokenStorage.getUserId();
-    
+
     // If userId is null, try to extract from access token
     if (_currentUserId == null) {
       _currentUserId = await _extractUserIdFromToken();
     }
-    
+
     debugPrint('📦 PackService: Current user ID loaded: $_currentUserId');
 
     // Load cached data first for instant display
     await _loadFromCache();
-    
+
     // Listen to socket events for real-time updates
     _listenToSocketEvents();
-    
+
     debugPrint('📦 PackService: Initialized with cache');
   }
-  
+
   /// Extract userId from JWT access token payload (base64 decode)
   Future<String?> _extractUserIdFromToken() async {
     try {
       final accessToken = await _tokenStorage.getAccessToken();
       if (accessToken == null) return null;
-      
+
       // JWT format: header.payload.signature
       final parts = accessToken.split('.');
       if (parts.length != 3) return null;
-      
+
       // Decode the payload (middle part)
       String payload = parts[1];
       // Add padding if needed for base64
@@ -106,10 +106,10 @@ class PackService {
           payload += '=';
           break;
       }
-      
+
       final decodedPayload = utf8.decode(base64Url.decode(payload));
       final payloadMap = jsonDecode(decodedPayload) as Map<String, dynamic>;
-      
+
       // The user ID is typically in 'sub' or 'userId' field
       final userId = payloadMap['sub'] ?? payloadMap['userId'];
       if (userId != null) {
@@ -133,15 +133,17 @@ class PackService {
   Future<void> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Load selected aid from cache
       final aidJson = prefs.getString(_PackCacheKeys.selectedAid);
       if (aidJson != null) {
         final aidData = jsonDecode(aidJson) as Map<String, dynamic>;
         _selectedAid = SelectedAidModel.fromJson(aidData);
-        debugPrint('📦 PackService: Loaded selected aid from cache: ${_selectedAid?.aidDisplayName}');
+        debugPrint(
+          '📦 PackService: Loaded selected aid from cache: ${_selectedAid?.aidDisplayName}',
+        );
       }
-      
+
       // Load current pack from cache
       final packJson = prefs.getString(_PackCacheKeys.currentPack);
       if (packJson != null) {
@@ -153,7 +155,6 @@ class PackService {
         }
         debugPrint('📦 PackService: Loaded pack data from cache');
       }
-      
     } catch (e) {
       debugPrint('📦 PackService: Failed to load from cache - $e');
     }
@@ -163,17 +164,26 @@ class PackService {
   Future<void> _saveToCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       if (_selectedAid != null) {
-        await prefs.setString(_PackCacheKeys.selectedAid, jsonEncode(_selectedAidToJson(_selectedAid!)));
+        await prefs.setString(
+          _PackCacheKeys.selectedAid,
+          jsonEncode(_selectedAidToJson(_selectedAid!)),
+        );
       }
-      
+
       if (_currentData != null) {
-        await prefs.setString(_PackCacheKeys.currentPack, jsonEncode(_currentPackToJson(_currentData!)));
+        await prefs.setString(
+          _PackCacheKeys.currentPack,
+          jsonEncode(_currentPackToJson(_currentData!)),
+        );
       }
-      
-      await prefs.setInt(_PackCacheKeys.lastFetchTime, DateTime.now().millisecondsSinceEpoch);
-      
+
+      await prefs.setInt(
+        _PackCacheKeys.lastFetchTime,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+
       debugPrint('📦 PackService: Saved to cache');
     } catch (e) {
       debugPrint('📦 PackService: Failed to save to cache - $e');
@@ -188,8 +198,10 @@ class PackService {
       'aidName': aid.aidName,
       'aidDisplayName': aid.aidDisplayName,
       'maxWithdrawal': aid.maxWithdrawal,
-      'windowStart': aid.windowStart,
-      'windowEnd': aid.windowEnd,
+      'aidStartDate': aid.aidStartDate,
+      'aidEndDate': aid.aidEndDate,
+      'withdrawalStartDate': aid.withdrawalStartDate,
+      'withdrawalEndDate': aid.withdrawalEndDate,
       'status': aid.status,
       'withdrawnAmount': aid.withdrawnAmount,
       'withdrawnAt': aid.withdrawnAt?.toIso8601String(),
@@ -227,7 +239,9 @@ class PackService {
         'isKycVerified': data.withdrawAccess.isKycVerified,
         'kycStatus': data.withdrawAccess.kycStatus,
       },
-      'selectedAids': data.selectedAids.map((a) => _selectedAidToJson(a)).toList(),
+      'selectedAids': data.selectedAids
+          .map((a) => _selectedAidToJson(a))
+          .toList(),
       'adsStats': {
         'familyTotalAdsToday': data.adsStats.familyTotalAdsToday,
         'familyMaxAdsToday': data.adsStats.familyMaxAdsToday,
@@ -249,21 +263,27 @@ class PackService {
     // Listen for aid_selected events from socket (real-time aid selection)
     _aidSelectedSubscription?.cancel();
     _aidSelectedSubscription = _socketService.onAidSelected.listen((data) {
-      debugPrint('📦 PackService: Received aid_selected via socket - ${data.aidDisplayName}');
+      debugPrint(
+        '📦 PackService: Received aid_selected via socket - ${data.aidDisplayName}',
+      );
       _handleAidSelectedFromSocket(data);
     });
 
     // Listen for aid_removed events from socket
     _aidRemovedSubscription?.cancel();
     _aidRemovedSubscription = _socketService.onAidRemoved.listen((data) {
-      debugPrint('📦 PackService: Received aid_removed via socket - ${data.aidDisplayName}');
+      debugPrint(
+        '📦 PackService: Received aid_removed via socket - ${data.aidDisplayName}',
+      );
       _handleAidRemovedFromSocket(data);
     });
 
     // Listen for pack_updated events (trigger full refresh)
     _packUpdatedSubscription?.cancel();
     _packUpdatedSubscription = _socketService.onPackUpdated.listen((data) {
-      debugPrint('📦 PackService: Received pack_updated via socket - reason: ${data.reason}');
+      debugPrint(
+        '📦 PackService: Received pack_updated via socket - reason: ${data.reason}',
+      );
       _handlePackUpdatedFromSocket(data);
     });
   }
@@ -276,8 +296,10 @@ class PackService {
       aidName: data.aidName,
       aidDisplayName: data.aidDisplayName,
       maxWithdrawal: data.maxWithdrawal,
-      windowStart: data.windowStart,
-      windowEnd: data.windowEnd,
+      aidStartDate: data.aidStartDate,
+      aidEndDate: data.aidEndDate,
+      withdrawalStartDate: data.withdrawalStartDate,
+      withdrawalEndDate: data.withdrawalEndDate,
       status: 'selected',
     );
 
@@ -288,7 +310,9 @@ class PackService {
       // Add new aid to selected aids (or replace if it's a single selection pack)
       final updatedAids = [..._currentData!.selectedAids];
       // Check if already exists
-      final existingIndex = updatedAids.indexWhere((a) => a.aidId == newAid.aidId);
+      final existingIndex = updatedAids.indexWhere(
+        (a) => a.aidId == newAid.aidId,
+      );
       if (existingIndex == -1) {
         updatedAids.add(newAid);
       }
@@ -313,8 +337,10 @@ class PackService {
 
   /// Handle real-time aid removal from socket
   void _handleAidRemovedFromSocket(AidRemovedData data) {
-    debugPrint('📦 PackService: Processing aid removal - ${data.aidDisplayName}');
-    
+    debugPrint(
+      '📦 PackService: Processing aid removal - ${data.aidDisplayName}',
+    );
+
     // Update current data if available
     if (_currentData != null) {
       final updatedAids = _currentData!.selectedAids
@@ -332,7 +358,9 @@ class PackService {
         adsStats: _currentData!.adsStats,
       );
       _dataController.add(_currentData!);
-      debugPrint('📦 PackService: Emitted updated data to stream (aid removed)');
+      debugPrint(
+        '📦 PackService: Emitted updated data to stream (aid removed)',
+      );
     }
 
     // Clear selected aid if it matches
@@ -346,33 +374,49 @@ class PackService {
 
   /// Handle pack_updated event - trigger a full refresh
   void _handlePackUpdatedFromSocket(PackUpdatedData data) {
-    debugPrint('📦 PackService: Pack updated notification received, triggering refresh');
+    debugPrint(
+      '📦 PackService: Pack updated notification received, triggering refresh',
+    );
     // Force refresh the pack data from API
-    fetchCurrentPack(forceRefresh: true).then((_) {
-      debugPrint('📦 PackService: Pack data refreshed after socket notification');
-    }).catchError((e) {
-      debugPrint('📦 PackService: Error refreshing pack data: $e');
-    });
+    fetchCurrentPack(forceRefresh: true)
+        .then((_) {
+          debugPrint(
+            '📦 PackService: Pack data refreshed after socket notification',
+          );
+        })
+        .catchError((e) {
+          debugPrint('📦 PackService: Error refreshing pack data: $e');
+        });
   }
 
   void _handleAdsStatsUpdate(AdsStatsUpdatedData data) {
     // Determine userAdsToday: if this socket event is for the current user,
     // use the userAdsToday from the event. Otherwise, keep existing value.
     int userAdsToday = _adsStats?.userAdsToday ?? 0;
-    
-    debugPrint('📦 PackService: Comparing userIds - socket: "${data.userId}", local: "$_currentUserId"');
-    
-    if (data.userId != null && data.userId == _currentUserId && data.userAdsToday != null) {
+
+    debugPrint(
+      '📦 PackService: Comparing userIds - socket: "${data.userId}", local: "$_currentUserId"',
+    );
+
+    if (data.userId != null &&
+        data.userId == _currentUserId &&
+        data.userAdsToday != null) {
       // This update is for the current user - use the new value
       userAdsToday = data.userAdsToday!;
-      debugPrint('📦 PackService: Updated userAdsToday from socket: $userAdsToday (current user matched!)');
+      debugPrint(
+        '📦 PackService: Updated userAdsToday from socket: $userAdsToday (current user matched!)',
+      );
     } else if (data.userId != null && data.userId != _currentUserId) {
       // This update is for another family member - keep our personal count
-      debugPrint('📦 PackService: Family member ${data.userId} watched an ad, keeping local userAdsToday: $userAdsToday');
+      debugPrint(
+        '📦 PackService: Family member ${data.userId} watched an ad, keeping local userAdsToday: $userAdsToday',
+      );
     } else {
-      debugPrint('📦 PackService: No userId match - userId: ${data.userId}, userAdsToday: ${data.userAdsToday}');
+      debugPrint(
+        '📦 PackService: No userId match - userId: ${data.userId}, userAdsToday: ${data.userAdsToday}',
+      );
     }
-    
+
     final newStats = FamilyAdsStats(
       familyTotalAdsToday: data.familyTotalAdsToday,
       familyMaxAdsToday: data.familyMaxAdsToday,
@@ -381,8 +425,10 @@ class PackService {
       memberCount: data.memberCount,
     );
 
-    debugPrint('📦 PackService: Emitting new stats - familyTotal: ${newStats.familyTotalAdsToday}, userAdsToday: ${newStats.userAdsToday}');
-    
+    debugPrint(
+      '📦 PackService: Emitting new stats - familyTotal: ${newStats.familyTotalAdsToday}, userAdsToday: ${newStats.userAdsToday}',
+    );
+
     _adsStats = newStats;
     _adsStatsController.add(newStats);
 
@@ -401,7 +447,9 @@ class PackService {
       _dataController.add(_currentData!);
       debugPrint('📦 PackService: Emitted updated CurrentPackData to stream');
     } else {
-      debugPrint('📦 PackService: _currentData is null, only ads stats stream updated');
+      debugPrint(
+        '📦 PackService: _currentData is null, only ads stats stream updated',
+      );
     }
 
     // Save to cache
@@ -410,7 +458,10 @@ class PackService {
 
   /// Get cached selected aid (no API call)
   SelectedAidModel? getCachedSelectedAid() {
-    return _selectedAid ?? (_currentData?.selectedAids.isNotEmpty == true ? _currentData!.selectedAids.first : null);
+    return _selectedAid ??
+        (_currentData?.selectedAids.isNotEmpty == true
+            ? _currentData!.selectedAids.first
+            : null);
   }
 
   /// Fetch current pack data from API (call only once per session)
@@ -429,13 +480,13 @@ class PackService {
         _selectedAid = data.selectedAids.first;
       }
       _hasFetchedOnce = true;
-      
+
       _dataController.add(data);
       _adsStatsController.add(data.adsStats);
-      
+
       // Save to cache for next app launch
       await _saveToCache();
-      
+
       debugPrint('📦 PackService: Fetched and cached pack data');
       return data;
     } catch (e) {
@@ -501,12 +552,12 @@ class PackService {
       await prefs.remove(_PackCacheKeys.selectedAid);
       await prefs.remove(_PackCacheKeys.adsStats);
       await prefs.remove(_PackCacheKeys.lastFetchTime);
-      
+
       _currentData = null;
       _selectedAid = null;
       _adsStats = null;
       _hasFetchedOnce = false;
-      
+
       debugPrint('📦 PackService: Cache cleared');
     } catch (e) {
       debugPrint('📦 PackService: Failed to clear cache - $e');

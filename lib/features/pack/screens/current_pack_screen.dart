@@ -933,28 +933,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
   }
 
   String _getAidWindow(SelectedAidModel aid) {
-    if (aid.windowStart == null || aid.windowEnd == null) {
-      return 'Year-round';
-    }
-    
-    final months = [
-      'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-      'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-    ];
-    
-    final startParts = aid.windowStart!.split('-');
-    final endParts = aid.windowEnd!.split('-');
-    
-    if (startParts.length >= 2 && endParts.length >= 2) {
-      final startMonth = int.parse(startParts[0]);
-      final startDay = int.parse(startParts[1]);
-      final endMonth = int.parse(endParts[0]);
-      final endDay = int.parse(endParts[1]);
-      
-      return '${months[startMonth - 1]} $startDay - ${months[endMonth - 1]} $endDay';
-    }
-    
-    return '${aid.windowStart} - ${aid.windowEnd}';
+    return aid.getWithdrawalWindowDisplay();
   }
 
   Widget _buildAdsTile(AppLocalizations l10n) {

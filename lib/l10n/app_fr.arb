@@ -1041,5 +1041,38 @@
   "transferCodeSent": "Un code de vérification a été envoyé à votre email",
   "transferringTo": "Transfert à",
   "confirmTransfer": "Confirmer le Transfert",
-  "ownershipTransferredSuccess": "Propriété transférée avec succès"
+  "ownershipTransferredSuccess": "Propriété transférée avec succès",
+
+  "withdrawWindowLabel": "Retrait du {startDate} au {endDate}",
+  "@withdrawWindowLabel": {
+    "placeholders": {
+      "startDate": {"type": "String"},
+      "endDate": {"type": "String"}
+    }
+  },
+  "aidDateLabel": "Date de l'aide: {date}",
+  "@aidDateLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "selectionDeadlineLabel": "Sélectionner avant le {date}",
+  "@selectionDeadlineLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "maxWithdrawAmount": "Max: {amount} DT",
+  "@maxWithdrawAmount": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "withdrawWindowOpen": "Fenêtre de retrait ouverte!",
+  "daysUntilWithdrawOpen": "{days} jours avant l'ouverture du retrait",
+  "@daysUntilWithdrawOpen": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  }
 }

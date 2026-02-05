@@ -149,7 +149,9 @@ class PointsEarnedData {
       newTndValue: (json['newTndValue'] ?? 0).toDouble(),
       source: json['source'],
       streakDay: json['streakDay'],
-      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
+      amount: json['amount'] != null
+          ? (json['amount'] as num).toDouble()
+          : null,
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
@@ -163,8 +165,10 @@ class AidSelectedData {
   final String aidName;
   final String aidDisplayName;
   final int maxWithdrawal;
-  final String? windowStart;
-  final String? windowEnd;
+  final String? aidStartDate;
+  final String? aidEndDate;
+  final String? withdrawalStartDate;
+  final String? withdrawalEndDate;
   final DateTime timestamp;
 
   AidSelectedData({
@@ -172,8 +176,10 @@ class AidSelectedData {
     required this.aidName,
     required this.aidDisplayName,
     required this.maxWithdrawal,
-    this.windowStart,
-    this.windowEnd,
+    this.aidStartDate,
+    this.aidEndDate,
+    this.withdrawalStartDate,
+    this.withdrawalEndDate,
     required this.timestamp,
   });
 
@@ -183,8 +189,10 @@ class AidSelectedData {
       aidName: json['aidName'] ?? '',
       aidDisplayName: json['aidDisplayName'] ?? '',
       maxWithdrawal: json['maxWithdrawal'] ?? 0,
-      windowStart: json['windowStart'],
-      windowEnd: json['windowEnd'],
+      aidStartDate: json['aidStartDate'],
+      aidEndDate: json['aidEndDate'],
+      withdrawalStartDate: json['withdrawalStartDate'],
+      withdrawalEndDate: json['withdrawalEndDate'],
       timestamp: json['timestamp'] != null
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
@@ -605,7 +613,10 @@ class SocketService {
     _socket = io.io(
       '$wsUrl/session',
       io.OptionBuilder()
-          .setTransports(['websocket', 'polling']) // Add polling as fallback for Android
+          .setTransports([
+            'websocket',
+            'polling',
+          ]) // Add polling as fallback for Android
           .setAuth({'token': accessToken})
           .enableAutoConnect()
           .enableReconnection()
@@ -683,7 +694,9 @@ class SocketService {
       debugPrint('🎁 Socket: Received points_earned event - data: $data');
       if (data is Map<String, dynamic>) {
         final pointsData = PointsEarnedData.fromJson(data);
-        debugPrint('🎁 Socket: Parsed points_earned - amount: ${pointsData.amount}, source: ${pointsData.source}');
+        debugPrint(
+          '🎁 Socket: Parsed points_earned - amount: ${pointsData.amount}, source: ${pointsData.source}',
+        );
         _pointsEarnedController.add(pointsData);
         _eventController.add(SocketEvent.pointsEarned);
       }

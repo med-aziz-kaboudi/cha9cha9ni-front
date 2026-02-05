@@ -2095,4 +2095,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ownershipTransferredSuccess => 'Propriété transférée avec succès';
+
+  @override
+  String withdrawWindowLabel(String startDate, String endDate) {
+    return 'Retrait du $startDate au $endDate';
+  }
+
+  @override
+  String aidDateLabel(String date) {
+    return 'Date de l\'aide: $date';
+  }
+
+  @override
+  String selectionDeadlineLabel(String date) {
+    return 'Sélectionner avant le $date';
+  }
+
+  @override
+  String maxWithdrawAmount(int amount) {
+    return 'Max: $amount DT';
+  }
+
+  @override
+  String get withdrawWindowOpen => 'Fenêtre de retrait ouverte!';
+
+  @override
+  String daysUntilWithdrawOpen(int days) {
+    return '$days jours avant l\'ouverture du retrait';
+  }
 }

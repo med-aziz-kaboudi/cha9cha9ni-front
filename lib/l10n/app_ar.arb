@@ -1049,5 +1049,38 @@
   "transferCodeSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
   "transferringTo": "النقل إلى",
   "confirmTransfer": "تأكيد النقل",
-  "ownershipTransferredSuccess": "تم نقل الملكية بنجاح"
+  "ownershipTransferredSuccess": "تم نقل الملكية بنجاح",
+
+  "withdrawWindowLabel": "السحب من {startDate} إلى {endDate}",
+  "@withdrawWindowLabel": {
+    "placeholders": {
+      "startDate": {"type": "String"},
+      "endDate": {"type": "String"}
+    }
+  },
+  "aidDateLabel": "تاريخ المناسبة: {date}",
+  "@aidDateLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "selectionDeadlineLabel": "اختر قبل {date}",
+  "@selectionDeadlineLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "maxWithdrawAmount": "الحد الأقصى: {amount} دت",
+  "@maxWithdrawAmount": {
+    "placeholders": {
+      "amount": {"type": "int"}
+    }
+  },
+  "withdrawWindowOpen": "نافذة السحب مفتوحة!",
+  "daysUntilWithdrawOpen": "{days} أيام حتى فتح السحب",
+  "@daysUntilWithdrawOpen": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  }
 }

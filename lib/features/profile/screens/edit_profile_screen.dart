@@ -40,7 +40,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _imagePicker = ImagePicker();
   bool _isUploadingPicture = false;
   String? _profilePictureUrl;
-  
+
   // Profile picture rate limiting (1 change per day)
   bool _canUpdateProfilePicture = true;
   DateTime? _nextAllowedProfilePictureUpdate;
@@ -88,13 +88,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   /// Load profile picture rate limit status from API
   Future<void> _loadProfilePictureRateLimitStatus() async {
     try {
-      final status = await _profileApiService.getProfilePictureRateLimitStatus();
+      final status = await _profileApiService
+          .getProfilePictureRateLimitStatus();
       if (mounted) {
         setState(() {
           _canUpdateProfilePicture = status.canUpdate;
           _nextAllowedProfilePictureUpdate = status.nextAllowedUpdate;
         });
-        
+
         // Start timer to update UI if rate limited
         if (!status.canUpdate && status.nextAllowedUpdate != null) {
           _startProfilePictureRateLimitTimer();
@@ -108,7 +109,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   /// Start timer to update remaining time for profile picture rate limit
   void _startProfilePictureRateLimitTimer() {
     _profilePictureRateLimitTimer?.cancel();
-    _profilePictureRateLimitTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+    _profilePictureRateLimitTimer = Timer.periodic(const Duration(minutes: 1), (
+      _,
+    ) {
       if (mounted) {
         if (_nextAllowedProfilePictureUpdate != null &&
             DateTime.now().isAfter(_nextAllowedProfilePictureUpdate!)) {
@@ -128,7 +131,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   /// Get remaining time string for profile picture rate limit
   String get _profilePictureRateLimitRemainingTime {
     if (_nextAllowedProfilePictureUpdate == null) return '';
-    final remaining = _nextAllowedProfilePictureUpdate!.difference(DateTime.now());
+    final remaining = _nextAllowedProfilePictureUpdate!.difference(
+      DateTime.now(),
+    );
     if (remaining.isNegative) return '';
     final hours = remaining.inHours;
     final mins = remaining.inMinutes % 60;
@@ -209,11 +214,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
     }
-    
+
     // First, load from cache for instant display
     final cachedProfile = await _tokenStorage.getCachedUserProfile();
     final hasCachedData = cachedProfile['email'] != null;
-    
+
     if (hasCachedData && !fromRefresh) {
       // Show cached data immediately (no loading spinner)
       setState(() {
@@ -223,22 +228,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _lastNameController.text = cachedProfile['lastName'] ?? '';
         _emailController.text = cachedProfile['email'] ?? '';
         _profilePictureUrl = cachedProfile['profilePictureUrl'];
-        
+
         // Handle phone - strip +216 prefix if present
         String phone = cachedProfile['phone'] ?? '';
         if (phone.startsWith('+216')) {
           phone = phone.substring(4);
         }
         _phoneController.text = phone;
-        
+
         debugPrint('📱 Phone from cache: ${cachedProfile['phone']}');
-        debugPrint('📸 Profile picture from cache: ${cachedProfile['profilePictureUrl']}');
+        debugPrint(
+          '📸 Profile picture from cache: ${cachedProfile['profilePictureUrl']}',
+        );
       });
     }
 
     // Check if data is fresh (fetched within last 60 seconds) - skip for manual refresh
     if (!fromRefresh) {
-      final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 60);
+      final isFresh = await _tokenStorage.isProfileDataFresh(
+        thresholdSeconds: 60,
+      );
       if (isFresh && hasCachedData) {
         debugPrint('📦 Profile data is fresh, skipping API fetch');
         return;
@@ -255,10 +264,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       final profile = await _profileApiService.getProfile();
-      
+
       debugPrint('📱 Phone from API: ${profile.phone}');
       debugPrint('📸 Profile picture from API: ${profile.profilePictureUrl}');
-      
+
       // Save to cache for next time
       await _tokenStorage.saveUserProfile(
         firstName: profile.firstName,
@@ -268,20 +277,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         phone: profile.phone,
         profilePictureUrl: profile.profilePictureUrl,
       );
-      
+
       if (mounted) {
         setState(() {
           _profile = profile;
           _isLoading = false;
           _profilePictureUrl = profile.profilePictureUrl;
-          
+
           // Fill all name fields with their values (empty if null)
           _fullNameController.text = profile.fullName ?? '';
           _firstNameController.text = profile.firstName ?? '';
           _lastNameController.text = profile.lastName ?? '';
-          
+
           _emailController.text = profile.email;
-          
+
           // Handle phone - strip +216 prefix if present
           String phone = profile.phone ?? '';
           if (phone.startsWith('+216')) {
@@ -307,14 +316,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _saveProfile() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     // Validate phone number if provided (must be exactly 8 digits)
     final phone = _phoneController.text.trim();
     if (phone.isNotEmpty && phone.length != 8) {
       AppToast.error(context, l10n.phoneNumberMustBe8Digits);
       return;
     }
-    
+
     // Check if phone contains only digits
     if (phone.isNotEmpty && !RegExp(r'^[0-9]{8}$').hasMatch(phone)) {
       AppToast.error(context, l10n.phoneNumberMustBe8Digits);
@@ -325,9 +334,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final updatedProfile = await _profileApiService.updateProfile(
-        fullName: _fullNameController.text.trim().isEmpty ? null : _fullNameController.text.trim(),
-        firstName: _firstNameController.text.trim().isEmpty ? null : _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim().isEmpty ? null : _lastNameController.text.trim(),
+        fullName: _fullNameController.text.trim().isEmpty
+            ? null
+            : _fullNameController.text.trim(),
+        firstName: _firstNameController.text.trim().isEmpty
+            ? null
+            : _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim().isEmpty
+            ? null
+            : _lastNameController.text.trim(),
         phone: phone.isEmpty ? null : '+216$phone',
       );
 
@@ -362,7 +377,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _sendVerificationCodeToCurrentEmail() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _isSendingCode = true);
-    
+
     try {
       await _profileApiService.sendEmailChangeCode();
       _startCountdown();
@@ -384,14 +399,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _verifyCurrentEmailCode() async {
     final l10n = AppLocalizations.of(context)!;
     final code = _verificationCodeController.text.trim();
-    
+
     if (code.length != 6) {
       AppToast.error(context, l10n.enterAllDigits);
       return;
     }
 
     setState(() => _isSendingCode = true);
-    
+
     try {
       await _profileApiService.verifyEmailChangeCode(code);
       // Reset countdown timer so user can send to new email immediately
@@ -417,14 +432,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _sendVerificationCodeToNewEmail() async {
     final l10n = AppLocalizations.of(context)!;
     final newEmail = _newEmailController.text.trim();
-    
+
     if (newEmail.isEmpty || !newEmail.contains('@')) {
       AppToast.error(context, l10n.invalidEmailFormat);
       return;
     }
 
     setState(() => _isSendingCode = true);
-    
+
     try {
       await _profileApiService.sendNewEmailCode(newEmail);
       _startCountdown();
@@ -446,14 +461,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _verifyNewEmailAndChange() async {
     final l10n = AppLocalizations.of(context)!;
     final code = _verificationCodeController.text.trim();
-    
+
     if (code.length != 6) {
       AppToast.error(context, l10n.enterAllDigits);
       return;
     }
 
     setState(() => _isSendingCode = true);
-    
+
     try {
       final updatedProfile = await _profileApiService.confirmEmailChange(
         _newEmailController.text.trim(),
@@ -496,7 +511,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -515,11 +530,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(color: AppColors.primary),
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
                       )
                     : _errorMessage != null
-                        ? _buildErrorState(l10n)
-                        : _buildProfileForm(l10n),
+                    ? _buildErrorState(l10n)
+                    : _buildProfileForm(l10n),
               ),
             ],
           ),
@@ -531,7 +548,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildAppBar(AppLocalizations l10n) {
     final locale = Localizations.localeOf(context);
     final isRTL = locale.languageCode == 'ar';
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
@@ -600,10 +617,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Text(
               _errorMessage ?? l10n.anErrorOccurred,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -611,7 +625,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -637,7 +654,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 _buildAvatar(),
                 const SizedBox(height: 32),
-                
+
                 // Full Name field - always shown and editable
                 _buildTextField(
                   label: l10n.fullName,
@@ -645,7 +662,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isEditable: true,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // First Name field - always shown and editable
                 _buildTextField(
                   label: l10n.firstNameLabel,
@@ -653,7 +670,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isEditable: true,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Last Name field - always shown and editable
                 _buildTextField(
                   label: l10n.lastNameLabel,
@@ -661,18 +678,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isEditable: true,
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Email field with edit functionality
                 _buildEmailField(l10n),
                 const SizedBox(height: 16),
-                
+
                 // Phone field
                 _buildPhoneField(l10n),
               ],
             ),
           ),
         ),
-        
+
         // Save button at bottom (only if not editing email)
         if (!_isEditingEmail)
           Positioned(
@@ -685,10 +702,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    AppColors.gray.withValues(alpha: 0),
-                    AppColors.gray,
-                  ],
+                  colors: [AppColors.gray.withValues(alpha: 0), AppColors.gray],
                 ),
               ),
               child: _buildSaveButton(l10n),
@@ -700,7 +714,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildAvatar() {
     final initials = _getInitials();
-    
+
     return Center(
       child: GestureDetector(
         onTap: _isUploadingPicture ? null : _showImagePickerOptions,
@@ -711,11 +725,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                gradient: _profilePictureUrl == null ? const LinearGradient(
-                  begin: Alignment.centerRight,
-                  end: Alignment.centerLeft,
-                  colors: [AppColors.secondary, AppColors.secondary],
-                ) : null,
+                gradient: _profilePictureUrl == null
+                    ? const LinearGradient(
+                        begin: Alignment.centerRight,
+                        end: Alignment.centerLeft,
+                        colors: [AppColors.secondary, AppColors.secondary],
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   BoxShadow(
@@ -822,7 +838,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _showImagePickerOptions() {
     final l10n = AppLocalizations.of(context)!;
     final hasPhoto = _profilePictureUrl != null;
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -848,7 +864,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Title
                 Text(
                   l10n.changeProfilePhoto,
@@ -859,11 +875,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Rate limit warning if applicable
                 if (!_canUpdateProfilePicture) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade50,
                       borderRadius: BorderRadius.circular(10),
@@ -871,11 +890,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.timer_outlined, color: Colors.orange.shade700, size: 20),
+                        Icon(
+                          Icons.timer_outlined,
+                          color: Colors.orange.shade700,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            l10n.profilePictureRateLimitWarning(_profilePictureRateLimitRemainingTime),
+                            l10n.profilePictureRateLimitWarning(
+                              _profilePictureRateLimitRemainingTime,
+                            ),
                             style: TextStyle(
                               color: Colors.orange.shade800,
                               fontSize: 13,
@@ -888,13 +913,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                
+
                 if (!_canUpdateProfilePicture) ...[
                   const SizedBox(height: 8),
                 ] else ...[
                   const SizedBox(height: 12),
                 ],
-                
+
                 // Show add photo options only if no photo OR if can update
                 if (!hasPhoto && _canUpdateProfilePicture) ...[
                   // Camera option
@@ -909,7 +934,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  
+
                   // Gallery option
                   _buildPhotoOptionTile(
                     icon: Icons.photo_library_rounded,
@@ -922,7 +947,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     },
                   ),
                 ],
-                
+
                 // Show remove option if has photo AND can update
                 if (hasPhoto && _canUpdateProfilePicture) ...[
                   _buildPhotoOptionTile(
@@ -936,9 +961,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     },
                   ),
                 ],
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Cancel button
                 SizedBox(
                   width: double.infinity,
@@ -972,27 +997,137 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   /// Show confirmation dialog before removing profile picture
   void _confirmRemoveProfilePicture() {
     final l10n = AppLocalizations.of(context)!;
-    
-    showDialog(
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(l10n.removePhoto),
-        content: Text(l10n.removeProfilePictureConfirmation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _removeProfilePicture();
-            },
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFE53935)),
-            child: Text(l10n.remove),
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          12,
+          24,
+          MediaQuery.of(context).padding.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Warning icon
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE53935).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: Color(0xFFE53935),
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Title
+            Text(
+              l10n.removePhoto,
+              style: const TextStyle(
+                color: Color(0xFF13123A),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Description
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                l10n.removeProfilePictureConfirmation,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Remove button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _removeProfilePicture();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE53935),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.delete_rounded, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.remove,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Cancel button
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: Colors.grey[300]!),
+                  ),
+                ),
+                child: Text(
+                  l10n.cancel,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1014,10 +1149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: color.withValues(alpha: 0.15),
-              width: 1,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
           ),
           child: Row(
             children: [
@@ -1028,11 +1160,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   color: color,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                child: Icon(icon, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -1050,10 +1178,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                   ],
                 ),
@@ -1072,12 +1197,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     try {
       // Pick image with proper error handling
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 1024,  // Allow larger size for better cropping
+        maxWidth: 1024, // Allow larger size for better cropping
         maxHeight: 1024,
         imageQuality: 90,
         requestFullMetadata: false, // Helps with simulator issues
@@ -1093,7 +1218,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       // Crop the image
       final croppedFile = await _cropImage(pickedFile.path);
-      
+
       // User cancelled cropping
       if (croppedFile == null) {
         debugPrint('📸 Image cropper: User cancelled');
@@ -1104,12 +1229,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       // Check if widget is still mounted before setState
       if (!mounted) return;
-      
+
       setState(() => _isUploadingPicture = true);
 
       // Read the file bytes for upload
       final bytes = await croppedFile.readAsBytes();
-      
+
       if (bytes.isEmpty) {
         throw Exception('Failed to read image file');
       }
@@ -1117,16 +1242,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       debugPrint('📸 Image size: ${bytes.length} bytes');
 
       final userId = await _tokenStorage.getUserId();
-      final fileName = 'profile_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      
+      final fileName =
+          'profile_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final supabase = Supabase.instance.client;
-      
+
       // Upload to the profile-pictures bucket using bytes
       final uploadPath = 'public/$fileName';
       await supabase.storage
           .from('profile-pictures')
           .uploadBinary(
-            uploadPath, 
+            uploadPath,
             bytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg',
@@ -1162,7 +1288,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
 
       // Update the profile picture URL in backend
-      final updatedProfile = await _profileApiService.updateProfilePicture(publicUrl);
+      final updatedProfile = await _profileApiService.updateProfilePicture(
+        publicUrl,
+      );
 
       if (mounted) {
         setState(() {
@@ -1170,27 +1298,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _isUploadingPicture = false;
           // Update rate limit status - can't change again for 24h
           _canUpdateProfilePicture = false;
-          _nextAllowedProfilePictureUpdate = DateTime.now().add(const Duration(hours: 24));
+          _nextAllowedProfilePictureUpdate = DateTime.now().add(
+            const Duration(hours: 24),
+          );
         });
         _startProfilePictureRateLimitTimer();
-        
+
         AppToast.success(context, l10n.profilePictureUpdated);
       }
     } catch (e, stackTrace) {
       debugPrint('📸 Error picking/uploading image: $e');
       debugPrint('📸 Stack trace: $stackTrace');
-      
+
       if (mounted) {
         setState(() => _isUploadingPicture = false);
         String errorMessage = e.toString().replaceAll('Exception: ', '');
-        
+
         // Provide user-friendly error messages
-        if (errorMessage.contains('permission') || errorMessage.contains('denied')) {
+        if (errorMessage.contains('permission') ||
+            errorMessage.contains('denied')) {
           errorMessage = l10n.photoPermissionDenied;
-        } else if (errorMessage.contains('storage') || errorMessage.contains('bucket')) {
+        } else if (errorMessage.contains('storage') ||
+            errorMessage.contains('bucket')) {
           errorMessage = l10n.uploadFailed;
         }
-        
+
         AppToast.error(context, errorMessage);
       }
     }
@@ -1231,17 +1363,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _removeProfilePicture() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (!mounted) return;
     setState(() => _isUploadingPicture = true);
-    
+
     try {
       // Get the current profile picture URL before removal (to delete from Supabase)
       final oldUrl = _profilePictureUrl;
-      
+
       // Call API to remove profile picture
       final updatedProfile = await _profileApiService.removeProfilePicture();
-      
+
       // Try to delete the old image from Supabase storage
       if (oldUrl != null && oldUrl.contains('supabase.co/storage')) {
         try {
@@ -1255,29 +1387,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             await Supabase.instance.client.storage
                 .from('profile-pictures')
                 .remove([filePath]);
-            debugPrint('📸 Deleted old profile picture from storage: $filePath');
+            debugPrint(
+              '📸 Deleted old profile picture from storage: $filePath',
+            );
           }
         } catch (e) {
           // Ignore storage deletion errors - the main operation succeeded
           debugPrint('📸 Warning: Could not delete old image from storage: $e');
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _profilePictureUrl = updatedProfile.profilePictureUrl;
           _isUploadingPicture = false;
           // Update rate limit status - can't change again for 24h
           _canUpdateProfilePicture = false;
-          _nextAllowedProfilePictureUpdate = DateTime.now().add(const Duration(hours: 24));
+          _nextAllowedProfilePictureUpdate = DateTime.now().add(
+            const Duration(hours: 24),
+          );
         });
         _startProfilePictureRateLimitTimer();
-        
+
         AppToast.success(context, l10n.profilePictureRemoved);
       }
     } catch (e) {
       debugPrint('📸 Error removing profile picture: $e');
-      
+
       if (mounted) {
         setState(() => _isUploadingPicture = false);
         String errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -1296,10 +1432,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
       return fullName[0].toUpperCase();
     }
-    
+
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
-    
+
     if (firstName.isNotEmpty && lastName.isNotEmpty) {
       return '${firstName[0]}${lastName[0]}'.toUpperCase();
     } else if (firstName.isNotEmpty) {
@@ -1382,7 +1518,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             GestureDetector(
               onTap: () => setState(() => _isEditingEmail = true),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -1418,10 +1557,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFFF5F5F5),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFFE0E0E6),
-              width: 1,
-            ),
+            border: Border.all(color: const Color(0xFFE0E0E6), width: 1),
           ),
           child: Align(
             alignment: Alignment.centerLeft,
@@ -1505,24 +1641,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Expanded(
                     child: Text(
                       _emailController.text,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey[700], fontSize: 14),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 12),
-            
+
             if (!_isVerifyingCurrentEmail) ...[
               Text(
                 l10n.verifyCurrentEmailDesc,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 12),
               _buildActionButton(
@@ -1533,10 +1663,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ] else ...[
               Text(
                 l10n.enterCodeSentTo(_emailController.text),
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 12),
               _buildCodeInput(),
@@ -1556,7 +1683,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ],
           ]
-          
           // Step 2: Enter and verify new email
           else ...[
             // Success indicator for step 1
@@ -1582,14 +1708,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             if (!_isVerifyingNewEmail) ...[
               Text(
                 l10n.enterNewEmail,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 8),
               Container(
@@ -1603,10 +1726,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: TextField(
                   controller: _newEmailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(
-                    color: AppColors.dark,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: AppColors.dark, fontSize: 14),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: l10n.newEmailPlaceholder,
@@ -1629,7 +1749,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.email_outlined, color: AppColors.primary, size: 20),
+                    Icon(
+                      Icons.email_outlined,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -1647,10 +1771,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 12),
               Text(
                 l10n.enterCodeSentTo(_newEmailController.text),
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
               ),
               const SizedBox(height: 12),
               _buildCodeInput(),
@@ -1689,9 +1810,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
         maxLength: 6,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-        ],
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         style: const TextStyle(
           color: AppColors.dark,
           fontSize: 20,
@@ -1722,7 +1841,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       child: Container(
         height: 46,
         decoration: BoxDecoration(
-          color: isLoading ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary,
+          color: isLoading
+              ? AppColors.primary.withValues(alpha: 0.6)
+              : AppColors.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
@@ -1750,14 +1871,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildResendButton(AppLocalizations l10n, VoidCallback onResend) {
     final canResend = _resendCountdown == 0;
-    
+
     return GestureDetector(
       onTap: canResend ? onResend : null,
       child: Container(
         height: 46,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: canResend ? AppColors.secondary.withValues(alpha: 0.1) : Colors.grey[100],
+          color: canResend
+              ? AppColors.secondary.withValues(alpha: 0.1)
+              : Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: canResend ? AppColors.secondary : Colors.grey[300]!,
@@ -1797,10 +1920,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.secondary,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.secondary, width: 1),
           ),
           child: Row(
             children: [
@@ -1810,10 +1930,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: const BoxDecoration(
                   border: Border(
-                    right: BorderSide(
-                      color: Color(0xFFE0E0E6),
-                      width: 1,
-                    ),
+                    right: BorderSide(color: Color(0xFFE0E0E6), width: 1),
                   ),
                 ),
                 child: Row(
@@ -1852,10 +1969,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                     hintText: '12 345 678',
-                    hintStyle: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
+                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                   ),
                 ),
               ),
@@ -1901,8 +2015,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           gradient: LinearGradient(
             begin: Alignment.centerRight,
             end: Alignment.centerLeft,
-            colors: _isSaving 
-                ? [AppColors.primary.withValues(alpha: 0.6), AppColors.primary.withValues(alpha: 0.6)]
+            colors: _isSaving
+                ? [
+                    AppColors.primary.withValues(alpha: 0.6),
+                    AppColors.primary.withValues(alpha: 0.6),
+                  ]
                 : [AppColors.primary, AppColors.primary],
           ),
           borderRadius: BorderRadius.circular(14),
@@ -1945,43 +2062,32 @@ class TunisiaFlagPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final redPaint = Paint()..color = const Color(0xFFE70013);
     final whitePaint = Paint()..color = Colors.white;
-    
+
     // Red background
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      redPaint,
-    );
-    
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), redPaint);
+
     // White circle in center
     final centerX = size.width / 2;
     final centerY = size.height / 2;
     final circleRadius = size.height * 0.35;
-    
-    canvas.drawCircle(
-      Offset(centerX, centerY),
-      circleRadius,
-      whitePaint,
-    );
-    
+
+    canvas.drawCircle(Offset(centerX, centerY), circleRadius, whitePaint);
+
     // Red crescent (using two circles)
     final crescentOuterRadius = circleRadius * 0.85;
     final crescentInnerRadius = circleRadius * 0.65;
     final crescentOffset = circleRadius * 0.2;
-    
+
     // Draw outer red circle for crescent
-    canvas.drawCircle(
-      Offset(centerX, centerY),
-      crescentOuterRadius,
-      redPaint,
-    );
-    
+    canvas.drawCircle(Offset(centerX, centerY), crescentOuterRadius, redPaint);
+
     // Cut out inner white circle to form crescent
     canvas.drawCircle(
       Offset(centerX + crescentOffset, centerY),
       crescentInnerRadius,
       whitePaint,
     );
-    
+
     // Red star (5-pointed)
     _drawStar(
       canvas,
@@ -1994,16 +2100,16 @@ class TunisiaFlagPainter extends CustomPainter {
   void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     final innerRadius = radius * 0.4;
-    
+
     for (int i = 0; i < 5; i++) {
       final outerAngle = (i * 72 - 90) * math.pi / 180;
       final innerAngle = ((i * 72) + 36 - 90) * math.pi / 180;
-      
+
       final outerX = center.dx + radius * math.cos(outerAngle);
       final outerY = center.dy + radius * math.sin(outerAngle);
       final innerX = center.dx + innerRadius * math.cos(innerAngle);
       final innerY = center.dy + innerRadius * math.sin(innerAngle);
-      
+
       if (i == 0) {
         path.moveTo(outerX, outerY);
       } else {

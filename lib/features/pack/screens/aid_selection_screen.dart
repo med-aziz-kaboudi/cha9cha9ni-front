@@ -119,7 +119,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
     if (_isSelecting) return;
 
     if (_isAidSelected(aid)) {
-      AppToast.warning(context, AppLocalizations.of(context)!.aidAlreadySelected);
+      AppToast.warning(
+        context,
+        AppLocalizations.of(context)!.aidAlreadySelected,
+      );
       return;
     }
 
@@ -146,8 +149,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
         aidName: aid.name,
         aidDisplayName: aid.displayName,
         maxWithdrawal: aid.maxWithdrawal,
-        windowStart: aid.windowStart,
-        windowEnd: aid.windowEnd,
+        aidStartDate: aid.aidStartDate,
+        aidEndDate: aid.aidEndDate,
+        withdrawalStartDate: aid.withdrawalStartDate,
+        withdrawalEndDate: aid.withdrawalEndDate,
         status: 'selected',
       );
 
@@ -388,23 +393,6 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
     );
   }
 
-  String _formatWindow(String start, String end) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    final startParts = start.split('-');
-    final endParts = end.split('-');
-    if (startParts.length >= 2 && endParts.length >= 2) {
-      final startMonth = int.parse(startParts[0]);
-      final startDay = int.parse(startParts[1]);
-      final endMonth = int.parse(endParts[0]);
-      final endDay = int.parse(endParts[1]);
-      return '${months[startMonth - 1]} $startDay - ${months[endMonth - 1]} $endDay';
-    }
-    return '$start - $end';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -430,7 +418,9 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(
-                        child: CircularProgressIndicator(color: AppColors.primary),
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
                       )
                     : _buildContent(l10n, remainingSelections),
               ),
@@ -506,7 +496,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
 
           // Selected aids section
           if (_selectedAids.isNotEmpty) ...[
-            _buildSectionHeader(l10n.yourSelectedAids, Icons.check_circle_rounded, AppColors.secondary),
+            _buildSectionHeader(
+              l10n.yourSelectedAids,
+              Icons.check_circle_rounded,
+              AppColors.secondary,
+            ),
             const SizedBox(height: 14),
             ..._selectedAids.map((selected) {
               final aid = _allAids.firstWhere(
@@ -528,16 +522,22 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
           ],
 
           // Available aids section
-          _buildSectionHeader(l10n.availableAids, Icons.card_giftcard_rounded, AppColors.primary),
+          _buildSectionHeader(
+            l10n.availableAids,
+            Icons.card_giftcard_rounded,
+            AppColors.primary,
+          ),
           const SizedBox(height: 14),
 
           if (_allAids.isEmpty)
             _buildEmptyState(l10n)
           else
-            ..._allAids.map((aid) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _buildAidCard(aid, l10n, remainingSelections > 0),
-            )),
+            ..._allAids.map(
+              (aid) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildAidCard(aid, l10n, remainingSelections > 0),
+              ),
+            ),
         ],
       ),
     );
@@ -591,7 +591,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: remaining > 0
                             ? const Color(0xFF10B981).withOpacity(0.1)
@@ -599,9 +602,14 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        l10n.selectionsRemaining(remaining, widget.maxAidsSelectable),
+                        l10n.selectionsRemaining(
+                          remaining,
+                          widget.maxAidsSelectable,
+                        ),
                         style: TextStyle(
-                          color: remaining > 0 ? const Color(0xFF10B981) : Colors.orange[700],
+                          color: remaining > 0
+                              ? const Color(0xFF10B981)
+                              : Colors.orange[700],
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -624,7 +632,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lightbulb_outline_rounded, color: Colors.amber[700], size: 18),
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  color: Colors.amber[700],
+                  size: 18,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -651,7 +663,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.trending_up_rounded, color: AppColors.secondary, size: 18),
+                Icon(
+                  Icons.trending_up_rounded,
+                  color: AppColors.secondary,
+                  size: 18,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -691,7 +707,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
     );
   }
 
-  Widget _buildSelectedAidCard(AidModel aid, SelectedAidModel selected, AppLocalizations l10n) {
+  Widget _buildSelectedAidCard(
+    AidModel aid,
+    SelectedAidModel selected,
+    AppLocalizations l10n,
+  ) {
     final color = _getAidColor(aid.name);
 
     return Container(
@@ -700,7 +720,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.secondary.withOpacity(0.3), width: 2),
+        border: Border.all(
+          color: AppColors.secondary.withOpacity(0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withOpacity(0.08),
@@ -738,7 +761,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.secondary,
                         borderRadius: BorderRadius.circular(20),
@@ -746,7 +772,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check, color: Colors.white, size: 12),
+                          const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             l10n.selected,
@@ -763,7 +793,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.gray,
                     borderRadius: BorderRadius.circular(10),
@@ -795,21 +828,60 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                     ],
                   ),
                 ),
-                if (selected.windowStart != null && selected.windowEnd != null) ...[
+                if (selected.withdrawalStartDate != null &&
+                    selected.withdrawalEndDate != null) ...[
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey[400]),
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 14,
+                        color: Colors.grey[400],
+                      ),
                       const SizedBox(width: 6),
-                      Text(
-                        _formatWindow(selected.windowStart!, selected.windowEnd!),
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          l10n.withdrawWindowLabel(
+                            selected
+                                .getWithdrawalWindowDisplay()
+                                .split(' - ')
+                                .first,
+                            selected
+                                .getWithdrawalWindowDisplay()
+                                .split(' - ')
+                                .last,
+                          ),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  // Show if withdrawal window is open
+                  if (selected.isWithinWithdrawalWindow)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 14,
+                            color: AppColors.secondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.withdrawWindowOpen,
+                            style: TextStyle(
+                              color: AppColors.secondary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ],
             ),
@@ -819,7 +891,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
     );
   }
 
-  Widget _buildAidCard(AidModel aid, AppLocalizations l10n, bool canSelectMore) {
+  Widget _buildAidCard(
+    AidModel aid,
+    AppLocalizations l10n,
+    bool canSelectMore,
+  ) {
     final isSelected = _isAidSelected(aid);
     final color = _getAidColor(aid.name);
     final canSelect = !isSelected && canSelectMore;
@@ -867,29 +943,88 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                         Text(
                           aid.displayName,
                           style: TextStyle(
-                            color: isSelected ? AppColors.dark.withOpacity(0.4) : AppColors.dark,
+                            color: isSelected
+                                ? AppColors.dark.withOpacity(0.4)
+                                : AppColors.dark,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        if (aid.windowStart != null && aid.windowEnd != null) ...[
+                        // Show aid dates
+                        if (aid.aidStartDate != null) ...[
                           const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.event_rounded,
+                                size: 12,
+                                color: isSelected
+                                    ? Colors.grey[300]
+                                    : color.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                aid.getAidDatesDisplay(),
+                                style: TextStyle(
+                                  color: isSelected ? Colors.grey[400] : color,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        // Show withdrawal window with "Withdraw from ... to ..."
+                        if (aid.withdrawalStartDate != null &&
+                            aid.withdrawalEndDate != null) ...[
+                          const SizedBox(height: 2),
                           Row(
                             children: [
                               Icon(
                                 Icons.calendar_today_rounded,
                                 size: 12,
-                                color: isSelected ? Colors.grey[300] : Colors.grey[400],
+                                color: isSelected
+                                    ? Colors.grey[300]
+                                    : Colors.grey[400],
                               ),
                               const SizedBox(width: 5),
-                              Text(
-                                _formatWindow(aid.windowStart!, aid.windowEnd!),
-                                style: TextStyle(
-                                  color: isSelected ? Colors.grey[400] : Colors.grey[500],
-                                  fontSize: 12,
+                              Expanded(
+                                child: Text(
+                                  l10n.withdrawWindowLabel(
+                                    aid
+                                        .getWithdrawalWindowDisplay()
+                                        .split(' - ')
+                                        .first,
+                                    aid
+                                        .getWithdrawalWindowDisplay()
+                                        .split(' - ')
+                                        .last,
+                                  ),
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ),
                             ],
+                          ),
+                        ],
+                        // Show days until aid or withdrawal window status
+                        if (!isSelected && aid.daysUntilAid != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            aid.isWithinWindow
+                                ? l10n.withdrawWindowOpen
+                                : aid.getDaysUntilAidDisplay(),
+                            style: TextStyle(
+                              color: aid.isWithinWindow
+                                  ? AppColors.secondary
+                                  : Colors.orange[700],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ],
@@ -897,7 +1032,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                   ),
                   if (isSelected)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -905,7 +1043,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 14),
+                          const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFF10B981),
+                            size: 14,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             l10n.selected,
@@ -942,7 +1084,9 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                         Text(
                           l10n.withdrawalLimit,
                           style: TextStyle(
-                            color: isSelected ? Colors.grey[400] : Colors.grey[600],
+                            color: isSelected
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -955,7 +1099,9 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                             Text(
                               '${aid.maxWithdrawal}',
                               style: TextStyle(
-                                color: isSelected ? Colors.grey[400] : AppColors.dark,
+                                color: isSelected
+                                    ? Colors.grey[400]
+                                    : AppColors.dark,
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -964,7 +1110,9 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                             Text(
                               'DT',
                               style: TextStyle(
-                                color: isSelected ? Colors.grey[400] : Colors.grey[600],
+                                color: isSelected
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -978,7 +1126,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                     GestureDetector(
                       onTap: _isSelecting ? null : () => _selectAid(aid),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.secondary,
                           borderRadius: BorderRadius.circular(10),
@@ -1004,7 +1155,10 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                     )
                   else if (!isSelected && !canSelect)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(10),
@@ -1044,11 +1198,7 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.inbox_rounded,
-            size: 64,
-            color: Colors.grey[300],
-          ),
+          Icon(Icons.inbox_rounded, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
           Text(
             'No aids available',
@@ -1070,7 +1220,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.refresh_rounded, color: AppColors.primary, size: 20),
+                  Icon(
+                    Icons.refresh_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Retry',
