@@ -522,6 +522,23 @@ class FamilyApiService {
     }
   }
 
+  /// Resend verification code for pending transfer
+  Future<Map<String, dynamic>> resendTransferCode(String requestId) async {
+    final headers = await _getHeaders();
+    
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/family/transfer/$requestId/resend'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return _safeJsonDecode(response);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to resend code');
+    }
+  }
+
   /// Cancel a pending transfer request
   Future<void> cancelTransfer(String requestId) async {
     final headers = await _getHeaders();

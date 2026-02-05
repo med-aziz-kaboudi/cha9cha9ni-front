@@ -131,7 +131,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
   StreamSubscription<RemovalInitiatedData>? _removalInitiatedSubscription;
   StreamSubscription<RemovalCancelledData>? _removalCancelledSubscription;
-  StreamSubscription<OwnershipTransferredData>? _ownershipTransferredSubscription;
+  StreamSubscription<OwnershipTransferredData>?
+  _ownershipTransferredSubscription;
 
   // Leave family rate limiting
   static const String _leaveAttemptKey = 'leave_family_attempts';
@@ -180,12 +181,14 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   Future<void> _fetchProfileForSidebar() async {
     try {
       // Check if profile data is fresh
-      final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 300);
+      final isFresh = await _tokenStorage.isProfileDataFresh(
+        thresholdSeconds: 300,
+      );
       if (isFresh) {
         debugPrint('📦 Profile data is fresh, skipping API fetch for sidebar');
         return;
       }
-      
+
       // Fetch profile in background - this will save profilePictureUrl to storage
       final profileService = ProfileApiService();
       await profileService.getProfile();
@@ -340,7 +343,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     // Also listen to socket for realtime updates
     _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
         .listen((data) {
-          debugPrint('🎁 Socket: Points earned - new total: ${data.newTotalPoints}');
+          debugPrint(
+            '🎁 Socket: Points earned - new total: ${data.newTotalPoints}',
+          );
           if (mounted) {
             setState(() {
               _familyPoints = data.newTotalPoints;
@@ -529,31 +534,33 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   void _listenToProfilePictureUpdates() {
-    _profilePictureSubscription =
-        _socketService.onProfilePictureUpdated.listen((data) {
-      if (mounted) {
-        debugPrint('📸 Profile picture updated for member: ${data.memberId}');
-        // Update the member in our local list
-        final index = _familyMembers.indexWhere((m) => m.id == data.memberId);
-        if (index != -1) {
-          setState(() {
-            _familyMembers[index] = _familyMembers[index].copyWith(
-              profilePictureUrl: data.profilePictureUrl,
-            );
-            // Also update owner picture if this is the owner
-            if (_familyMembers[index].isOwner) {
-              _familyOwnerProfilePictureUrl = data.profilePictureUrl;
-            }
-          });
+    _profilePictureSubscription = _socketService.onProfilePictureUpdated.listen(
+      (data) {
+        if (mounted) {
+          debugPrint('📸 Profile picture updated for member: ${data.memberId}');
+          // Update the member in our local list
+          final index = _familyMembers.indexWhere((m) => m.id == data.memberId);
+          if (index != -1) {
+            setState(() {
+              _familyMembers[index] = _familyMembers[index].copyWith(
+                profilePictureUrl: data.profilePictureUrl,
+              );
+              // Also update owner picture if this is the owner
+              if (_familyMembers[index].isOwner) {
+                _familyOwnerProfilePictureUrl = data.profilePictureUrl;
+              }
+            });
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   /// Listen to profile updates from family members (name, phone, etc.)
   void _listenToProfileUpdates() {
-    _profileUpdatedSubscription =
-        _socketService.onProfileUpdated.listen((data) {
+    _profileUpdatedSubscription = _socketService.onProfileUpdated.listen((
+      data,
+    ) {
       if (mounted) {
         debugPrint('👤 Profile updated for member: ${data.memberId}');
         // Update the member in our local list
@@ -562,7 +569,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           setState(() {
             _familyMembers[index] = _familyMembers[index].copyWith(
               name: data.displayName,
-              profilePictureUrl: data.profilePictureUrl ?? _familyMembers[index].profilePictureUrl,
+              profilePictureUrl:
+                  data.profilePictureUrl ??
+                  _familyMembers[index].profilePictureUrl,
             );
             // Also update owner name if this is the owner
             if (_familyMembers[index].isOwner) {
@@ -579,15 +588,17 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   /// Listen to real-time removal initiated events (when owner confirms removal)
   void _listenToRemovalInitiated() {
-    _removalInitiatedSubscription =
-        _socketService.onRemovalInitiated.listen((data) {
+    _removalInitiatedSubscription = _socketService.onRemovalInitiated.listen((
+      data,
+    ) {
       if (mounted) {
         debugPrint('⚠️ Removal initiated by owner: ${data.ownerName}');
         // Reload removal requests to show the pending removal banner immediately
         _loadRemovalRequests();
         // Show a toast notification
         final l10n = AppLocalizations.of(context);
-        final message = l10n?.ownerRequestedRemoval(data.ownerName) ??
+        final message =
+            l10n?.ownerRequestedRemoval(data.ownerName) ??
             '${data.ownerName} has requested to remove you from the family';
         AppToast.warning(context, message);
       }
@@ -596,8 +607,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   /// Listen to real-time removal cancelled events (when owner cancels removal request)
   void _listenToRemovalCancelled() {
-    _removalCancelledSubscription =
-        _socketService.onRemovalCancelled.listen((data) {
+    _removalCancelledSubscription = _socketService.onRemovalCancelled.listen((
+      data,
+    ) {
       if (mounted) {
         debugPrint('✅ Removal cancelled by owner: ${data.ownerName}');
         // Clear the removal requests to hide the pending removal banner immediately
@@ -606,8 +618,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         });
         // Show a toast notification
         final l10n = AppLocalizations.of(context);
-        final message = l10n?.removalCancelled ??
-            'The removal request has been cancelled';
+        final message =
+            l10n?.removalCancelled ?? 'The removal request has been cancelled';
         AppToast.success(context, message);
       }
     });
@@ -615,23 +627,33 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   /// Listen to ownership transfer events (when current user becomes the new owner)
   void _listenToOwnershipTransferred() {
-    _ownershipTransferredSubscription =
-        _socketService.onOwnershipTransferred.listen((data) {
+    _ownershipTransferredSubscription = _socketService.onOwnershipTransferred.listen((
+      data,
+    ) {
       if (mounted) {
-        debugPrint('👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}');
+        debugPrint(
+          '👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}',
+        );
 
         // If current user is the NEW owner, navigate to owner home screen
         if (data.newOwnerId == _currentUserId) {
-          AppToast.success(
-            context,
-            'Vous êtes maintenant le propriétaire de la famille!',
-          );
-
-          // Navigate to family owner home screen
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const FamilyOwnerHomeScreen()),
+          // Use root navigator to ensure we clear all routes
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const FamilyOwnerHomeScreen(),
+            ),
             (route) => false,
           );
+
+          // Show toast after navigation
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              AppToast.success(
+                context,
+                'Vous êtes maintenant le propriétaire de la famille!',
+              );
+            }
+          });
         } else {
           // Another member, just show info that ownership changed
           AppToast.info(
@@ -1314,15 +1336,19 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           await _tokenStorage.saveFamilyMembers(
             family.members!.map((m) => m.toJson()).toList(),
           );
-          
+
           // Extract and save current user's profile picture
           if (_currentUserId != null) {
-            final currentUser = family.members!.where((m) => m.id == _currentUserId).firstOrNull;
+            final currentUser = family.members!
+                .where((m) => m.id == _currentUserId)
+                .firstOrNull;
             if (currentUser != null && currentUser.profilePictureUrl != null) {
               await _tokenStorage.saveUserProfile(
                 profilePictureUrl: currentUser.profilePictureUrl,
               );
-              debugPrint('📸 Saved current user profile picture from family data');
+              debugPrint(
+                '📸 Saved current user profile picture from family data',
+              );
             }
           }
         }
@@ -1999,11 +2025,11 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   }
 
   void _openScanScreen() async {
-    await Navigator.of(
-      context,
-    ).push<String>(MaterialPageRoute(
-      builder: (context) => const ScanScreen(handleRedemption: true),
-    ));
+    await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => const ScanScreen(handleRedemption: true),
+      ),
+    );
 
     // Refresh balance from API after returning from scan
     _loadFamilyBalance();
@@ -2036,7 +2062,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         builder: (context) => TopUpScreen(initialBalance: _familyBalance),
       ),
     );
-    
+
     // Refresh balance from API after returning from TopUp
     _loadFamilyBalance();
   }

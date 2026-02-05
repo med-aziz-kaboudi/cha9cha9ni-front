@@ -47,6 +47,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   bool _isRateLimited = false;
   int _rateLimitRemainingMinutes = 0;
 
+  // Pending transfer state
+  bool _hasPendingTransfer = false;
+  String? _pendingNewOwnerName;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +98,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
 
     // Now check if transfer is allowed from backend
     await _checkCanTransfer();
+
+    // Also check for pending transfers
+    await _checkPendingTransfer();
   }
 
   Future<void> _checkCanTransfer() async {
@@ -103,7 +110,6 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         setState(() {
           _canTransfer = result['canTransfer'] == true;
           _blockedReason = result['reason'] as String?;
-          _isLoading = false;
         });
       }
     } catch (e) {
@@ -111,10 +117,54 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         setState(() {
           _canTransfer = false;
           _blockedReason = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+    }
+  }
+
+  Future<void> _checkPendingTransfer() async {
+    try {
+      final pending = await _familyApi.getPendingTransfer();
+      if (mounted) {
+        if (pending != null) {
+          setState(() {
+            _hasPendingTransfer = true;
+            _requestId = pending['id'] as String?;
+            _pendingNewOwnerName = pending['newOwnerName'] as String?;
+            _isCodeStep = true;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _hasPendingTransfer = false;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
           _isLoading = false;
         });
       }
     }
+  }
+
+  /// Get the name of the transfer target (selected member or pending transfer)
+  String _getTransferTargetName() {
+    if (_selectedMember != null) {
+      return _selectedMember!.name;
+    }
+    return _pendingNewOwnerName ?? 'Membre';
+  }
+
+  /// Get the initial of the transfer target
+  String _getTransferTargetInitial() {
+    final name = _getTransferTargetName();
+    if (name.isNotEmpty) {
+      return name[0].toUpperCase();
+    }
+    return '?';
   }
 
   /// Increment transfer attempt and check if should block
@@ -245,7 +295,19 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           AppLocalizations.of(context)?.ownershipTransferredSuccess ??
               'Ownership transferred successfully!',
         );
-        Navigator.of(context).pop(true);
+        // Don't pop here - the socket listener in FamilyOwnerHomeScreen
+        // will handle navigation to FamilyMemberHomeScreen
+        // Just show a loading state while waiting for socket event
+        setState(() {
+          _isProcessing = true; // Keep showing loading
+        });
+
+        // Fallback: if socket doesn't navigate within 3 seconds, pop manually
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) {
+            Navigator.of(context).pop(true);
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -260,11 +322,19 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   }
 
   Future<void> _cancelTransfer() async {
+    setState(() => _isProcessing = true);
+
     if (_requestId != null) {
       try {
         await _familyApi.cancelTransfer(_requestId!);
+        if (mounted) {
+          AppToast.success(context, 'Transfert annulé');
+        }
       } catch (e) {
         debugPrint('Failed to cancel transfer: $e');
+        if (mounted) {
+          AppToast.error(context, e.toString().replaceFirst('Exception: ', ''));
+        }
       }
     }
     if (mounted) {
@@ -273,7 +343,39 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         _requestId = null;
         _codeController.clear();
         _error = null;
+        _hasPendingTransfer = false;
+        _pendingNewOwnerName = null;
+        _selectedMember = null;
+        _isProcessing = false;
       });
+    }
+  }
+
+  /// Resend verification code for pending transfer
+  Future<void> _resendCode() async {
+    if (_requestId == null) return;
+
+    setState(() {
+      _isProcessing = true;
+      _error = null;
+    });
+
+    try {
+      await _familyApi.resendTransferCode(_requestId!);
+
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        AppToast.success(context, 'Nouveau code envoyé par email');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString().replaceFirst('Exception: ', '');
+          _isProcessing = false;
+        });
+      }
     }
   }
 
@@ -727,16 +829,35 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         children: [
           SizedBox(height: screenHeight * 0.03),
 
-          Icon(
-            Icons.email_outlined,
-            size: screenHeight * 0.08,
-            color: AppColors.primary,
+          // Stylish icon container
+          Container(
+            width: screenHeight * 0.12,
+            height: screenHeight * 0.12,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Container(
+                width: screenHeight * 0.08,
+                height: screenHeight * 0.08,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.mark_email_read_outlined,
+                  size: screenHeight * 0.04,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
           ),
 
-          SizedBox(height: screenHeight * 0.02),
+          SizedBox(height: screenHeight * 0.025),
 
           Text(
-            l10n.verifyTransfer,
+            _hasPendingTransfer ? 'Transfert en attente' : l10n.verifyTransfer,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
               fontWeight: FontWeight.w700,
@@ -747,13 +868,19 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
 
           SizedBox(height: screenHeight * 0.015),
 
-          Text(
-            l10n.transferCodeSent,
-            style: TextStyle(
-              fontSize: screenHeight * 0.015,
-              color: Colors.grey[600],
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+            child: Text(
+              _hasPendingTransfer
+                  ? 'Vous avez un transfert en cours vers ${_getTransferTargetName()}. Entrez le code reçu par email pour confirmer, ou annulez le transfert.'
+                  : l10n.transferCodeSent,
+              style: TextStyle(
+                fontSize: screenHeight * 0.015,
+                color: Colors.grey[600],
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
 
           SizedBox(height: screenHeight * 0.04),
@@ -807,24 +934,54 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           if (_error != null)
             Padding(
               padding: EdgeInsets.only(top: screenHeight * 0.015),
-              child: Text(
-                _error!,
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: screenHeight * 0.014,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenHeight * 0.01,
                 ),
-                textAlign: TextAlign.center,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontSize: screenHeight * 0.014,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
 
-          SizedBox(height: screenHeight * 0.015),
+          SizedBox(height: screenHeight * 0.02),
 
-          Text(
-            l10n.codeExpiresInfo,
-            style: TextStyle(
-              fontSize: screenHeight * 0.013,
-              color: Colors.grey[500],
-            ),
+          // Resend code button - always show
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l10n.codeExpiresInfo,
+                style: TextStyle(
+                  fontSize: screenHeight * 0.013,
+                  color: Colors.grey[500],
+                ),
+              ),
+              SizedBox(width: screenWidth * 0.02),
+              GestureDetector(
+                onTap: !_isProcessing ? _resendCode : null,
+                child: Text(
+                  'Renvoyer',
+                  style: TextStyle(
+                    color: _isProcessing ? Colors.grey : AppColors.primary,
+                    fontSize: screenHeight * 0.013,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
           ),
 
           const Spacer(),
@@ -844,11 +1001,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                   backgroundImage: _selectedMember?.profilePictureUrl != null
                       ? NetworkImage(_selectedMember!.profilePictureUrl!)
                       : null,
-                  child: _selectedMember?.profilePictureUrl == null
+                  child: (_selectedMember?.profilePictureUrl == null)
                       ? Text(
-                          _selectedMember?.name.isNotEmpty == true
-                              ? _selectedMember!.name[0].toUpperCase()
-                              : '?',
+                          _getTransferTargetInitial(),
                           style: TextStyle(
                             color: AppColors.secondary,
                             fontWeight: FontWeight.bold,
@@ -869,7 +1024,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                         ),
                       ),
                       Text(
-                        _selectedMember?.name ?? '',
+                        _getTransferTargetName(),
                         style: TextStyle(
                           fontSize: screenHeight * 0.016,
                           fontWeight: FontWeight.w600,

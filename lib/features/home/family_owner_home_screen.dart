@@ -78,7 +78,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   StreamSubscription<MemberLeftData>? _memberLeftSubscription;
   StreamSubscription<ProfilePictureUpdatedData>? _profilePictureSubscription;
   StreamSubscription<ProfileUpdatedData>? _profileUpdatedSubscription;
-  StreamSubscription<OwnershipTransferredData>? _ownershipTransferredSubscription;
+  StreamSubscription<OwnershipTransferredData>?
+  _ownershipTransferredSubscription;
   final _socketService = SocketService();
 
   // Family members state
@@ -162,12 +163,14 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   Future<void> _fetchProfileForSidebar() async {
     try {
       // Check if profile data is fresh
-      final isFresh = await _tokenStorage.isProfileDataFresh(thresholdSeconds: 300);
+      final isFresh = await _tokenStorage.isProfileDataFresh(
+        thresholdSeconds: 300,
+      );
       if (isFresh) {
         debugPrint('📦 Profile data is fresh, skipping API fetch for sidebar');
         return;
       }
-      
+
       // Fetch profile in background - this will save profilePictureUrl to storage
       final profileService = ProfileApiService();
       await profileService.getProfile();
@@ -320,7 +323,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     // Also listen to socket for realtime updates
     _pointsEarnedSubscription = _sessionManager.socketService.onPointsEarned
         .listen((data) {
-          debugPrint('🎁 Socket: Points earned - new total: ${data.newTotalPoints}');
+          debugPrint(
+            '🎁 Socket: Points earned - new total: ${data.newTotalPoints}',
+          );
           if (mounted) {
             setState(() {
               _familyPoints = data.newTotalPoints;
@@ -566,31 +571,37 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   /// Listen to profile picture updates from family members
   void _listenToProfilePictureUpdates() {
-    _profilePictureSubscription = _socketService.onProfilePictureUpdated.listen((data) {
-      if (mounted) {
-        debugPrint('📸 Profile picture updated for member: ${data.memberId}');
+    _profilePictureSubscription = _socketService.onProfilePictureUpdated.listen(
+      (data) {
+        if (mounted) {
+          debugPrint('📸 Profile picture updated for member: ${data.memberId}');
 
-        // Update the member's profile picture in the list
-        setState(() {
-          final index = _familyMembers.indexWhere((m) => m.id == data.memberId);
-          if (index != -1) {
-            _familyMembers[index] = _familyMembers[index].copyWith(
-              profilePictureUrl: data.profilePictureUrl,
+          // Update the member's profile picture in the list
+          setState(() {
+            final index = _familyMembers.indexWhere(
+              (m) => m.id == data.memberId,
             );
-          }
-        });
+            if (index != -1) {
+              _familyMembers[index] = _familyMembers[index].copyWith(
+                profilePictureUrl: data.profilePictureUrl,
+              );
+            }
+          });
 
-        // Update cached data
-        _tokenStorage.saveFamilyMembers(
-          _familyMembers.map((m) => m.toJson()).toList(),
-        );
-      }
-    });
+          // Update cached data
+          _tokenStorage.saveFamilyMembers(
+            _familyMembers.map((m) => m.toJson()).toList(),
+          );
+        }
+      },
+    );
   }
 
   /// Listen to profile updates from family members (name, phone, etc.)
   void _listenToProfileUpdates() {
-    _profileUpdatedSubscription = _socketService.onProfileUpdated.listen((data) {
+    _profileUpdatedSubscription = _socketService.onProfileUpdated.listen((
+      data,
+    ) {
       if (mounted) {
         debugPrint('👤 Profile updated for member: ${data.memberId}');
 
@@ -600,7 +611,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           if (index != -1) {
             _familyMembers[index] = _familyMembers[index].copyWith(
               name: data.displayName,
-              profilePictureUrl: data.profilePictureUrl ?? _familyMembers[index].profilePictureUrl,
+              profilePictureUrl:
+                  data.profilePictureUrl ??
+                  _familyMembers[index].profilePictureUrl,
             );
           }
         });
@@ -615,23 +628,34 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   /// Listen to ownership transfer events (when someone becomes the new owner)
   void _listenToOwnershipTransferred() {
-    _ownershipTransferredSubscription = _socketService.onOwnershipTransferred.listen((data) {
+    _ownershipTransferredSubscription = _socketService.onOwnershipTransferred.listen((
+      data,
+    ) {
       if (mounted) {
-        debugPrint('👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}');
+        debugPrint(
+          '👑 Ownership transferred: ${data.oldOwnerName} → ${data.newOwnerName}',
+        );
 
         // If current user is the OLD owner, they are no longer the owner
         // Navigate them to the member home screen
         if (data.oldOwnerId == _currentUserId) {
-          AppToast.info(
-            context,
-            'Vous avez transféré la propriété à ${data.newOwnerName}',
-          );
-
-          // Navigate to family member home screen
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const FamilyMemberHomeScreen()),
+          // Use root navigator to ensure we clear all routes including any modals/screens on top
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const FamilyMemberHomeScreen(),
+            ),
             (route) => false,
           );
+
+          // Show toast after navigation
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              AppToast.info(
+                context,
+                'Vous avez transféré la propriété à ${data.newOwnerName}',
+              );
+            }
+          });
         }
       }
     });
@@ -957,16 +981,20 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           await _tokenStorage.saveFamilyMembers(
             family.members!.map((m) => m.toJson()).toList(),
           );
-          
+
           // Extract and save current user's profile picture
           final currentUserId = await _tokenStorage.getUserId();
           if (currentUserId != null) {
-            final currentUser = family.members!.where((m) => m.id == currentUserId).firstOrNull;
+            final currentUser = family.members!
+                .where((m) => m.id == currentUserId)
+                .firstOrNull;
             if (currentUser != null && currentUser.profilePictureUrl != null) {
               await _tokenStorage.saveUserProfile(
                 profilePictureUrl: currentUser.profilePictureUrl,
               );
-              debugPrint('📸 Saved current user profile picture from family data');
+              debugPrint(
+                '📸 Saved current user profile picture from family data',
+              );
             }
           }
         }
@@ -1093,11 +1121,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   }
 
   void _openScanScreen() async {
-    await Navigator.of(
-      context,
-    ).push<String>(MaterialPageRoute(
-      builder: (context) => const ScanScreen(handleRedemption: true),
-    ));
+    await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => const ScanScreen(handleRedemption: true),
+      ),
+    );
 
     // Refresh balance from API after returning from scan
     _loadFamilyBalance();
@@ -1129,7 +1157,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         builder: (context) => TopUpScreen(initialBalance: _familyBalance),
       ),
     );
-    
+
     // Refresh balance from API after returning from TopUp
     _loadFamilyBalance();
   }
@@ -2542,10 +2570,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                         end: Alignment.bottomRight,
                       )
                     : null,
-                border: Border.all(
-                  color: AppColors.secondary,
-                  width: 3,
-                ),
+                border: Border.all(color: AppColors.secondary, width: 3),
               ),
               child: owner.profilePictureUrl != null
                   ? ClipOval(
@@ -2556,7 +2581,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Center(
                           child: Text(
-                            owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                            owner.name.isNotEmpty
+                                ? owner.name[0].toUpperCase()
+                                : '?',
                             style: const TextStyle(
                               color: AppColors.secondary,
                               fontSize: 24,
@@ -2566,7 +2593,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                         ),
                         errorWidget: (context, url, error) => Center(
                           child: Text(
-                            owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                            owner.name.isNotEmpty
+                                ? owner.name[0].toUpperCase()
+                                : '?',
                             style: const TextStyle(
                               color: AppColors.secondary,
                               fontSize: 24,
@@ -2578,7 +2607,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                     )
                   : Center(
                       child: Text(
-                        owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+                        owner.name.isNotEmpty
+                            ? owner.name[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           color: AppColors.secondary,
                           fontSize: 24,
@@ -2696,7 +2727,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Center(
                             child: Text(
-                              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                              member.name.isNotEmpty
+                                  ? member.name[0].toUpperCase()
+                                  : '?',
                               style: TextStyle(
                                 color: hasPendingRemoval
                                     ? AppColors.primary
@@ -2708,7 +2741,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                           ),
                           errorWidget: (context, url, error) => Center(
                             child: Text(
-                              member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                              member.name.isNotEmpty
+                                  ? member.name[0].toUpperCase()
+                                  : '?',
                               style: TextStyle(
                                 color: hasPendingRemoval
                                     ? AppColors.primary
@@ -2722,7 +2757,9 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                       )
                     : Center(
                         child: Text(
-                          member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
+                          member.name.isNotEmpty
+                              ? member.name[0].toUpperCase()
+                              : '?',
                           style: TextStyle(
                             color: hasPendingRemoval
                                 ? AppColors.primary
