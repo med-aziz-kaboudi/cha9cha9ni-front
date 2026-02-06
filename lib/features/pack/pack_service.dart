@@ -170,6 +170,9 @@ class PackService {
           _PackCacheKeys.selectedAid,
           jsonEncode(_selectedAidToJson(_selectedAid!)),
         );
+      } else {
+        // Remove cached selected aid when null
+        await prefs.remove(_PackCacheKeys.selectedAid);
       }
 
       if (_currentData != null) {
@@ -476,9 +479,10 @@ class PackService {
       final data = await _apiService.getCurrentPack();
       _currentData = data;
       _adsStats = data.adsStats;
-      if (data.selectedAids.isNotEmpty) {
-        _selectedAid = data.selectedAids.first;
-      }
+      // Update selected aid - set to first if available, null if empty
+      _selectedAid = data.selectedAids.isNotEmpty 
+          ? data.selectedAids.first 
+          : null;
       _hasFetchedOnce = true;
 
       _dataController.add(data);
@@ -487,7 +491,7 @@ class PackService {
       // Save to cache for next app launch
       await _saveToCache();
 
-      debugPrint('📦 PackService: Fetched and cached pack data');
+      debugPrint('📦 PackService: Fetched and cached pack data (selectedAid: ${_selectedAid?.aidDisplayName ?? 'none'})');
       return data;
     } catch (e) {
       debugPrint('📦 PackService: Failed to fetch pack - $e');

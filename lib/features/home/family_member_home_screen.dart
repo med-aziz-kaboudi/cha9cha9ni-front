@@ -387,7 +387,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         });
   }
 
-  /// Load selected aid from pack service (cache first, then API if needed)
+  /// Load selected aid from pack service (cache first, then API)
   Future<void> _loadSelectedAid() async {
     try {
       // Initialize pack service (loads from cache first)
@@ -399,9 +399,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         _updateSelectedAid(cachedAid);
       }
 
-      // Only fetch from API if not fetched this session
-      if (!_packService.hasFetchedOnce) {
-        final packData = await _packService.fetchCurrentPack();
+      // Always fetch from API to get latest data
+      final packData = await _packService.fetchCurrentPack();
+      if (mounted) {
         _updateSelectedAid(
           packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null,
         );

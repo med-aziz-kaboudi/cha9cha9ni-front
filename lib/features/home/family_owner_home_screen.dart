@@ -379,11 +379,18 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         _updateSelectedAid(cachedAid);
       }
 
-      // Only fetch from API if not fetched this session
-      if (!_packService.hasFetchedOnce) {
-        final data = await _packService.fetchCurrentPack();
-        if (mounted && data.selectedAids.isNotEmpty) {
+      // Always fetch from API to get latest data
+      final data = await _packService.fetchCurrentPack();
+      if (mounted) {
+        if (data.selectedAids.isNotEmpty) {
           _updateSelectedAid(data.selectedAids.first);
+        } else {
+          // Clear selected aid if API returns empty
+          setState(() {
+            _selectedAid = null;
+            _daysUntilAid = null;
+            _aidWindowOpen = false;
+          });
         }
       }
     } catch (e) {
