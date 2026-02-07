@@ -1888,6 +1888,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAidSelected => 'No aid selected yet';
 
   @override
+  String get tapToViewAids => 'Tap to view upcoming aids';
+
+  @override
   String daysUntilAid(int days, String aidName) {
     return '$days days until $aidName';
   }
@@ -2095,4 +2098,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String daysUntilWithdrawOpen(int days) {
     return '$days days until withdrawal opens';
   }
+
+  @override
+  String get identityVerification => 'Identity Verification';
+
+  @override
+  String get cancelVerification => 'Cancel Verification';
+
+  @override
+  String get cancelVerificationMessage =>
+      'Are you sure you want to cancel the verification process?';
+
+  @override
+  String get verificationError => 'Verification error occurred';
+
+  @override
+  String get verificationInProgress => 'Verification in progress...';
+
+  @override
+  String get identityVerified => 'Identity verified';
+
+  @override
+  String get verifyIdentityDescription =>
+      'Verify your identity to enable additional features';
+
+  @override
+  String get transferOwnershipContactSupport =>
+      'Your identity is verified. Please contact support to transfer ownership.';
 }

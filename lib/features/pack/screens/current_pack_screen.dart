@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/identity_verification_service.dart';
+import '../../../core/widgets/identity_verification_screen.dart';
 import '../../../l10n/app_localizations.dart';
 import '../pack_models.dart';
 import '../pack_service.dart';
@@ -18,15 +20,15 @@ class CurrentPackScreen extends StatefulWidget {
 
 class _CurrentPackScreenState extends State<CurrentPackScreen> {
   final _packService = PackService();
-  
+
   CurrentPackData? _packData;
   bool _isLoading = true;
   String? _error;
   bool _withdrawAccessExpanded = false;
-  
+
   StreamSubscription<CurrentPackData>? _dataSubscription;
   StreamSubscription<FamilyAdsStats>? _adsSubscription;
-  
+
   // Rate limiting for refresh
   DateTime? _lastRefreshTime;
   static const _refreshCooldown = Duration(seconds: 30);
@@ -57,7 +59,9 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
     });
 
     _adsSubscription = _packService.adsStatsStream.listen((stats) {
-      debugPrint('📱 CurrentPackScreen: Received adsStats update - userAdsToday: ${stats.userAdsToday}, familyTotal: ${stats.familyTotalAdsToday}');
+      debugPrint(
+        '📱 CurrentPackScreen: Received adsStats update - userAdsToday: ${stats.userAdsToday}, familyTotal: ${stats.familyTotalAdsToday}',
+      );
       if (mounted && _packData != null) {
         setState(() {
           _packData = CurrentPackData(
@@ -80,11 +84,14 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
     if (forceRefresh && _lastRefreshTime != null) {
       final timeSinceLastRefresh = DateTime.now().difference(_lastRefreshTime!);
       if (timeSinceLastRefresh < _refreshCooldown) {
-        final remainingSeconds = (_refreshCooldown - timeSinceLastRefresh).inSeconds;
+        final remainingSeconds =
+            (_refreshCooldown - timeSinceLastRefresh).inSeconds;
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Please wait $remainingSeconds seconds before refreshing again'),
+              content: Text(
+                'Please wait $remainingSeconds seconds before refreshing again',
+              ),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
             ),
@@ -93,14 +100,16 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
         return;
       }
     }
-    
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final data = await _packService.fetchCurrentPack(forceRefresh: forceRefresh);
+      final data = await _packService.fetchCurrentPack(
+        forceRefresh: forceRefresh,
+      );
       if (forceRefresh) {
         _lastRefreshTime = DateTime.now();
       }
@@ -117,6 +126,509 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  /// Start identity verification flow
+  Future<void> _startIdentityVerification() async {
+    try {
+      // First check current verification status
+      final status =
+          await IdentityVerificationService().getVerificationStatus();
+
+      // If already verified, no need to continue
+      if (status.isVerified) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You are already verified!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await _loadData(forceRefresh: true);
+        }
+        return;
+      }
+
+      // If verification is under review, show status (can't continue)
+      if (status.statusEnum == VerificationStatus.inReview) {
+        if (mounted) {
+          _showVerificationStatusDialog(status);
+        }
+        return;
+      }
+
+      // Start or resume verification session (works for in_progress too)
+      final response = await IdentityVerificationService().startVerification();
+      if (mounted) {
+        final result = await Navigator.push<VerificationResult>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => IdentityVerificationScreen(
+              verificationUrl: response.verificationUrl,
+            ),
+          ),
+        );
+
+        // Reload pack data after verification attempt to update KYC status
+        if (result != null && !result.cancelled) {
+          await _loadData(forceRefresh: true);
+
+          // Check the final status after verification
+          final newStatus = await IdentityVerificationService().checkSession(
+            sessionId: response.sessionId,
+          );
+
+          if (mounted) {
+            _showVerificationStatusDialog(newStatus);
+          }
+        }
+      }
+    } catch (e) {
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
+      
+      // Check if it's an "under review" error from backend
+      if (errorMsg.toLowerCase().contains('under review') || 
+          errorMsg.toLowerCase().contains('in review')) {
+        // Re-check status and show the review dialog
+        try {
+          final status = await IdentityVerificationService().getVerificationStatus();
+          if (mounted) {
+            _showVerificationStatusDialog(status);
+          }
+        } catch (_) {
+          // Fallback: show a styled dialog
+          if (mounted) {
+            _showFallbackReviewDialog();
+          }
+        }
+        return;
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to start verification: $errorMsg'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showFallbackReviewDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDBEAFE),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.schedule_rounded, size: 40, color: Color(0xFF3B82F6)),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Submitted for Review',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'We\'re on it!',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF3B82F6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Your documents have been submitted and are being reviewed by our team. This usually takes just a few minutes.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0F9FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFBAE6FD)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.notifications_active_rounded, color: Color(0xFF3B82F6), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'You\'ll receive an email when the review is complete.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Got it',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  void _showVerificationStatusDialog(VerificationStatusResponse status) {
+    IconData icon;
+    Color color;
+    Color bgColor;
+    String title;
+    String message;
+    String? subtitle;
+    bool showRetryButton = false;
+
+    switch (status.statusEnum) {
+      case VerificationStatus.approved:
+        icon = Icons.verified_rounded;
+        color = const Color(0xFF10B981);
+        bgColor = const Color(0xFFD1FAE5);
+        title = 'Identity Verified! 🎉';
+        subtitle = 'Welcome to the verified community';
+        message = 'Your identity has been verified successfully. You now have full access to all withdrawal features.';
+        break;
+      case VerificationStatus.inProgress:
+        icon = Icons.hourglass_top_rounded;
+        color = const Color(0xFFF59E0B);
+        bgColor = const Color(0xFFFEF3C7);
+        title = 'Verification In Progress';
+        subtitle = 'Almost there!';
+        message = 'Please complete the verification steps in the verification portal to continue.';
+        break;
+      case VerificationStatus.inReview:
+        icon = Icons.schedule_rounded;
+        color = const Color(0xFF3B82F6);
+        bgColor = const Color(0xFFDBEAFE);
+        title = 'Submitted for Review';
+        subtitle = 'We\'re on it!';
+        message = 'Your documents have been submitted and are being reviewed by our team. This usually takes just a few minutes.';
+        break;
+      case VerificationStatus.declined:
+        icon = Icons.error_rounded;
+        color = const Color(0xFFEF4444);
+        bgColor = const Color(0xFFFEE2E2);
+        title = 'Verification Declined';
+        subtitle = 'Don\'t worry, you can try again';
+        message = 'Your verification couldn\'t be approved. This might be due to unclear photos or document issues. Please try again with clearer images.';
+        showRetryButton = true;
+        break;
+      case VerificationStatus.expired:
+        icon = Icons.timer_off_rounded;
+        color = const Color(0xFF6B7280);
+        bgColor = const Color(0xFFF3F4F6);
+        title = 'Session Expired';
+        subtitle = 'Your session has timed out';
+        message = 'Your verification session has expired. Please start a new verification to continue.';
+        showRetryButton = true;
+        break;
+      default:
+        return; // Don't show dialog for not_started or abandoned
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon with gradient background
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 40, color: color),
+              ),
+              const SizedBox(height: 20),
+              // Title
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: color,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 16),
+              // Message
+              Text(
+                message,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              // Info box for in_review
+              if (status.statusEnum == VerificationStatus.inReview) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F9FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFBAE6FD)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.notifications_active_rounded, color: color, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'You\'ll receive an email when the review is complete.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              // Buttons
+              if (showRetryButton) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey[700],
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Later', style: TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            _startIdentityVerification();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: color,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: status.statusEnum == VerificationStatus.approved 
+                          ? const Color(0xFF10B981) 
+                          : AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      status.statusEnum == VerificationStatus.approved ? 'Awesome!' : 'Got it',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper methods for verification status UI
+  Color _getVerificationCardColor(String? status) {
+    switch (status) {
+      case 'in_progress':
+        return Colors.orange;
+      case 'in_review':
+        return Colors.blue;
+      case 'declined':
+        return Colors.red;
+      case 'expired':
+      case 'abandoned':
+        return Colors.grey;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  IconData _getVerificationIcon(String? status) {
+    switch (status) {
+      case 'in_progress':
+        return Icons.hourglass_top;
+      case 'in_review':
+        return Icons.pending;
+      case 'declined':
+        return Icons.cancel;
+      case 'expired':
+        return Icons.timer_off;
+      case 'abandoned':
+        return Icons.exit_to_app;
+      default:
+        return Icons.info_outline;
+    }
+  }
+
+  String _getVerificationMessage(String? status, AppLocalizations l10n) {
+    switch (status) {
+      case 'in_progress':
+        return 'Verification in progress. Tap to continue where you left off.';
+      case 'in_review':
+        return 'Your verification is under review. We\'ll notify you once complete.';
+      case 'declined':
+        return 'Verification was declined. Please try again with valid documents.';
+      case 'expired':
+        return 'Your verification session expired. Please start a new verification.';
+      case 'abandoned':
+        return 'Your previous session was abandoned. Start a new verification.';
+      default:
+        return l10n.verifyIdentityDescription;
+    }
+  }
+
+  bool _getVerificationButtonEnabled(String? status) {
+    // Button is disabled only when verification is in_review (waiting for manual review)
+    return status != 'in_review';
+  }
+
+  Color _getVerificationButtonColor(String? status) {
+    switch (status) {
+      case 'in_progress':
+        return Colors.orange;
+      case 'declined':
+      case 'expired':
+      case 'abandoned':
+        return Colors.red.shade600;
+      default:
+        return AppColors.primary;
+    }
+  }
+
+  IconData _getVerificationButtonIcon(String? status) {
+    switch (status) {
+      case 'in_progress':
+        return Icons.play_arrow;
+      case 'in_review':
+        return Icons.hourglass_top;
+      case 'declined':
+      case 'expired':
+      case 'abandoned':
+        return Icons.refresh;
+      default:
+        return Icons.verified_user_outlined;
+    }
+  }
+
+  String _getVerificationButtonText(String? status, AppLocalizations l10n) {
+    switch (status) {
+      case 'in_progress':
+        return 'Continue Verification';
+      case 'in_review':
+        return 'Under Review...';
+      case 'declined':
+      case 'expired':
+      case 'abandoned':
+        return 'Retry Verification';
+      default:
+        return l10n.verifyIdentity;
     }
   }
 
@@ -151,7 +663,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context);
     final isRTL = locale.languageCode == 'ar';
-    
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -169,10 +681,14 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               _buildAppBar(l10n, isRTL),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: AppColors.secondary))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.secondary,
+                        ),
+                      )
                     : _error != null
-                        ? _buildError()
-                        : _buildContent(l10n),
+                    ? _buildError()
+                    : _buildContent(l10n),
               ),
             ],
           ),
@@ -247,10 +763,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
@@ -258,7 +771,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
 
   Widget _buildContent(AppLocalizations l10n) {
     if (_packData == null) return const SizedBox();
-    
+
     final isOwner = _packData!.withdrawAccess.isOwner;
 
     return RefreshIndicator(
@@ -280,7 +793,11 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                    const Icon(
+                      Icons.info_outline,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -297,12 +814,12 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            
+
             // Pack Card
             _buildPackCard(l10n, isOwner),
-            
+
             const SizedBox(height: 24),
-            
+
             // Usage and Limits Section
             Text(
               l10n.usageAndLimits,
@@ -312,36 +829,37 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Family Members
             _buildInfoTile(
               icon: Icons.people_rounded,
               iconColor: AppColors.primary,
               title: l10n.familyMembers,
               subtitle: l10n.ownerPlusMembers(_packData!.maxFamilyMembers - 1),
-              trailing: '${_packData!.currentFamilyMembers} / ${_packData!.maxFamilyMembers}',
+              trailing:
+                  '${_packData!.currentFamilyMembers} / ${_packData!.maxFamilyMembers}',
               onTap: null,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Withdraw Access
             _buildWithdrawAccessTile(l10n),
-            
+
             const SizedBox(height: 8),
-            
+
             // Selected Aid
             _buildSelectedAidTile(l10n, isOwner),
-            
+
             const SizedBox(height: 8),
-            
+
             // Ads Today
             _buildAdsTile(l10n),
-            
+
             const SizedBox(height: 16),
-            
+
             // Upgrade Prompt (only for owner)
             if (isOwner) _buildUpgradePrompt(l10n),
           ],
@@ -353,7 +871,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
   Widget _buildPackCard(AppLocalizations l10n, bool isOwner) {
     final pack = _packData!.pack;
     final packColor = _getPackColor(pack.name);
-    
+
     // Get screen width for responsive sizing
     final screenWidth = MediaQuery.of(context).size.width;
     final imageWidth = screenWidth * 0.42; // 42% of screen width
@@ -432,12 +950,14 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Price
                     Text(
-                      pack.isFree ? l10n.free : '${pack.priceMonthly.toInt()} DT / ${l10n.month}',
+                      pack.isFree
+                          ? l10n.free
+                          : '${pack.priceMonthly.toInt()} DT / ${l10n.month}',
                       style: const TextStyle(
                         color: AppColors.dark,
                         fontSize: 28,
@@ -446,9 +966,9 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                         height: 1.1,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 6),
-                    
+
                     // Withdrawals
                     Text(
                       l10n.withdrawalsPerYear(pack.withdrawalsPerYear),
@@ -458,12 +978,12 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 8),
                   ],
                 ),
               ),
-              
+
               // Pack Image - larger and touching the edge
               Positioned(
                 right: -10,
@@ -478,7 +998,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                   ),
                 ),
               ),
-              
+
               // Checkmark badge - top right
               Positioned(
                 right: 12,
@@ -519,7 +1039,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               ),
             ],
           ),
-          
+
           // Change Pack Button (owner only)
           if (isOwner)
             Padding(
@@ -538,7 +1058,10 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.dark,
                     backgroundColor: Colors.white,
-                    side: BorderSide(color: packColor.withOpacity(0.4), width: 1.5),
+                    side: BorderSide(
+                      color: packColor.withOpacity(0.4),
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
                     ),
@@ -627,10 +1150,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               if (showArrow && onTap != null)
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey,
-                  ),
+                  child: Icon(Icons.chevron_right, color: Colors.grey),
                 ),
             ],
           ),
@@ -710,7 +1230,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               ),
             ),
           ),
-          
+
           // Expanded content
           if (_withdrawAccessExpanded)
             Container(
@@ -781,21 +1301,85 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                         ],
                       ),
                       if (!withdrawAccess.isKycVerified) ...[
+                        const SizedBox(height: 16),
+                        // Verification info card
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _getVerificationCardColor(
+                              withdrawAccess.kycStatus,
+                            ).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _getVerificationCardColor(
+                                withdrawAccess.kycStatus,
+                              ).withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _getVerificationIcon(withdrawAccess.kycStatus),
+                                color: _getVerificationCardColor(
+                                  withdrawAccess.kycStatus,
+                                ),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _getVerificationMessage(
+                                    withdrawAccess.kycStatus,
+                                    l10n,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: _getVerificationCardColor(
+                                      withdrawAccess.kycStatus,
+                                    ),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // TODO: Navigate to KYC screen
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          child: ElevatedButton.icon(
+                            onPressed:
+                                _getVerificationButtonEnabled(
+                                  withdrawAccess.kycStatus,
+                                )
+                                ? _startIdentityVerification
+                                : null,
+                            icon: Icon(
+                              _getVerificationButtonIcon(
+                                withdrawAccess.kycStatus,
+                              ),
+                              size: 18,
+                            ),
+                            label: Text(
+                              _getVerificationButtonText(
+                                withdrawAccess.kycStatus,
+                                l10n,
                               ),
                             ),
-                            child: Text(l10n.verifyIdentity),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _getVerificationButtonColor(
+                                withdrawAccess.kycStatus,
+                              ),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              disabledForegroundColor: Colors.grey.shade600,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
                           ),
                         ),
                       ],
@@ -818,18 +1402,20 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
       color: Colors.white,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
-        onTap: isOwner ? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AidSelectionScreen(
-                allAids: _packData!.allAids,
-                selectedAids: _packData!.selectedAids,
-                maxAidsSelectable: _packData!.pack.maxAidsSelectable,
-              ),
-            ),
-          ).then((_) => _loadData());
-        } : null,
+        onTap: isOwner
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AidSelectionScreen(
+                      allAids: _packData!.allAids,
+                      selectedAids: _packData!.selectedAids,
+                      maxAidsSelectable: _packData!.pack.maxAidsSelectable,
+                    ),
+                  ),
+                ).then((_) => _loadData());
+              }
+            : null,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -913,7 +1499,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                     ),
                 ],
               ),
-              
+
               if (hasAid) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -992,7 +1578,8 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: '${stats.familyTotalAdsToday} / ${stats.familyMaxAdsToday} ',
+                      text:
+                          '${stats.familyTotalAdsToday} / ${stats.familyMaxAdsToday} ',
                       style: const TextStyle(
                         color: AppColors.dark,
                         fontSize: 11,
@@ -1012,9 +1599,9 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 10),
-          
+
           // Progress Bar - shows user's personal ads progress
           Row(
             children: [
@@ -1042,9 +1629,9 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Description
           Text(
             l10n.adsDescription,
@@ -1088,10 +1675,7 @@ class _CurrentPackScreenState extends State<CurrentPackScreen> {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFBBF24),
-                  Color(0xFFF59E0B),
-                ],
+                colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [

@@ -1916,6 +1916,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noAidSelected => 'Aucune aide sélectionnée';
 
   @override
+  String get tapToViewAids => 'Appuyez pour voir les aides à venir';
+
+  @override
   String daysUntilAid(int days, String aidName) {
     return '$days jours avant $aidName';
   }
@@ -2123,4 +2126,31 @@ class AppLocalizationsFr extends AppLocalizations {
   String daysUntilWithdrawOpen(int days) {
     return '$days jours avant l\'ouverture du retrait';
   }
+
+  @override
+  String get identityVerification => 'Vérification d\'identité';
+
+  @override
+  String get cancelVerification => 'Annuler la vérification';
+
+  @override
+  String get cancelVerificationMessage =>
+      'Êtes-vous sûr de vouloir annuler le processus de vérification ?';
+
+  @override
+  String get verificationError => 'Erreur de vérification';
+
+  @override
+  String get verificationInProgress => 'Vérification en cours...';
+
+  @override
+  String get identityVerified => 'Identité vérifiée';
+
+  @override
+  String get verifyIdentityDescription =>
+      'Vérifiez votre identité pour activer des fonctionnalités supplémentaires';
+
+  @override
+  String get transferOwnershipContactSupport =>
+      'Votre identité est vérifiée. Veuillez contacter le support pour transférer la propriété.';
 }

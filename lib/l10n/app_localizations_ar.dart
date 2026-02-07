@@ -1881,6 +1881,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noAidSelected => 'لم يتم اختيار عيد بعد';
 
   @override
+  String get tapToViewAids => 'اضغط لعرض الأعياد القادمة';
+
+  @override
   String daysUntilAid(int days, String aidName) {
     return '$days يوم حتى $aidName';
   }
@@ -2087,4 +2090,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String daysUntilWithdrawOpen(int days) {
     return '$days أيام حتى فتح السحب';
   }
+
+  @override
+  String get identityVerification => 'التحقق من الهوية';
+
+  @override
+  String get cancelVerification => 'إلغاء التحقق';
+
+  @override
+  String get cancelVerificationMessage =>
+      'هل أنت متأكد من أنك تريد إلغاء عملية التحقق؟';
+
+  @override
+  String get verificationError => 'حدث خطأ في التحقق';
+
+  @override
+  String get verificationInProgress => 'التحقق جاري...';
+
+  @override
+  String get identityVerified => 'تم التحقق من الهوية';
+
+  @override
+  String get verifyIdentityDescription => 'تحقق من هويتك لتفعيل ميزات إضافية';
+
+  @override
+  String get transferOwnershipContactSupport =>
+      'تم التحقق من هويتك. يرجى الاتصال بالدعم لنقل الملكية.';
 }

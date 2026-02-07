@@ -964,6 +964,7 @@
   },
   "viewOnlyPackInfo": "فقط مالك العائلة يمكنه إدارة الباقة والأعياد",
   "noAidSelected": "لم يتم اختيار عيد بعد",
+  "tapToViewAids": "اضغط لعرض الأعياد القادمة",
   "daysUntilAid": "{days} يوم حتى {aidName}",
   "@daysUntilAid": {
     "placeholders": {
@@ -1082,5 +1083,15 @@
     "placeholders": {
       "days": {"type": "int"}
     }
-  }
+  },
+  
+  "verifyIdentity": "التحقق من الهوية",
+  "identityVerification": "التحقق من الهوية",
+  "cancelVerification": "إلغاء التحقق",
+  "cancelVerificationMessage": "هل أنت متأكد من أنك تريد إلغاء عملية التحقق؟",
+  "verificationError": "حدث خطأ في التحقق",
+  "verificationInProgress": "التحقق جاري...",
+  "identityVerified": "تم التحقق من الهوية",
+  "verifyIdentityDescription": "تحقق من هويتك لتفعيل ميزات إضافية",
+  "transferOwnershipContactSupport": "تم التحقق من هويتك. يرجى الاتصال بالدعم لنقل الملكية."
 }

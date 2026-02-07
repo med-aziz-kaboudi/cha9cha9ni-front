@@ -15,8 +15,10 @@ class CustomDrawer extends StatefulWidget {
   final VoidCallback? onLegalAgreements;
   final VoidCallback? onLeaveFamily;
   final VoidCallback? onTransferOwnership;
+  final VoidCallback? onVerifyIdentity;
   final bool isOwner;
   final bool canTransferOwnership;
+  final bool isIdentityVerified;
 
   const CustomDrawer({
     super.key,
@@ -30,8 +32,10 @@ class CustomDrawer extends StatefulWidget {
     this.onLegalAgreements,
     this.onLeaveFamily,
     this.onTransferOwnership,
+    this.onVerifyIdentity,
     this.isOwner = true,
     this.canTransferOwnership = true,
+    this.isIdentityVerified = false,
   });
 
   @override
@@ -233,16 +237,40 @@ class _CustomDrawerState extends State<CustomDrawer> with SingleTickerProviderSt
                                 ),
                         ),
                         SizedBox(height: nameTopSpacing),
-                        // User name
-                        Text(
-                          _userName,
-                          style: TextStyle(
-                            color: const Color(0xFF252934),
-                            fontSize: userNameFontSize,
-                            fontFamily: 'Nunito Sans',
-                            fontWeight: FontWeight.w700,
-                            height: 1.31,
-                          ),
+                        // User name with verified badge
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _userName,
+                                style: TextStyle(
+                                  color: const Color(0xFF252934),
+                                  fontSize: userNameFontSize,
+                                  fontFamily: 'Nunito Sans',
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.31,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (widget.isIdentityVerified) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1DA1F2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: userNameFontSize * 0.7,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

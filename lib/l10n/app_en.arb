@@ -979,6 +979,7 @@
   },
   "viewOnlyPackInfo": "Only the family owner can manage pack and aids",
   "noAidSelected": "No aid selected yet",
+  "tapToViewAids": "Tap to view upcoming aids",
   "daysUntilAid": "{days} days until {aidName}",
   "@daysUntilAid": {
     "placeholders": {
@@ -1111,5 +1112,15 @@
     "placeholders": {
       "days": {"type": "int"}
     }
-  }
+  },
+  
+  "verifyIdentity": "Verify Identity",
+  "identityVerification": "Identity Verification",
+  "cancelVerification": "Cancel Verification",
+  "cancelVerificationMessage": "Are you sure you want to cancel the verification process?",
+  "verificationError": "Verification error occurred",
+  "verificationInProgress": "Verification in progress...",
+  "identityVerified": "Identity verified",
+  "verifyIdentityDescription": "Verify your identity to enable additional features",
+  "transferOwnershipContactSupport": "Your identity is verified. Please contact support to transfer ownership."
 }

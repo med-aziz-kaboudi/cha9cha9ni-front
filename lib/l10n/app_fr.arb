@@ -959,6 +959,7 @@
   },
   "viewOnlyPackInfo": "Seul le propriétaire de la famille peut gérer le pack et les aides",
   "noAidSelected": "Aucune aide sélectionnée",
+  "tapToViewAids": "Appuyez pour voir les aides à venir",
   "daysUntilAid": "{days} jours avant {aidName}",
   "@daysUntilAid": {
     "placeholders": {
@@ -1074,5 +1075,15 @@
     "placeholders": {
       "days": {"type": "int"}
     }
-  }
+  },
+  
+  "verifyIdentity": "Vérifier l'identité",
+  "identityVerification": "Vérification d'identité",
+  "cancelVerification": "Annuler la vérification",
+  "cancelVerificationMessage": "Êtes-vous sûr de vouloir annuler le processus de vérification ?",
+  "verificationError": "Erreur de vérification",
+  "verificationInProgress": "Vérification en cours...",
+  "identityVerified": "Identité vérifiée",
+  "verifyIdentityDescription": "Vérifiez votre identité pour activer des fonctionnalités supplémentaires",
+  "transferOwnershipContactSupport": "Votre identité est vérifiée. Veuillez contacter le support pour transférer la propriété."
 }

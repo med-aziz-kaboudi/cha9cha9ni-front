@@ -948,8 +948,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ],
 
-                // Show remove option if has photo AND can update
-                if (hasPhoto && _canUpdateProfilePicture) ...[
+                // Show remove option if has photo (delete is ALWAYS allowed, no rate limit)
+                if (hasPhoto) ...[
                   _buildPhotoOptionTile(
                     icon: Icons.delete_outline_rounded,
                     title: l10n.removePhoto,
@@ -1401,15 +1401,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         setState(() {
           _profilePictureUrl = updatedProfile.profilePictureUrl;
           _isUploadingPicture = false;
-          // Update rate limit status - can't change again for 24h
-          _canUpdateProfilePicture = false;
-          _nextAllowedProfilePictureUpdate = DateTime.now().add(
-            const Duration(hours: 24),
-          );
+          // Delete does NOT update rate limit - only upload does
+          // The rate limit timer stays based on last UPLOAD time
         });
-        _startProfilePictureRateLimitTimer();
 
         AppToast.success(context, l10n.profilePictureRemoved);
+        
+        // Refresh rate limit status from backend to get accurate state
+        _loadProfilePictureRateLimitStatus();
       }
     } catch (e) {
       debugPrint('📸 Error removing profile picture: $e');

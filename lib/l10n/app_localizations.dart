@@ -3496,6 +3496,12 @@ abstract class AppLocalizations {
   /// **'No aid selected yet'**
   String get noAidSelected;
 
+  /// No description provided for @tapToViewAids.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view upcoming aids'**
+  String get tapToViewAids;
+
   /// No description provided for @daysUntilAid.
   ///
   /// In en, this message translates to:
@@ -3843,6 +3849,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days until withdrawal opens'**
   String daysUntilWithdrawOpen(int days);
+
+  /// No description provided for @identityVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Verification'**
+  String get identityVerification;
+
+  /// No description provided for @cancelVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Verification'**
+  String get cancelVerification;
+
+  /// No description provided for @cancelVerificationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel the verification process?'**
+  String get cancelVerificationMessage;
+
+  /// No description provided for @verificationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification error occurred'**
+  String get verificationError;
+
+  /// No description provided for @verificationInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification in progress...'**
+  String get verificationInProgress;
+
+  /// No description provided for @identityVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verified'**
+  String get identityVerified;
+
+  /// No description provided for @verifyIdentityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to enable additional features'**
+  String get verifyIdentityDescription;
+
+  /// No description provided for @transferOwnershipContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity is verified. Please contact support to transfer ownership.'**
+  String get transferOwnershipContactSupport;
 }
 
 class _AppLocalizationsDelegate

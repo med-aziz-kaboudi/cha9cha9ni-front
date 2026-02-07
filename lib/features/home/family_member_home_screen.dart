@@ -13,6 +13,7 @@ import '../../core/services/socket_service.dart'
     show
         PointsEarnedData,
         AidSelectedData,
+        AidRemovedData,
         MemberLeftData,
         SocketService,
         BalanceUpdatedData,
@@ -23,6 +24,7 @@ import '../../core/services/socket_service.dart'
         OwnershipTransferredData;
 import '../../core/services/notification_service.dart';
 import '../../core/services/analytics_service.dart';
+import '../../core/services/identity_verification_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/custom_bottom_nav_bar.dart';
@@ -90,6 +92,9 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   // ignore: unused_field
   bool _isLoadingRemovalRequests = false;
 
+  // Identity verification state
+  bool _isIdentityVerified = false;
+
   // Tutorial keys
   bool _showTutorial = false;
   final GlobalKey _sidebarKey = GlobalKey();
@@ -123,6 +128,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   bool _aidWindowOpen = false;
   StreamSubscription<CurrentPackData>? _packDataSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
+  StreamSubscription<AidRemovedData>? _aidRemovedSubscription;
 
   // Leave family state
   final _socketService = SocketService();
@@ -165,12 +171,14 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _loadSelectedAid();
     _listenToPackUpdates();
     _listenToAidSelectedSocket();
+    _listenToAidRemovedSocket();
     _listenToMemberLeft();
     _listenToProfilePictureUpdates();
     _listenToProfileUpdates();
     _listenToRemovalInitiated();
     _listenToRemovalCancelled();
     _listenToOwnershipTransferred();
+    _loadIdentityStatus(); // Load identity verification status
     // Delay loading removal requests to avoid too many simultaneous API calls
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) _loadRemovalRequests();
@@ -222,6 +230,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     _balanceUpdatedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
+    _aidRemovedSubscription?.cancel();
     _memberLeftSubscription?.cancel();
     _profilePictureSubscription?.cancel();
     _profileUpdatedSubscription?.cancel();
@@ -399,8 +408,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
         _updateSelectedAid(cachedAid);
       }
 
-      // Always fetch from API to get latest data
-      final packData = await _packService.fetchCurrentPack();
+      // Always fetch from API to get latest data (force refresh)
+      final packData = await _packService.fetchCurrentPack(forceRefresh: true);
       if (mounted) {
         _updateSelectedAid(
           packData.selectedAids.isNotEmpty ? packData.selectedAids.first : null,
@@ -443,6 +452,22 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           status: 'selected',
         );
         _updateSelectedAid(aid);
+      }
+    });
+  }
+
+  void _listenToAidRemovedSocket() {
+    _aidRemovedSubscription = _sessionManager.socketService.onAidRemoved.listen((
+      removedData,
+    ) {
+      if (mounted) {
+        debugPrint(
+          '🗑️ Home: Received real-time aid removal: ${removedData.aidId}',
+        );
+        // If the removed aid is the currently selected one, clear it
+        if (_selectedAid != null && _selectedAid!.aidId == removedData.aidId) {
+          _updateSelectedAid(null);
+        }
       }
     });
   }
@@ -1277,6 +1302,20 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
           _isLoadingFamily = false;
         });
       }
+    }
+  }
+
+  /// Load identity verification status
+  Future<void> _loadIdentityStatus() async {
+    try {
+      final response = await IdentityVerificationService().getVerificationStatus();
+      if (mounted) {
+        setState(() {
+          _isIdentityVerified = response.isVerified;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading identity status: $e');
     }
   }
 
@@ -2245,7 +2284,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
     final aidEmoji = _selectedAid != null
         ? getAidEmoji(_selectedAid!.aidName)
-        : '📅';
+        : '🎁';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2375,11 +2414,22 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                             ],
                           ),
                         ] else ...[
+                          // Empty state - more engaging design
                           Text(
-                            l10n.noAidSelected,
+                            l10n.nextWithdrawal,
+                            style: const TextStyle(
+                              color: Color(0xFF1A1A2E),
+                              fontSize: 15,
+                              fontFamily: 'Nunito Sans',
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.tapToViewAids,
                             style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
+                              color: AppColors.primary,
+                              fontSize: 13,
                               fontFamily: 'Nunito Sans',
                               fontWeight: FontWeight.w600,
                             ),
@@ -3045,6 +3095,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
               Navigator.pop(context);
             },
             isOwner: false,
+            isIdentityVerified: _isIdentityVerified,
           ),
           body: IndexedStack(
             index: _currentNavIndex == 2 ? 1 : 0,

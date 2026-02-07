@@ -7,6 +7,7 @@ import '../../core/services/family_api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../l10n/app_localizations.dart';
+import '../support/screens/tawkto_chat_screen.dart';
 
 /// Screen for transferring family ownership to another member
 class TransferOwnershipScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   final _codeController = TextEditingController();
   final _focusNode = FocusNode();
 
-  // Rate limiting constants
+  // Rate limiting constants (frontend - for code verification attempts)
   static const String _transferAttemptKey = 'transfer_ownership_attempts';
   static const String _transferBlockedUntilKey =
       'transfer_ownership_blocked_until';
@@ -46,6 +47,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   String? _error;
   bool _isRateLimited = false;
   int _rateLimitRemainingMinutes = 0;
+  int _rateLimitRemainingDays = 0; // For backend rate limiting (max transfers per month)
+  bool _isBackendRateLimited = false; // Distinguish between frontend/backend rate limiting
 
   // Pending transfer state
   bool _hasPendingTransfer = false;
@@ -110,13 +113,30 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         setState(() {
           _canTransfer = result['canTransfer'] == true;
           _blockedReason = result['reason'] as String?;
+          
+          // Handle backend rate limiting (max transfers per 30 days)
+          if (result['isRateLimited'] == true) {
+            _isRateLimited = true;
+            _isBackendRateLimited = true;
+            _rateLimitRemainingDays = result['remainingDays'] as int? ?? 1;
+          }
         });
       }
     } catch (e) {
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
       if (mounted) {
+        // Check if it's an authentication error
+        if (errorMsg.toLowerCase().contains('unauthorized') || 
+            errorMsg.toLowerCase().contains('401') ||
+            errorMsg.toLowerCase().contains('authentication')) {
+          // Auth error - don't show blocked view, show error and let user retry
+          AppToast.error(context, 'Session expired. Please go back and try again.');
+          Navigator.of(context).pop();
+          return;
+        }
         setState(() {
           _canTransfer = false;
-          _blockedReason = e.toString().replaceFirst('Exception: ', '');
+          _blockedReason = errorMsg;
         });
       }
     }
@@ -426,11 +446,45 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     );
   }
 
+  /// Get display text for blocked reason
+  String _getBlockedReasonText(AppLocalizations l10n) {
+    if (_blockedReason == null) return l10n.transferOwnershipBlockedDesc;
+    
+    switch (_blockedReason) {
+      case 'verified_identity_contact_support':
+        return 'Your identity has been verified. To transfer ownership, please contact our support team.';
+      case 'verification_in_review':
+        return 'Your identity verification is under review. Please wait for the result before transferring ownership.';
+      case 'rate_limit_exceeded':
+        return 'You have reached the maximum number of ownership transfers. Please wait before transferring again.';
+      default:
+        if (_blockedReason!.contains('withdrawal')) {
+          return l10n.transferOwnershipBlockedDesc;
+        }
+        return _blockedReason!;
+    }
+  }
+  
+  /// Get info box text based on reason
+  String _getBlockedInfoText(AppLocalizations l10n) {
+    if (_blockedReason == 'verified_identity_contact_support') {
+      return 'For security reasons, verified accounts require support assistance to transfer ownership.';
+    }
+    if (_blockedReason == 'verification_in_review') {
+      return 'Verification usually takes a few minutes. You\'ll be notified once complete.';
+    }
+    return l10n.transferOwnershipWithdrawalNote;
+  }
+
   Widget _buildBlockedView(
     AppLocalizations l10n,
     double screenHeight,
     double screenWidth,
   ) {
+    final isVerifiedBlock = _blockedReason == 'verified_identity_contact_support';
+    final isInReviewBlock = _blockedReason == 'verification_in_review';
+    final isVerificationRelated = isVerifiedBlock || isInReviewBlock;
+    
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
       child: Column(
@@ -440,18 +494,28 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             width: screenHeight * 0.12,
             height: screenHeight * 0.12,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: isInReviewBlock 
+                  ? Colors.blue.withValues(alpha: 0.1)
+                  : AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.lock_outline,
+              isInReviewBlock 
+                  ? Icons.pending_outlined
+                  : isVerifiedBlock 
+                      ? Icons.verified_user_outlined 
+                      : Icons.lock_outline,
               size: screenHeight * 0.06,
-              color: AppColors.primary,
+              color: isInReviewBlock ? Colors.blue : AppColors.primary,
             ),
           ),
           SizedBox(height: screenHeight * 0.03),
           Text(
-            l10n.transferOwnershipBlocked,
+            isInReviewBlock 
+                ? 'Verification Under Review'
+                : isVerifiedBlock 
+                    ? 'Verified Account' 
+                    : l10n.transferOwnershipBlocked,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
               fontWeight: FontWeight.w700,
@@ -461,7 +525,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           ),
           SizedBox(height: screenHeight * 0.015),
           Text(
-            _blockedReason ?? l10n.transferOwnershipBlockedDesc,
+            _getBlockedReasonText(l10n),
             style: TextStyle(
               fontSize: screenHeight * 0.016,
               color: Colors.grey[600],
@@ -472,30 +536,75 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           Container(
             padding: EdgeInsets.all(screenWidth * 0.04),
             decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.1),
+              color: isVerificationRelated 
+                  ? Colors.blue.withValues(alpha: 0.1)
+                  : Colors.amber.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: isVerificationRelated 
+                    ? Colors.blue.withValues(alpha: 0.3)
+                    : Colors.amber.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
                 Icon(
-                  Icons.info_outline,
-                  color: Colors.amber[700],
+                  isInReviewBlock 
+                      ? Icons.schedule 
+                      : isVerifiedBlock 
+                          ? Icons.support_agent 
+                          : Icons.info_outline,
+                  color: isVerificationRelated ? Colors.blue[700] : Colors.amber[700],
                   size: screenHeight * 0.025,
                 ),
                 SizedBox(width: screenWidth * 0.03),
                 Expanded(
                   child: Text(
-                    l10n.transferOwnershipWithdrawalNote,
+                    _getBlockedInfoText(l10n),
                     style: TextStyle(
                       fontSize: screenHeight * 0.014,
-                      color: Colors.amber[800],
+                      color: isVerificationRelated ? Colors.blue[800] : Colors.amber[800],
                     ),
                   ),
                 ),
               ],
             ),
           ),
+          // Contact Support button for verified users
+          if (isVerifiedBlock) ...[
+            SizedBox(height: screenHeight * 0.03),
+            SizedBox(
+              width: double.infinity,
+              height: screenHeight * 0.06,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Navigate to Tawk.to chat screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TawkToChatScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                label: const Text(
+                  'Contact Support',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -506,6 +615,12 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     double screenHeight,
     double screenWidth,
   ) {
+    // Determine if this is backend rate limiting (days) or frontend rate limiting (minutes)
+    final isBackendLimit = _isBackendRateLimited;
+    final displayTime = isBackendLimit 
+        ? '$_rateLimitRemainingDays ${_rateLimitRemainingDays == 1 ? 'day' : 'days'}'
+        : '$_rateLimitRemainingMinutes ${_rateLimitRemainingMinutes == 1 ? 'minute' : 'minutes'}';
+    
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
       child: Column(
@@ -519,14 +634,14 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.timer_outlined,
+              isBackendLimit ? Icons.swap_horiz_rounded : Icons.timer_outlined,
               size: screenHeight * 0.06,
               color: Colors.orange,
             ),
           ),
           SizedBox(height: screenHeight * 0.03),
           Text(
-            l10n.tooManyAttemptsTitle,
+            isBackendLimit ? 'Transfer Limit Reached' : l10n.tooManyAttemptsTitle,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
               fontWeight: FontWeight.w700,
@@ -536,7 +651,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           ),
           SizedBox(height: screenHeight * 0.015),
           Text(
-            l10n.tooManyAttempts(_rateLimitRemainingMinutes),
+            isBackendLimit 
+                ? 'You have reached the maximum of 2 ownership transfers per month. Please try again in $displayTime.'
+                : l10n.tooManyAttempts(_rateLimitRemainingMinutes),
             style: TextStyle(
               fontSize: screenHeight * 0.016,
               color: Colors.grey[600],
@@ -561,7 +678,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                 SizedBox(width: screenWidth * 0.03),
                 Expanded(
                   child: Text(
-                    'Vous avez effectué trop de tentatives de transfert. Veuillez patienter avant de réessayer.',
+                    isBackendLimit 
+                        ? 'This limit helps prevent abuse and ensures security for all family members.'
+                        : 'Vous avez effectué trop de tentatives de transfert. Veuillez patienter avant de réessayer.',
                     style: TextStyle(
                       fontSize: screenHeight * 0.014,
                       color: Colors.orange[800],

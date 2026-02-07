@@ -15,6 +15,7 @@ import '../../core/services/socket_service.dart'
         FamilyMemberJoinedData,
         PointsEarnedData,
         AidSelectedData,
+        AidRemovedData,
         MemberLeftData,
         BalanceUpdatedData,
         ProfilePictureUpdatedData,
@@ -50,6 +51,7 @@ import '../statement/screens/statement_screen.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 import '../topup/screens/topup_screen.dart';
 import '../family/transfer_ownership_screen.dart';
+import '../../core/services/identity_verification_service.dart';
 import 'family_member_home_screen.dart';
 import 'widgets/home_header_widget.dart';
 
@@ -125,6 +127,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
   bool _aidWindowOpen = false;
   StreamSubscription<CurrentPackData>? _packDataSubscription;
   StreamSubscription<AidSelectedData>? _aidSelectedSubscription;
+  StreamSubscription<AidRemovedData>? _aidRemovedSubscription;
+
+  // Identity Verification
+  bool _isIdentityVerified = false;
 
   // Pull-to-refresh rate limiting
   static const int _maxRefreshes = 10;
@@ -155,6 +161,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _loadSelectedAid();
     _listenToPackUpdates();
     _listenToAidSelectedSocket();
+    _listenToAidRemovedSocket();
+    _loadIdentityStatus(); // Load identity verification status
     // WebSocket handles real-time session invalidation via SessionManager
     _checkTutorialStatus();
   }
@@ -209,6 +217,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _balanceUpdatedSubscription?.cancel();
     _packDataSubscription?.cancel();
     _aidSelectedSubscription?.cancel();
+    _aidRemovedSubscription?.cancel();
     _rateLimitTimer?.cancel();
     super.dispose();
   }
@@ -379,8 +388,8 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
         _updateSelectedAid(cachedAid);
       }
 
-      // Always fetch from API to get latest data
-      final data = await _packService.fetchCurrentPack();
+      // Always fetch from API to get latest data (force refresh)
+      final data = await _packService.fetchCurrentPack(forceRefresh: true);
       if (mounted) {
         if (data.selectedAids.isNotEmpty) {
           _updateSelectedAid(data.selectedAids.first);
@@ -440,8 +449,35 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     });
   }
 
+  void _listenToAidRemovedSocket() {
+    _aidRemovedSubscription = _sessionManager.socketService.onAidRemoved.listen((
+      removedData,
+    ) {
+      if (mounted) {
+        debugPrint(
+          '🗑️ Home: Received real-time aid removal: ${removedData.aidId}',
+        );
+        // If the removed aid is the currently selected one, clear it
+        if (_selectedAid != null && _selectedAid!.aidId == removedData.aidId) {
+          _updateSelectedAid(null);
+        }
+      }
+    });
+  }
+
   /// Update selected aid and calculate days
-  void _updateSelectedAid(SelectedAidModel aid) {
+  void _updateSelectedAid(SelectedAidModel? aid) {
+    if (!mounted) return;
+
+    if (aid == null) {
+      setState(() {
+        _selectedAid = null;
+        _daysUntilAid = null;
+        _aidWindowOpen = false;
+      });
+      return;
+    }
+
     final now = DateTime.now();
     int? daysUntil;
     bool windowOpen = false;
@@ -952,6 +988,20 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     }
   }
 
+  /// Load identity verification status
+  Future<void> _loadIdentityStatus() async {
+    try {
+      final response = await IdentityVerificationService().getVerificationStatus();
+      if (mounted) {
+        setState(() {
+          _isIdentityVerified = response.isVerified;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading identity status: $e');
+    }
+  }
+
   /// Refresh family data silently without showing loading states
   Future<void> _refreshFamilyDataSilently() async {
     try {
@@ -1150,6 +1200,15 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
     // Refresh balance from API after returning from TopUp
     _loadFamilyBalance();
+  }
+
+  /// Navigate to Current Pack screen for withdraw access
+  void _navigateToWithdraw(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CurrentPackScreen(),
+      ),
+    ).then((_) => _loadSelectedAid());
   }
 
   /// Initialize notification service and listen for updates
@@ -1965,6 +2024,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               _openTransferOwnership();
             },
             isOwner: true,
+            isIdentityVerified: _isIdentityVerified,
           ),
           body: IndexedStack(
             index: _currentNavIndex == 2 ? 1 : 0,
@@ -2104,7 +2164,7 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
               balance: NumberFormatter.formatBalance(_familyBalance),
               points: _familyPoints,
               onTopUp: () => _navigateToTopUp(context),
-              onWithdraw: () {},
+              onWithdraw: () => _navigateToWithdraw(context),
               onStatement: () => _navigateToStatement(context),
               onPoints: () => _navigateToRewards(context),
               onNotification: () => _handleNotificationTap(context),
@@ -2187,22 +2247,33 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
           },
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFEE3764).withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(15),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFEE3764).withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEE3764).withValues(alpha: 0.12),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEE3764).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFFEE3764).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(
-                    child: Text('🎁', style: TextStyle(fontSize: 20)),
+                    child: Text('🎁', style: TextStyle(fontSize: 24)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -2213,19 +2284,20 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                       Text(
                         l10n.nextWithdrawal,
                         style: const TextStyle(
-                          color: Color(0xFF13123A),
-                          fontSize: 12,
+                          color: Color(0xFF1A1A2E),
+                          fontSize: 15,
                           fontFamily: 'Nunito Sans',
                           fontWeight: FontWeight.w700,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         l10n.selectAnAid,
                         style: const TextStyle(
                           color: AppColors.primary,
-                          fontSize: 12,
+                          fontSize: 13,
                           fontFamily: 'Nunito Sans',
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -2233,9 +2305,10 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
                 ),
                 Icon(
                   Directionality.of(context) == TextDirection.rtl
-                      ? Icons.chevron_left
-                      : Icons.chevron_right,
-                  color: const Color(0xFF13123A),
+                      ? Icons.chevron_left_rounded
+                      : Icons.chevron_right_rounded,
+                  color: const Color(0xFFEE3764),
+                  size: 24,
                 ),
               ],
             ),
