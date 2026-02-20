@@ -745,6 +745,9 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
           lastName: response.user?.lastName,
           fullName: response.user?.fullName,
           email: response.user?.email ?? user.email,
+          phone: response.user?.phone,
+          profilePictureUrl: response.user?.profilePictureUrl,
+          identityVerified: response.user?.identityVerified,
         );
 
         final settings = await _biometricService.getSecuritySettings();

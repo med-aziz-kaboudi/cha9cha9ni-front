@@ -889,7 +889,7 @@ abstract class AppLocalizations {
   /// No description provided for @withdraw.
   ///
   /// In en, this message translates to:
-  /// **'withdraw'**
+  /// **'Withdraw'**
   String get withdraw;
 
   /// No description provided for @statement.
@@ -1149,6 +1149,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Profile updated successfully!'**
   String get profileUpdatedSuccessfully;
+
+  /// No description provided for @nameLockedAfterVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get nameLockedAfterVerification;
+
+  /// No description provided for @accountAlreadyVerifiedWithId.
+  ///
+  /// In en, this message translates to:
+  /// **'This identity document is already linked to another account.'**
+  String get accountAlreadyVerifiedWithId;
 
   /// No description provided for @takePhoto.
   ///
@@ -3897,6 +3909,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your identity is verified. Please contact support to transfer ownership.'**
   String get transferOwnershipContactSupport;
+
+  /// No description provided for @sessionExpiredGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please go back and try again.'**
+  String get sessionExpiredGoBack;
+
+  /// No description provided for @memberFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get memberFallback;
+
+  /// No description provided for @transferCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer cancelled'**
+  String get transferCancelled;
+
+  /// No description provided for @newCodeSentEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'New code sent to your email'**
+  String get newCodeSentEmail;
+
+  /// No description provided for @resend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend'**
+  String get resend;
+
+  /// No description provided for @verifiedAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified Account'**
+  String get verifiedAccountTitle;
+
+  /// No description provided for @verificationUnderReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Under Review'**
+  String get verificationUnderReviewTitle;
+
+  /// No description provided for @verifiedIdentityTransferDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity has been verified. To transfer ownership, please contact our support team.'**
+  String get verifiedIdentityTransferDesc;
+
+  /// No description provided for @verificationUnderReviewTransferDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification is under review. Please wait for the result before transferring ownership.'**
+  String get verificationUnderReviewTransferDesc;
+
+  /// No description provided for @transferRateLimitExceededDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the maximum number of ownership transfers. Please wait before transferring again.'**
+  String get transferRateLimitExceededDesc;
+
+  /// No description provided for @verifiedAccountSecurityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'For security reasons, verified accounts require support assistance to transfer ownership.'**
+  String get verifiedAccountSecurityNote;
+
+  /// No description provided for @verificationPendingNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification usually takes a few minutes. You will be notified once complete.'**
+  String get verificationPendingNote;
+
+  /// No description provided for @transferLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Limit Reached'**
+  String get transferLimitReached;
+
+  /// No description provided for @transferLimitReachedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the maximum of 2 ownership transfers per month. Please try again in {displayTime}.'**
+  String transferLimitReachedDesc(String displayTime);
+
+  /// No description provided for @transferLimitSecurityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This limit helps prevent abuse and ensures security for all family members.'**
+  String get transferLimitSecurityNote;
+
+  /// No description provided for @tooManyTransferAttemptsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You have made too many transfer attempts. Please wait before trying again.'**
+  String get tooManyTransferAttemptsNote;
+
+  /// No description provided for @pendingTransferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Transfer'**
+  String get pendingTransferTitle;
+
+  /// No description provided for @pendingTransferDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You have a pending transfer to {name}. Enter the code received by email to confirm, or cancel the transfer.'**
+  String pendingTransferDesc(String name);
+
+  /// No description provided for @withdrawVerifyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Your Identity'**
+  String get withdrawVerifyTitle;
+
+  /// No description provided for @withdrawVerifySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification is required before you can withdraw funds. It only takes a minute.'**
+  String get withdrawVerifySubtitle;
+
+  /// No description provided for @withdrawStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Your ID'**
+  String get withdrawStep1Title;
+
+  /// No description provided for @withdrawStep1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit your government-issued ID for a quick verification.'**
+  String get withdrawStep1Desc;
+
+  /// No description provided for @withdrawStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for Approval'**
+  String get withdrawStep2Title;
+
+  /// No description provided for @withdrawStep2Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Our team reviews your documents — usually within minutes.'**
+  String get withdrawStep2Desc;
+
+  /// No description provided for @withdrawStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw Funds'**
+  String get withdrawStep3Title;
+
+  /// No description provided for @withdrawStep3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Once verified, you can withdraw from your selected aids.'**
+  String get withdrawStep3Desc;
+
+  /// No description provided for @continueVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Verification'**
+  String get continueVerification;
+
+  /// No description provided for @underReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Review'**
+  String get underReview;
+
+  /// No description provided for @retryVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Verification'**
+  String get retryVerification;
+
+  /// No description provided for @withdrawReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to Withdraw'**
+  String get withdrawReady;
+
+  /// No description provided for @withdrawalQuota.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal Quota'**
+  String get withdrawalQuota;
+
+  /// No description provided for @withdrawalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Selected Aids'**
+  String get withdrawalDetails;
+
+  /// No description provided for @withdrawalsThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals this year'**
+  String get withdrawalsThisYear;
+
+  /// No description provided for @noWithdrawalsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'No withdrawals left this year'**
+  String get noWithdrawalsLeft;
+
+  /// No description provided for @withdrawalsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} withdrawals remaining'**
+  String withdrawalsRemaining(int count);
+
+  /// No description provided for @noAidSelectedYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No Aid Selected'**
+  String get noAidSelectedYet;
+
+  /// No description provided for @noAidSelectedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an aid to see your withdrawal details and available amounts.'**
+  String get noAidSelectedDesc;
+
+  /// No description provided for @changeAid.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Aid Selection'**
+  String get changeAid;
+
+  /// No description provided for @withdrawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get withdrawn;
+
+  /// No description provided for @expired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expired;
+
+  /// No description provided for @upcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get upcoming;
+
+  /// No description provided for @withdrawnOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn on'**
+  String get withdrawnOn;
+
+  /// No description provided for @withdrawalWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal Window'**
+  String get withdrawalWindow;
+
+  /// No description provided for @aidDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Aid Dates'**
+  String get aidDates;
+
+  /// No description provided for @viewPacks.
+  ///
+  /// In en, this message translates to:
+  /// **'View Packs'**
+  String get viewPacks;
 }
 
 class _AppLocalizationsDelegate

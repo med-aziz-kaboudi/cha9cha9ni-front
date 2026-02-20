@@ -6,6 +6,8 @@ class UserModel {
   final String? fullName;
   final String? phone;
   final bool isVerified;
+  final bool identityVerified;
+  final String? profilePictureUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -17,6 +19,8 @@ class UserModel {
     this.fullName,
     this.phone,
     this.isVerified = false,
+    this.identityVerified = false,
+    this.profilePictureUrl,
     this.createdAt,
     this.updatedAt,
   });
@@ -44,6 +48,8 @@ class UserModel {
       fullName: json['fullName']?.toString(),
       phone: json['phone']?.toString(),
       isVerified: json['isVerified'] as bool? ?? false,
+      identityVerified: json['identityVerified'] as bool? ?? false,
+      profilePictureUrl: json['profilePictureUrl']?.toString(),
       createdAt: json['createdAt'] != null 
           ? DateTime.tryParse(json['createdAt'].toString()) 
           : null,
@@ -62,6 +68,8 @@ class UserModel {
       'fullName': fullName,
       'phone': phone,
       'isVerified': isVerified,
+      'identityVerified': identityVerified,
+      'profilePictureUrl': profilePictureUrl,
       if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
       if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     };
@@ -75,6 +83,8 @@ class UserModel {
     String? fullName,
     String? phone,
     bool? isVerified,
+    bool? identityVerified,
+    String? profilePictureUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -86,6 +96,8 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       phone: phone ?? this.phone,
       isVerified: isVerified ?? this.isVerified,
+      identityVerified: identityVerified ?? this.identityVerified,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -1406,11 +1407,23 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
 
   Future<void> _handleSignOut(BuildContext context) async {
     try {
-      await _tokenStorage.clearTokens();
+      // Disconnect WebSocket first
+      _sessionManager.disconnectSocket();
+
+      await _tokenStorage.clearAll();
       await PendingVerificationHelper.clear();
       await BiometricService().clearSecurityCache();
       await ActivityService().clearCache();
       TopUpService.clearCache();
+      await _packService.clearCache();
+      _packService.reset();
+
+      // Clear cached images (profile pictures, etc.)
+      await DefaultCacheManager().emptyCache();
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+
+      _sessionManager.resetHandlingFlag();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {

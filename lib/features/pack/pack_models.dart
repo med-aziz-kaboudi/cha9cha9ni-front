@@ -8,6 +8,7 @@ class PackModel {
   final int withdrawalsPerYear;
   final int maxAidsSelectable;
   final int maxFamilyMembers;
+  final double yearlyWithdrawalMultiplier;
 
   PackModel({
     required this.id,
@@ -18,6 +19,7 @@ class PackModel {
     required this.withdrawalsPerYear,
     required this.maxAidsSelectable,
     required this.maxFamilyMembers,
+    this.yearlyWithdrawalMultiplier = 1.0,
   });
 
   factory PackModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class PackModel {
       withdrawalsPerYear: json['withdrawalsPerYear'] ?? 1,
       maxAidsSelectable: json['maxAidsSelectable'] ?? 1,
       maxFamilyMembers: json['maxFamilyMembers'] ?? 5,
+      yearlyWithdrawalMultiplier: (json['yearlyWithdrawalMultiplier'] ?? 1.0).toDouble(),
     );
   }
 

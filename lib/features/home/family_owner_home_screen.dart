@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -45,6 +46,7 @@ import '../settings/screens/login_security_screen.dart';
 import '../notifications/screens/notifications_screen.dart';
 import '../scan/screens/scan_screen.dart';
 import '../pack/screens/current_pack_screen.dart';
+import '../pack/screens/withdraw_screen.dart';
 import '../pack/pack_models.dart';
 import '../pack/pack_service.dart';
 import '../statement/screens/statement_screen.dart';
@@ -1120,11 +1122,23 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
 
   Future<void> _handleSignOut(BuildContext context) async {
     try {
-      await _tokenStorage.clearTokens();
+      // Disconnect WebSocket first
+      _sessionManager.disconnectSocket();
+
+      await _tokenStorage.clearAll();
       await PendingVerificationHelper.clear();
       await BiometricService().clearSecurityCache();
       await ActivityService().clearCache();
       TopUpService.clearCache();
+      await _packService.clearCache();
+      _packService.reset();
+
+      // Clear cached images (profile pictures, etc.)
+      await DefaultCacheManager().emptyCache();
+      PaintingBinding.instance.imageCache.clear();
+      PaintingBinding.instance.imageCache.clearLiveImages();
+
+      _sessionManager.resetHandlingFlag();
 
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
@@ -1202,11 +1216,11 @@ class _FamilyOwnerHomeScreenState extends State<FamilyOwnerHomeScreen>
     _loadFamilyBalance();
   }
 
-  /// Navigate to Current Pack screen for withdraw access
+  /// Navigate to Withdraw screen
   void _navigateToWithdraw(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const CurrentPackScreen(),
+        builder: (context) => const WithdrawScreen(),
       ),
     ).then((_) => _loadSelectedAid());
   }

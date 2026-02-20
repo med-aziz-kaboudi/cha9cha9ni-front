@@ -6,6 +6,7 @@ import '../../core/models/family_model.dart';
 import '../../core/services/family_api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_toast.dart';
+import '../../core/widgets/skeleton_loading.dart';
 import '../../l10n/app_localizations.dart';
 import '../support/screens/tawkto_chat_screen.dart';
 
@@ -130,7 +131,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             errorMsg.toLowerCase().contains('401') ||
             errorMsg.toLowerCase().contains('authentication')) {
           // Auth error - don't show blocked view, show error and let user retry
-          AppToast.error(context, 'Session expired. Please go back and try again.');
+          final l10n = AppLocalizations.of(context)!;
+          AppToast.error(context, l10n.sessionExpiredGoBack);
           Navigator.of(context).pop();
           return;
         }
@@ -175,7 +177,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     if (_selectedMember != null) {
       return _selectedMember!.name;
     }
-    return _pendingNewOwnerName ?? 'Membre';
+    return _pendingNewOwnerName ?? (AppLocalizations.of(context)?.memberFallback ?? 'Member');
   }
 
   /// Get the initial of the transfer target
@@ -239,9 +241,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             _rateLimitRemainingMinutes = remaining > 0 ? remaining + 1 : 1;
             _canTransfer = false;
           });
+          final l10n = AppLocalizations.of(context)!;
           AppToast.error(
             context,
-            'Trop de tentatives. Réessayez dans $_rateLimitRemainingMinutes minutes.',
+            l10n.tooManyAttempts(_rateLimitRemainingMinutes),
           );
         }
         return;
@@ -348,7 +351,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
       try {
         await _familyApi.cancelTransfer(_requestId!);
         if (mounted) {
-          AppToast.success(context, 'Transfert annulé');
+          final l10n = AppLocalizations.of(context)!;
+          AppToast.success(context, l10n.transferCancelled);
         }
       } catch (e) {
         debugPrint('Failed to cancel transfer: $e');
@@ -387,7 +391,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
         setState(() {
           _isProcessing = false;
         });
-        AppToast.success(context, 'Nouveau code envoyé par email');
+        final l10n = AppLocalizations.of(context)!;
+        AppToast.success(context, l10n.newCodeSentEmail);
       }
     } catch (e) {
       if (mounted) {
@@ -432,9 +437,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
+            ? _buildSkeletonLoading(screenHeight, screenWidth)
             : _isRateLimited
             ? _buildRateLimitedView(l10n, screenHeight, screenWidth)
             : !_canTransfer
@@ -446,17 +449,151 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     );
   }
 
+  Widget _buildSkeletonLoading(double screenHeight, double screenWidth) {
+    return Padding(
+      padding: EdgeInsets.all(screenWidth * 0.05),
+      child: SkeletonShimmer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Warning box skeleton
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: screenHeight * 0.03,
+                    height: screenHeight * 0.03,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.03),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: screenWidth * 0.5,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: screenHeight * 0.03),
+
+            // "Select new owner" title skeleton
+            Container(
+              width: 140,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+
+            SizedBox(height: screenHeight * 0.015),
+
+            // Member list skeletons
+            ...List.generate(3, (index) => Padding(
+              padding: EdgeInsets.only(bottom: screenHeight * 0.01),
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: screenHeight * 0.056,
+                      height: screenHeight * 0.056,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.04),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: 180,
+                            height: 11,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )),
+
+            const Spacer(),
+
+            // Button skeleton
+            Container(
+              width: double.infinity,
+              height: screenHeight * 0.06,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Get display text for blocked reason
   String _getBlockedReasonText(AppLocalizations l10n) {
     if (_blockedReason == null) return l10n.transferOwnershipBlockedDesc;
     
     switch (_blockedReason) {
       case 'verified_identity_contact_support':
-        return 'Your identity has been verified. To transfer ownership, please contact our support team.';
+        return l10n.verifiedIdentityTransferDesc;
       case 'verification_in_review':
-        return 'Your identity verification is under review. Please wait for the result before transferring ownership.';
+        return l10n.verificationUnderReviewTransferDesc;
       case 'rate_limit_exceeded':
-        return 'You have reached the maximum number of ownership transfers. Please wait before transferring again.';
+        return l10n.transferRateLimitExceededDesc;
       default:
         if (_blockedReason!.contains('withdrawal')) {
           return l10n.transferOwnershipBlockedDesc;
@@ -468,10 +605,10 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
   /// Get info box text based on reason
   String _getBlockedInfoText(AppLocalizations l10n) {
     if (_blockedReason == 'verified_identity_contact_support') {
-      return 'For security reasons, verified accounts require support assistance to transfer ownership.';
+      return l10n.verifiedAccountSecurityNote;
     }
     if (_blockedReason == 'verification_in_review') {
-      return 'Verification usually takes a few minutes. You\'ll be notified once complete.';
+      return l10n.verificationPendingNote;
     }
     return l10n.transferOwnershipWithdrawalNote;
   }
@@ -512,9 +649,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           SizedBox(height: screenHeight * 0.03),
           Text(
             isInReviewBlock 
-                ? 'Verification Under Review'
+                ? l10n.verificationUnderReviewTitle
                 : isVerifiedBlock 
-                    ? 'Verified Account' 
+                    ? l10n.verifiedAccountTitle 
                     : l10n.transferOwnershipBlocked,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
@@ -587,9 +724,9 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                   );
                 },
                 icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                label: const Text(
-                  'Contact Support',
-                  style: TextStyle(
+                label: Text(
+                  l10n.contactSupport,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -619,7 +756,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
     final isBackendLimit = _isBackendRateLimited;
     final displayTime = isBackendLimit 
         ? '$_rateLimitRemainingDays ${_rateLimitRemainingDays == 1 ? 'day' : 'days'}'
-        : '$_rateLimitRemainingMinutes ${_rateLimitRemainingMinutes == 1 ? 'minute' : 'minutes'}';
+        : '$_rateLimitRemainingMinutes min';
     
     return Padding(
       padding: EdgeInsets.all(screenWidth * 0.06),
@@ -641,7 +778,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           ),
           SizedBox(height: screenHeight * 0.03),
           Text(
-            isBackendLimit ? 'Transfer Limit Reached' : l10n.tooManyAttemptsTitle,
+            isBackendLimit ? l10n.transferLimitReached : l10n.tooManyAttemptsTitle,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
               fontWeight: FontWeight.w700,
@@ -652,7 +789,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           SizedBox(height: screenHeight * 0.015),
           Text(
             isBackendLimit 
-                ? 'You have reached the maximum of 2 ownership transfers per month. Please try again in $displayTime.'
+                ? l10n.transferLimitReachedDesc(displayTime)
                 : l10n.tooManyAttempts(_rateLimitRemainingMinutes),
             style: TextStyle(
               fontSize: screenHeight * 0.016,
@@ -679,8 +816,8 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
                 Expanded(
                   child: Text(
                     isBackendLimit 
-                        ? 'This limit helps prevent abuse and ensures security for all family members.'
-                        : 'Vous avez effectué trop de tentatives de transfert. Veuillez patienter avant de réessayer.',
+                        ? l10n.transferLimitSecurityNote
+                        : l10n.tooManyTransferAttemptsNote,
                     style: TextStyle(
                       fontSize: screenHeight * 0.014,
                       color: Colors.orange[800],
@@ -976,7 +1113,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
           SizedBox(height: screenHeight * 0.025),
 
           Text(
-            _hasPendingTransfer ? 'Transfert en attente' : l10n.verifyTransfer,
+            _hasPendingTransfer ? l10n.pendingTransferTitle : l10n.verifyTransfer,
             style: TextStyle(
               fontSize: screenHeight * 0.024,
               fontWeight: FontWeight.w700,
@@ -991,7 +1128,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Text(
               _hasPendingTransfer
-                  ? 'Vous avez un transfert en cours vers ${_getTransferTargetName()}. Entrez le code reçu par email pour confirmer, ou annulez le transfert.'
+                  ? l10n.pendingTransferDesc(_getTransferTargetName())
                   : l10n.transferCodeSent,
               style: TextStyle(
                 fontSize: screenHeight * 0.015,
@@ -1090,7 +1227,7 @@ class _TransferOwnershipScreenState extends State<TransferOwnershipScreen> {
               GestureDetector(
                 onTap: !_isProcessing ? _resendCode : null,
                 child: Text(
-                  'Renvoyer',
+                  l10n.resend,
                   style: TextStyle(
                     color: _isProcessing ? Colors.grey : AppColors.primary,
                     fontSize: screenHeight * 0.013,

@@ -16,6 +16,7 @@ class UserProfile {
   final String? profilePictureUrl;
   final String? familyId;
   final bool isOwner;
+  final bool identityVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -29,6 +30,7 @@ class UserProfile {
     this.profilePictureUrl,
     this.familyId,
     required this.isOwner,
+    this.identityVerified = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -44,6 +46,7 @@ class UserProfile {
       profilePictureUrl: json['profilePictureUrl'],
       familyId: json['familyId'],
       isOwner: json['isOwner'] ?? false,
+      identityVerified: json['identityVerified'] ?? false,
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
     );

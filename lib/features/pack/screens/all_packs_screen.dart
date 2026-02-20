@@ -16,13 +16,29 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
   final _packService = PackService();
   bool _isYearly = false; // Toggle for monthly/yearly pricing
   
-  // Pack details with max amounts
-  static const Map<String, int> _maxWithdrawAmounts = {
+  // Pack details with max amounts (monthly)
+  static const Map<String, int> _maxWithdrawAmountsMonthly = {
     'free': 1000,
     'plus': 1500,
     'pro': 2000,
     'premium': 3000,
   };
+  
+  // Pack details with max amounts (yearly - boosted)
+  static const Map<String, int> _maxWithdrawAmountsYearly = {
+    'free': 1000,
+    'plus': 3000,
+    'pro': 4000,
+    'premium': 5000,
+  };
+  
+  /// Get max withdrawal amount based on current toggle
+  int _getMaxWithdrawAmount(String packName) {
+    if (_isYearly) {
+      return _maxWithdrawAmountsYearly[packName] ?? 1000;
+    }
+    return _maxWithdrawAmountsMonthly[packName] ?? 1000;
+  }
   
   /// Hardcoded packs - these are always available
   static final List<PackModel> _defaultPacks = [
@@ -35,6 +51,7 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
       withdrawalsPerYear: 1,
       maxAidsSelectable: 1,
       maxFamilyMembers: 99, // Unlimited
+      yearlyWithdrawalMultiplier: 1.0,
     ),
     PackModel(
       id: 'plus',
@@ -45,6 +62,7 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
       withdrawalsPerYear: 3,
       maxAidsSelectable: 2,
       maxFamilyMembers: 99, // Unlimited
+      yearlyWithdrawalMultiplier: 2.0,
     ),
     PackModel(
       id: 'pro',
@@ -55,6 +73,7 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
       withdrawalsPerYear: 5,
       maxAidsSelectable: 3,
       maxFamilyMembers: 99, // Unlimited
+      yearlyWithdrawalMultiplier: 2.0,
     ),
     PackModel(
       id: 'premium',
@@ -65,6 +84,7 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
       withdrawalsPerYear: 8,
       maxAidsSelectable: 5,
       maxFamilyMembers: 99, // Unlimited
+      yearlyWithdrawalMultiplier: 1.67,
     ),
   ];
   
@@ -563,12 +583,19 @@ class _AllPacksScreenState extends State<AllPacksScreen> {
                     const SizedBox(height: 6),
                     
                     // Max withdrawal amount
-                    Text(
-                      l10n.upToAmount(_maxWithdrawAmounts[pack.name] ?? 1000),
-                      style: TextStyle(
-                        color: AppColors.dark.withOpacity(0.55),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                      child: Text(
+                        l10n.upToAmount(_getMaxWithdrawAmount(pack.name)),
+                        key: ValueKey<String>('${pack.name}_${_isYearly}'),
+                        style: TextStyle(
+                          color: AppColors.dark.withOpacity(0.55),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     

@@ -166,7 +166,7 @@
   "topUpPointsEarned": "points earned",
   "topUpNewBalance": "New balance",
   "topUpScanQR": "Or scan QR code",
-  "withdraw": "withdraw",
+  "withdraw": "Withdraw",
   "statement": "Statement",
   "nextWithdrawal": "Next Withdrawal",
   "availableInDays": "Available in {days} days",
@@ -217,6 +217,8 @@
   "firstNameRequired": "First name is required",
   "lastNameRequired": "Last name is required",
   "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "nameLockedAfterVerification": "Verified",
+  "accountAlreadyVerifiedWithId": "This identity document is already linked to another account.",
   "takePhoto": "Take Photo",
   "chooseFromGallery": "Choose from Gallery",
   "removePhoto": "Remove Photo",
@@ -1122,5 +1124,67 @@
   "verificationInProgress": "Verification in progress...",
   "identityVerified": "Identity verified",
   "verifyIdentityDescription": "Verify your identity to enable additional features",
-  "transferOwnershipContactSupport": "Your identity is verified. Please contact support to transfer ownership."
+  "transferOwnershipContactSupport": "Your identity is verified. Please contact support to transfer ownership.",
+
+  "sessionExpiredGoBack": "Session expired. Please go back and try again.",
+  "memberFallback": "Member",
+  "transferCancelled": "Transfer cancelled",
+  "newCodeSentEmail": "New code sent to your email",
+  "resend": "Resend",
+  "verifiedAccountTitle": "Verified Account",
+  "verificationUnderReviewTitle": "Verification Under Review",
+  "verifiedIdentityTransferDesc": "Your identity has been verified. To transfer ownership, please contact our support team.",
+  "verificationUnderReviewTransferDesc": "Your identity verification is under review. Please wait for the result before transferring ownership.",
+  "transferRateLimitExceededDesc": "You have reached the maximum number of ownership transfers. Please wait before transferring again.",
+  "verifiedAccountSecurityNote": "For security reasons, verified accounts require support assistance to transfer ownership.",
+  "verificationPendingNote": "Verification usually takes a few minutes. You will be notified once complete.",
+  "transferLimitReached": "Transfer Limit Reached",
+  "transferLimitReachedDesc": "You have reached the maximum of 2 ownership transfers per month. Please try again in {displayTime}.",
+  "@transferLimitReachedDesc": {
+    "placeholders": {
+      "displayTime": {"type": "String"}
+    }
+  },
+  "transferLimitSecurityNote": "This limit helps prevent abuse and ensures security for all family members.",
+  "tooManyTransferAttemptsNote": "You have made too many transfer attempts. Please wait before trying again.",
+  "pendingTransferTitle": "Pending Transfer",
+  "pendingTransferDesc": "You have a pending transfer to {name}. Enter the code received by email to confirm, or cancel the transfer.",
+  "@pendingTransferDesc": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "withdrawVerifyTitle": "Verify Your Identity",
+  "withdrawVerifySubtitle": "Identity verification is required before you can withdraw funds. It only takes a minute.",
+  "withdrawStep1Title": "Verify Your ID",
+  "withdrawStep1Desc": "Submit your government-issued ID for a quick verification.",
+  "withdrawStep2Title": "Wait for Approval",
+  "withdrawStep2Desc": "Our team reviews your documents — usually within minutes.",
+  "withdrawStep3Title": "Withdraw Funds",
+  "withdrawStep3Desc": "Once verified, you can withdraw from your selected aids.",
+  "continueVerification": "Continue Verification",
+  "underReview": "Under Review",
+  "retryVerification": "Retry Verification",
+  "withdrawReady": "Ready to Withdraw",
+  "withdrawalQuota": "Withdrawal Quota",
+  "withdrawalDetails": "Your Selected Aids",
+  "withdrawalsThisYear": "Withdrawals this year",
+  "noWithdrawalsLeft": "No withdrawals left this year",
+  "withdrawalsRemaining": "{count} withdrawals remaining",
+  "@withdrawalsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "noAidSelectedYet": "No Aid Selected",
+  "noAidSelectedDesc": "Select an aid to see your withdrawal details and available amounts.",
+  "changeAid": "Change Aid Selection",
+  "withdrawn": "Withdrawn",
+  "expired": "Expired",
+  "upcoming": "Upcoming",
+  "withdrawnOn": "Withdrawn on",
+  "withdrawalWindow": "Withdrawal Window",
+  "aidDates": "Aid Dates",
+  "viewPacks": "View Packs"
 }

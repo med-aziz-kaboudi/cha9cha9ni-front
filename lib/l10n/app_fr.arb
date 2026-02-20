@@ -203,6 +203,8 @@
   "firstNameRequired": "Le prénom est requis",
   "lastNameRequired": "Le nom de famille est requis",
   "profileUpdatedSuccessfully": "Profil mis à jour avec succès!",
+  "nameLockedAfterVerification": "Vérifié",
+  "accountAlreadyVerifiedWithId": "Ce document d'identité est déjà lié à un autre compte.",
   "takePhoto": "Prendre une Photo",
   "chooseFromGallery": "Choisir dans la Galerie",
   "removePhoto": "Supprimer la Photo",
@@ -1085,5 +1087,73 @@
   "verificationInProgress": "Vérification en cours...",
   "identityVerified": "Identité vérifiée",
   "verifyIdentityDescription": "Vérifiez votre identité pour activer des fonctionnalités supplémentaires",
-  "transferOwnershipContactSupport": "Votre identité est vérifiée. Veuillez contacter le support pour transférer la propriété."
+  "transferOwnershipContactSupport": "Votre identité est vérifiée. Veuillez contacter le support pour transférer la propriété.",
+
+  "sessionExpiredGoBack": "Session expirée. Veuillez revenir en arrière et réessayer.",
+  "memberFallback": "Membre",
+  "transferCancelled": "Transfert annulé",
+  "newCodeSentEmail": "Nouveau code envoyé par email",
+  "resend": "Renvoyer",
+  "verifiedAccountTitle": "Compte vérifié",
+  "verificationUnderReviewTitle": "Vérification en cours",
+  "verifiedIdentityTransferDesc": "Votre identité a été vérifiée. Pour transférer la propriété, veuillez contacter notre équipe de support.",
+  "verificationUnderReviewTransferDesc": "La vérification de votre identité est en cours d'examen. Veuillez attendre le résultat avant de transférer la propriété.",
+  "transferRateLimitExceededDesc": "Vous avez atteint le nombre maximum de transferts de propriété. Veuillez patienter avant de réessayer.",
+  "verifiedAccountSecurityNote": "Pour des raisons de sécurité, les comptes vérifiés nécessitent l'assistance du support pour transférer la propriété.",
+  "verificationPendingNote": "La vérification prend généralement quelques minutes. Vous serez notifié une fois terminée.",
+  "transferLimitReached": "Limite de transfert atteinte",
+  "transferLimitReachedDesc": "Vous avez atteint le maximum de 2 transferts de propriété par mois. Veuillez réessayer dans {displayTime}.",
+  "@transferLimitReachedDesc": {
+    "placeholders": {
+      "displayTime": {"type": "String"}
+    }
+  },
+  "transferLimitSecurityNote": "Cette limite aide à prévenir les abus et garantit la sécurité de tous les membres de la famille.",
+  "tooManyTransferAttemptsNote": "Vous avez effectué trop de tentatives de transfert. Veuillez patienter avant de réessayer.",
+  "pendingTransferTitle": "Transfert en attente",
+  "pendingTransferDesc": "Vous avez un transfert en cours vers {name}. Entrez le code reçu par email pour confirmer, ou annulez le transfert.",
+  "@pendingTransferDesc": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "withdrawVerifyTitle": "Vérifiez votre identité",
+  "withdrawVerifySubtitle": "La vérification d'identité est requise avant de pouvoir retirer des fonds. Cela ne prend qu'une minute.",
+  "withdrawStep1Title": "Vérifiez votre pièce d'identité",
+  "withdrawStep1Desc": "Soumettez votre pièce d'identité officielle pour une vérification rapide.",
+  "withdrawStep2Title": "Attendez l'approbation",
+  "withdrawStep2Desc": "Notre équipe examine vos documents — généralement en quelques minutes.",
+  "withdrawStep3Title": "Retirez vos fonds",
+  "withdrawStep3Desc": "Une fois vérifié, vous pouvez retirer de vos aides sélectionnées.",
+  "continueVerification": "Continuer la vérification",
+  "underReview": "En cours d'examen",
+  "retryVerification": "Réessayer la vérification",
+  "withdrawReady": "Prêt à retirer",
+  "withdrawalQuota": "Quota de retrait",
+  "withdrawalDetails": "Vos aides sélectionnées",
+  "withdrawalsThisYear": "Retraits cette année",
+  "noWithdrawalsLeft": "Plus de retraits disponibles cette année",
+  "withdrawalsRemaining": "{count} retraits restants",
+  "@withdrawalsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "noAidSelectedYet": "Aucune aide sélectionnée",
+  "noAidSelectedDesc": "Sélectionnez une aide pour voir les détails de retrait et les montants disponibles.",
+  "changeAid": "Changer la sélection d'aide",
+  "withdrawn": "Retiré",
+  "expired": "Expiré",
+  "upcoming": "À venir",
+  "withdrawnOn": "Retiré le",
+  "withdrawalWindow": "Fenêtre de retrait",
+  "aidDates": "Dates de l'aide",
+  "viewPacks": "Voir les packs",
+  "confirmSelection": "Confirmer la sélection",
+  "aidSelectionHint": "Le montant affiché est le maximum que vous pouvez retirer pendant la période de cette aide après l'avoir sélectionnée.",
+  "packBasedWithdrawalHint": "Améliorez votre pack pour débloquer des limites de retrait plus élevées et sélectionner plus d'aides !",
+  "withdrawalLimit": "Vous pouvez retirer jusqu'à",
+  "limitReached": "Limite atteinte",
+  "leave": "Quitter"
 }

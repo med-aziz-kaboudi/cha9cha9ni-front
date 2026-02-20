@@ -570,6 +570,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'تم تحديث الملف الشخصي بنجاح!';
 
   @override
+  String get nameLockedAfterVerification => 'موثّق';
+
+  @override
+  String get accountAlreadyVerifiedWithId =>
+      'وثيقة الهوية هذه مرتبطة بالفعل بحساب آخر.';
+
+  @override
   String get takePhoto => 'التقاط صورة';
 
   @override
@@ -2116,4 +2123,156 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get transferOwnershipContactSupport =>
       'تم التحقق من هويتك. يرجى الاتصال بالدعم لنقل الملكية.';
+
+  @override
+  String get sessionExpiredGoBack =>
+      'انتهت الجلسة. يرجى العودة والمحاولة مرة أخرى.';
+
+  @override
+  String get memberFallback => 'عضو';
+
+  @override
+  String get transferCancelled => 'تم إلغاء النقل';
+
+  @override
+  String get newCodeSentEmail => 'تم إرسال رمز جديد إلى بريدك الإلكتروني';
+
+  @override
+  String get resend => 'إعادة إرسال';
+
+  @override
+  String get verifiedAccountTitle => 'حساب موثّق';
+
+  @override
+  String get verificationUnderReviewTitle => 'التحقق قيد المراجعة';
+
+  @override
+  String get verifiedIdentityTransferDesc =>
+      'تم التحقق من هويتك. لنقل الملكية، يرجى التواصل مع فريق الدعم.';
+
+  @override
+  String get verificationUnderReviewTransferDesc =>
+      'التحقق من هويتك قيد المراجعة. يرجى الانتظار حتى ظهور النتيجة قبل نقل الملكية.';
+
+  @override
+  String get transferRateLimitExceededDesc =>
+      'لقد وصلت إلى الحد الأقصى لعمليات نقل الملكية. يرجى الانتظار قبل المحاولة مرة أخرى.';
+
+  @override
+  String get verifiedAccountSecurityNote =>
+      'لأسباب أمنية، تتطلب الحسابات الموثّقة مساعدة الدعم لنقل الملكية.';
+
+  @override
+  String get verificationPendingNote =>
+      'يستغرق التحقق عادةً بضع دقائق. سيتم إعلامك عند الانتهاء.';
+
+  @override
+  String get transferLimitReached => 'تم الوصول لحد النقل';
+
+  @override
+  String transferLimitReachedDesc(String displayTime) {
+    return 'لقد وصلت إلى الحد الأقصى وهو عمليتا نقل ملكية شهرياً. يرجى المحاولة مرة أخرى بعد $displayTime.';
+  }
+
+  @override
+  String get transferLimitSecurityNote =>
+      'هذا الحد يساعد في منع سوء الاستخدام وضمان أمان جميع أفراد العائلة.';
+
+  @override
+  String get tooManyTransferAttemptsNote =>
+      'لقد قمت بمحاولات نقل كثيرة. يرجى الانتظار قبل المحاولة مرة أخرى.';
+
+  @override
+  String get pendingTransferTitle => 'نقل معلّق';
+
+  @override
+  String pendingTransferDesc(String name) {
+    return 'لديك طلب نقل معلّق إلى $name. أدخل الرمز المرسل بالبريد الإلكتروني للتأكيد، أو قم بإلغاء النقل.';
+  }
+
+  @override
+  String get withdrawVerifyTitle => 'تحقق من هويتك';
+
+  @override
+  String get withdrawVerifySubtitle =>
+      'التحقق من الهوية مطلوب قبل أن تتمكن من السحب. يستغرق دقيقة واحدة فقط.';
+
+  @override
+  String get withdrawStep1Title => 'تحقق من هويتك';
+
+  @override
+  String get withdrawStep1Desc => 'قدّم بطاقة هويتك الرسمية للتحقق السريع.';
+
+  @override
+  String get withdrawStep2Title => 'انتظر الموافقة';
+
+  @override
+  String get withdrawStep2Desc => 'فريقنا يراجع مستنداتك — عادة في غضون دقائق.';
+
+  @override
+  String get withdrawStep3Title => 'اسحب أموالك';
+
+  @override
+  String get withdrawStep3Desc =>
+      'بمجرد التحقق، يمكنك السحب من المساعدات المختارة.';
+
+  @override
+  String get continueVerification => 'متابعة التحقق';
+
+  @override
+  String get underReview => 'قيد المراجعة';
+
+  @override
+  String get retryVerification => 'إعادة التحقق';
+
+  @override
+  String get withdrawReady => 'جاهز للسحب';
+
+  @override
+  String get withdrawalQuota => 'حصة السحب';
+
+  @override
+  String get withdrawalDetails => 'المساعدات المختارة';
+
+  @override
+  String get withdrawalsThisYear => 'عمليات السحب هذا العام';
+
+  @override
+  String get noWithdrawalsLeft => 'لا توجد عمليات سحب متبقية هذا العام';
+
+  @override
+  String withdrawalsRemaining(int count) {
+    return '$count عمليات سحب متبقية';
+  }
+
+  @override
+  String get noAidSelectedYet => 'لم يتم اختيار مساعدة';
+
+  @override
+  String get noAidSelectedDesc =>
+      'اختر مساعدة لرؤية تفاصيل السحب والمبالغ المتاحة.';
+
+  @override
+  String get changeAid => 'تغيير اختيار المساعدة';
+
+  @override
+  String get withdrawn => 'تم السحب';
+
+  @override
+  String get expired => 'منتهية';
+
+  @override
+  String get upcoming => 'قادمة';
+
+  @override
+  String get withdrawnOn => 'تم السحب في';
+
+  @override
+  String get withdrawalWindow => 'فترة السحب';
+
+  @override
+  String get aidDates => 'تواريخ المساعدة';
+
+  @override
+  String get viewPacks => 'عرض الباقات';
 }

@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/analytics_service.dart';
+import '../../../core/services/socket_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
@@ -35,6 +36,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isSaving = false;
   UserProfile? _profile;
   String? _errorMessage;
+  bool _isIdentityVerified = false;
 
   // Profile picture state
   final _imagePicker = ImagePicker();
@@ -62,11 +64,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   DateTime? _rateLimitEndTime;
   Timer? _rateLimitTimer;
 
+  // Socket subscriptions for real-time updates
+  StreamSubscription<ProfileUpdatedData>? _profileUpdatedSub;
+  StreamSubscription<ProfilePictureUpdatedData>? _profilePictureUpdatedSub;
+
   @override
   void initState() {
     super.initState();
     _loadProfile();
     _loadProfilePictureRateLimitStatus();
+    _listenToSocketUpdates();
   }
 
   @override
@@ -81,8 +88,58 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _countdownTimer?.cancel();
     _rateLimitTimer?.cancel();
     _profilePictureRateLimitTimer?.cancel();
+    _profileUpdatedSub?.cancel();
+    _profilePictureUpdatedSub?.cancel();
     _profileApiService.dispose();
     super.dispose();
+  }
+
+  /// Listen to socket events for real-time profile updates
+  void _listenToSocketUpdates() {
+    final socketService = SocketService();
+
+    _profileUpdatedSub = socketService.onProfileUpdated.listen((data) {
+      if (!mounted) return;
+      debugPrint('👤 Edit profile: received profile_updated via socket');
+
+      setState(() {
+        if (data.firstName != null) _firstNameController.text = data.firstName!;
+        if (data.lastName != null) _lastNameController.text = data.lastName!;
+        if (data.fullName != null) _fullNameController.text = data.fullName!;
+        if (data.phone != null) {
+          String phone = data.phone!;
+          if (phone.startsWith('+216')) phone = phone.substring(4);
+          _phoneController.text = phone;
+        }
+        if (data.profilePictureUrl != null) {
+          _profilePictureUrl = data.profilePictureUrl;
+        }
+      });
+
+      // Update cache with new data
+      _tokenStorage.saveUserProfile(
+        firstName: data.firstName,
+        lastName: data.lastName,
+        fullName: data.fullName,
+        phone: data.phone,
+        profilePictureUrl: data.profilePictureUrl,
+      );
+    });
+
+    _profilePictureUpdatedSub =
+        socketService.onProfilePictureUpdated.listen((data) {
+      if (!mounted) return;
+      debugPrint('📸 Edit profile: received profile_picture_updated via socket');
+
+      setState(() {
+        _profilePictureUrl = data.profilePictureUrl;
+      });
+
+      // Update cache
+      _tokenStorage.saveUserProfile(
+        profilePictureUrl: data.profilePictureUrl,
+      );
+    });
   }
 
   /// Load profile picture rate limit status from API
@@ -223,6 +280,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // Show cached data immediately (no loading spinner)
       setState(() {
         _isLoading = false;
+        _isIdentityVerified = cachedProfile['identityVerified'] == true;
         _fullNameController.text = cachedProfile['fullName'] ?? '';
         _firstNameController.text = cachedProfile['firstName'] ?? '';
         _lastNameController.text = cachedProfile['lastName'] ?? '';
@@ -276,12 +334,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         email: profile.email,
         phone: profile.phone,
         profilePictureUrl: profile.profilePictureUrl,
+        identityVerified: profile.identityVerified,
       );
 
       if (mounted) {
         setState(() {
           _profile = profile;
           _isLoading = false;
+          _isIdentityVerified = profile.identityVerified;
           _profilePictureUrl = profile.profilePictureUrl;
 
           // Fill all name fields with their values (empty if null)
@@ -655,27 +715,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 _buildAvatar(),
                 const SizedBox(height: 32),
 
-                // Full Name field - always shown and editable
+                // Full Name field - locked after identity verification
                 _buildTextField(
                   label: l10n.fullName,
                   controller: _fullNameController,
-                  isEditable: true,
+                  isEditable: !_isIdentityVerified,
+                  lockedReason: _isIdentityVerified ? l10n.nameLockedAfterVerification : null,
                 ),
                 const SizedBox(height: 16),
 
-                // First Name field - always shown and editable
+                // First Name field - locked after identity verification
                 _buildTextField(
                   label: l10n.firstNameLabel,
                   controller: _firstNameController,
-                  isEditable: true,
+                  isEditable: !_isIdentityVerified,
+                  lockedReason: _isIdentityVerified ? l10n.nameLockedAfterVerification : null,
                 ),
                 const SizedBox(height: 16),
 
-                // Last Name field - always shown and editable
+                // Last Name field - locked after identity verification
                 _buildTextField(
                   label: l10n.lastNameLabel,
                   controller: _lastNameController,
-                  isEditable: true,
+                  isEditable: !_isIdentityVerified,
+                  lockedReason: _isIdentityVerified ? l10n.nameLockedAfterVerification : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -1449,18 +1512,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String label,
     required TextEditingController controller,
     required bool isEditable,
+    String? lockedReason,
   }) {
+    final isLocked = lockedReason != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF7A7A90),
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            height: 1.5,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF7A7A90),
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                height: 1.5,
+              ),
+            ),
+            if (isLocked) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.verified_rounded,
+                      size: 12,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      lockedReason,
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 8),
         Container(
@@ -1475,19 +1573,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               width: 1,
             ),
           ),
-          child: TextField(
-            controller: controller,
-            enabled: isEditable,
-            style: TextStyle(
-              color: isEditable ? AppColors.dark : Colors.grey[600],
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  enabled: isEditable,
+                  style: TextStyle(
+                    color: isEditable ? AppColors.dark : Colors.grey[600],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+              if (isLocked)
+                Icon(
+                  Icons.lock_rounded,
+                  size: 16,
+                  color: Colors.grey[400],
+                ),
+            ],
           ),
         ),
       ],

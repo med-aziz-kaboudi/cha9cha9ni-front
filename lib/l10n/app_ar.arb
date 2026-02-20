@@ -203,6 +203,8 @@
   "firstNameRequired": "الاسم الأول مطلوب",
   "lastNameRequired": "اسم العائلة مطلوب",
   "profileUpdatedSuccessfully": "تم تحديث الملف الشخصي بنجاح!",
+  "nameLockedAfterVerification": "موثّق",
+  "accountAlreadyVerifiedWithId": "وثيقة الهوية هذه مرتبطة بالفعل بحساب آخر.",
   "takePhoto": "التقاط صورة",
   "chooseFromGallery": "اختيار من المعرض",
   "removePhoto": "حذف الصورة",
@@ -1093,5 +1095,67 @@
   "verificationInProgress": "التحقق جاري...",
   "identityVerified": "تم التحقق من الهوية",
   "verifyIdentityDescription": "تحقق من هويتك لتفعيل ميزات إضافية",
-  "transferOwnershipContactSupport": "تم التحقق من هويتك. يرجى الاتصال بالدعم لنقل الملكية."
+  "transferOwnershipContactSupport": "تم التحقق من هويتك. يرجى الاتصال بالدعم لنقل الملكية.",
+
+  "sessionExpiredGoBack": "انتهت الجلسة. يرجى العودة والمحاولة مرة أخرى.",
+  "memberFallback": "عضو",
+  "transferCancelled": "تم إلغاء النقل",
+  "newCodeSentEmail": "تم إرسال رمز جديد إلى بريدك الإلكتروني",
+  "resend": "إعادة إرسال",
+  "verifiedAccountTitle": "حساب موثّق",
+  "verificationUnderReviewTitle": "التحقق قيد المراجعة",
+  "verifiedIdentityTransferDesc": "تم التحقق من هويتك. لنقل الملكية، يرجى التواصل مع فريق الدعم.",
+  "verificationUnderReviewTransferDesc": "التحقق من هويتك قيد المراجعة. يرجى الانتظار حتى ظهور النتيجة قبل نقل الملكية.",
+  "transferRateLimitExceededDesc": "لقد وصلت إلى الحد الأقصى لعمليات نقل الملكية. يرجى الانتظار قبل المحاولة مرة أخرى.",
+  "verifiedAccountSecurityNote": "لأسباب أمنية، تتطلب الحسابات الموثّقة مساعدة الدعم لنقل الملكية.",
+  "verificationPendingNote": "يستغرق التحقق عادةً بضع دقائق. سيتم إعلامك عند الانتهاء.",
+  "transferLimitReached": "تم الوصول لحد النقل",
+  "transferLimitReachedDesc": "لقد وصلت إلى الحد الأقصى وهو عمليتا نقل ملكية شهرياً. يرجى المحاولة مرة أخرى بعد {displayTime}.",
+  "@transferLimitReachedDesc": {
+    "placeholders": {
+      "displayTime": {"type": "String"}
+    }
+  },
+  "transferLimitSecurityNote": "هذا الحد يساعد في منع سوء الاستخدام وضمان أمان جميع أفراد العائلة.",
+  "tooManyTransferAttemptsNote": "لقد قمت بمحاولات نقل كثيرة. يرجى الانتظار قبل المحاولة مرة أخرى.",
+  "pendingTransferTitle": "نقل معلّق",
+  "pendingTransferDesc": "لديك طلب نقل معلّق إلى {name}. أدخل الرمز المرسل بالبريد الإلكتروني للتأكيد، أو قم بإلغاء النقل.",
+  "@pendingTransferDesc": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "withdrawVerifyTitle": "تحقق من هويتك",
+  "withdrawVerifySubtitle": "التحقق من الهوية مطلوب قبل أن تتمكن من السحب. يستغرق دقيقة واحدة فقط.",
+  "withdrawStep1Title": "تحقق من هويتك",
+  "withdrawStep1Desc": "قدّم بطاقة هويتك الرسمية للتحقق السريع.",
+  "withdrawStep2Title": "انتظر الموافقة",
+  "withdrawStep2Desc": "فريقنا يراجع مستنداتك — عادة في غضون دقائق.",
+  "withdrawStep3Title": "اسحب أموالك",
+  "withdrawStep3Desc": "بمجرد التحقق، يمكنك السحب من المساعدات المختارة.",
+  "continueVerification": "متابعة التحقق",
+  "underReview": "قيد المراجعة",
+  "retryVerification": "إعادة التحقق",
+  "withdrawReady": "جاهز للسحب",
+  "withdrawalQuota": "حصة السحب",
+  "withdrawalDetails": "المساعدات المختارة",
+  "withdrawalsThisYear": "عمليات السحب هذا العام",
+  "noWithdrawalsLeft": "لا توجد عمليات سحب متبقية هذا العام",
+  "withdrawalsRemaining": "{count} عمليات سحب متبقية",
+  "@withdrawalsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "noAidSelectedYet": "لم يتم اختيار مساعدة",
+  "noAidSelectedDesc": "اختر مساعدة لرؤية تفاصيل السحب والمبالغ المتاحة.",
+  "changeAid": "تغيير اختيار المساعدة",
+  "withdrawn": "تم السحب",
+  "expired": "منتهية",
+  "upcoming": "قادمة",
+  "withdrawnOn": "تم السحب في",
+  "withdrawalWindow": "فترة السحب",
+  "aidDates": "تواريخ المساعدة",
+  "viewPacks": "عرض الباقات"
 }

@@ -428,7 +428,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get topUpScanQR => 'Or scan QR code';
 
   @override
-  String get withdraw => 'withdraw';
+  String get withdraw => 'Withdraw';
 
   @override
   String get statement => 'Statement';
@@ -570,6 +570,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileUpdatedSuccessfully => 'Profile updated successfully!';
+
+  @override
+  String get nameLockedAfterVerification => 'Verified';
+
+  @override
+  String get accountAlreadyVerifiedWithId =>
+      'This identity document is already linked to another account.';
 
   @override
   String get takePhoto => 'Take Photo';
@@ -2125,4 +2132,158 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get transferOwnershipContactSupport =>
       'Your identity is verified. Please contact support to transfer ownership.';
+
+  @override
+  String get sessionExpiredGoBack =>
+      'Session expired. Please go back and try again.';
+
+  @override
+  String get memberFallback => 'Member';
+
+  @override
+  String get transferCancelled => 'Transfer cancelled';
+
+  @override
+  String get newCodeSentEmail => 'New code sent to your email';
+
+  @override
+  String get resend => 'Resend';
+
+  @override
+  String get verifiedAccountTitle => 'Verified Account';
+
+  @override
+  String get verificationUnderReviewTitle => 'Verification Under Review';
+
+  @override
+  String get verifiedIdentityTransferDesc =>
+      'Your identity has been verified. To transfer ownership, please contact our support team.';
+
+  @override
+  String get verificationUnderReviewTransferDesc =>
+      'Your identity verification is under review. Please wait for the result before transferring ownership.';
+
+  @override
+  String get transferRateLimitExceededDesc =>
+      'You have reached the maximum number of ownership transfers. Please wait before transferring again.';
+
+  @override
+  String get verifiedAccountSecurityNote =>
+      'For security reasons, verified accounts require support assistance to transfer ownership.';
+
+  @override
+  String get verificationPendingNote =>
+      'Verification usually takes a few minutes. You will be notified once complete.';
+
+  @override
+  String get transferLimitReached => 'Transfer Limit Reached';
+
+  @override
+  String transferLimitReachedDesc(String displayTime) {
+    return 'You have reached the maximum of 2 ownership transfers per month. Please try again in $displayTime.';
+  }
+
+  @override
+  String get transferLimitSecurityNote =>
+      'This limit helps prevent abuse and ensures security for all family members.';
+
+  @override
+  String get tooManyTransferAttemptsNote =>
+      'You have made too many transfer attempts. Please wait before trying again.';
+
+  @override
+  String get pendingTransferTitle => 'Pending Transfer';
+
+  @override
+  String pendingTransferDesc(String name) {
+    return 'You have a pending transfer to $name. Enter the code received by email to confirm, or cancel the transfer.';
+  }
+
+  @override
+  String get withdrawVerifyTitle => 'Verify Your Identity';
+
+  @override
+  String get withdrawVerifySubtitle =>
+      'Identity verification is required before you can withdraw funds. It only takes a minute.';
+
+  @override
+  String get withdrawStep1Title => 'Verify Your ID';
+
+  @override
+  String get withdrawStep1Desc =>
+      'Submit your government-issued ID for a quick verification.';
+
+  @override
+  String get withdrawStep2Title => 'Wait for Approval';
+
+  @override
+  String get withdrawStep2Desc =>
+      'Our team reviews your documents — usually within minutes.';
+
+  @override
+  String get withdrawStep3Title => 'Withdraw Funds';
+
+  @override
+  String get withdrawStep3Desc =>
+      'Once verified, you can withdraw from your selected aids.';
+
+  @override
+  String get continueVerification => 'Continue Verification';
+
+  @override
+  String get underReview => 'Under Review';
+
+  @override
+  String get retryVerification => 'Retry Verification';
+
+  @override
+  String get withdrawReady => 'Ready to Withdraw';
+
+  @override
+  String get withdrawalQuota => 'Withdrawal Quota';
+
+  @override
+  String get withdrawalDetails => 'Your Selected Aids';
+
+  @override
+  String get withdrawalsThisYear => 'Withdrawals this year';
+
+  @override
+  String get noWithdrawalsLeft => 'No withdrawals left this year';
+
+  @override
+  String withdrawalsRemaining(int count) {
+    return '$count withdrawals remaining';
+  }
+
+  @override
+  String get noAidSelectedYet => 'No Aid Selected';
+
+  @override
+  String get noAidSelectedDesc =>
+      'Select an aid to see your withdrawal details and available amounts.';
+
+  @override
+  String get changeAid => 'Change Aid Selection';
+
+  @override
+  String get withdrawn => 'Withdrawn';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String get upcoming => 'Upcoming';
+
+  @override
+  String get withdrawnOn => 'Withdrawn on';
+
+  @override
+  String get withdrawalWindow => 'Withdrawal Window';
+
+  @override
+  String get aidDates => 'Aid Dates';
+
+  @override
+  String get viewPacks => 'View Packs';
 }

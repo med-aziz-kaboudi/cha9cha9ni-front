@@ -219,6 +219,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           lastName: response.user?.lastName,
           fullName: response.user?.fullName,
           email: response.user?.email ?? widget.email,
+          phone: response.user?.phone,
+          profilePictureUrl: response.user?.profilePictureUrl,
+          identityVerified: response.user?.identityVerified,
         );
 
         // Clear countdown on successful verification

@@ -577,6 +577,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'Profil mis à jour avec succès!';
 
   @override
+  String get nameLockedAfterVerification => 'Vérifié';
+
+  @override
+  String get accountAlreadyVerifiedWithId =>
+      'Ce document d\'identité est déjà lié à un autre compte.';
+
+  @override
   String get takePhoto => 'Prendre une Photo';
 
   @override
@@ -1830,7 +1837,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get confirmSelection => 'Confirm Selection';
+  String get confirmSelection => 'Confirmer la sélection';
 
   @override
   String get subscriptionComingSoon =>
@@ -1853,17 +1860,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get aidSelectionHint =>
-      'The amount shown is the maximum you can withdraw during this aid\'s window period after selecting it.';
+      'Le montant affiché est le maximum que vous pouvez retirer pendant la période de cette aide après l\'avoir sélectionnée.';
 
   @override
   String get packBasedWithdrawalHint =>
-      'Upgrade your pack to unlock higher withdrawal limits and select more aids!';
+      'Améliorez votre pack pour débloquer des limites de retrait plus élevées et sélectionner plus d\'aides !';
 
   @override
-  String get withdrawalLimit => 'You can withdraw up to';
+  String get withdrawalLimit => 'Vous pouvez retirer jusqu\'à';
 
   @override
-  String get limitReached => 'Limit reached';
+  String get limitReached => 'Limite atteinte';
 
   @override
   String get yourSelectedAids => 'Vos Aides Sélectionnées';
@@ -1942,7 +1949,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get leaveFamilyWarning => 'Cette action est irréversible';
 
   @override
-  String get leave => 'Leave';
+  String get leave => 'Quitter';
 
   @override
   String get leaveFamilyCodeSent => 'Code de confirmation envoyé à votre email';
@@ -2153,4 +2160,158 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get transferOwnershipContactSupport =>
       'Votre identité est vérifiée. Veuillez contacter le support pour transférer la propriété.';
+
+  @override
+  String get sessionExpiredGoBack =>
+      'Session expirée. Veuillez revenir en arrière et réessayer.';
+
+  @override
+  String get memberFallback => 'Membre';
+
+  @override
+  String get transferCancelled => 'Transfert annulé';
+
+  @override
+  String get newCodeSentEmail => 'Nouveau code envoyé par email';
+
+  @override
+  String get resend => 'Renvoyer';
+
+  @override
+  String get verifiedAccountTitle => 'Compte vérifié';
+
+  @override
+  String get verificationUnderReviewTitle => 'Vérification en cours';
+
+  @override
+  String get verifiedIdentityTransferDesc =>
+      'Votre identité a été vérifiée. Pour transférer la propriété, veuillez contacter notre équipe de support.';
+
+  @override
+  String get verificationUnderReviewTransferDesc =>
+      'La vérification de votre identité est en cours d\'examen. Veuillez attendre le résultat avant de transférer la propriété.';
+
+  @override
+  String get transferRateLimitExceededDesc =>
+      'Vous avez atteint le nombre maximum de transferts de propriété. Veuillez patienter avant de réessayer.';
+
+  @override
+  String get verifiedAccountSecurityNote =>
+      'Pour des raisons de sécurité, les comptes vérifiés nécessitent l\'assistance du support pour transférer la propriété.';
+
+  @override
+  String get verificationPendingNote =>
+      'La vérification prend généralement quelques minutes. Vous serez notifié une fois terminée.';
+
+  @override
+  String get transferLimitReached => 'Limite de transfert atteinte';
+
+  @override
+  String transferLimitReachedDesc(String displayTime) {
+    return 'Vous avez atteint le maximum de 2 transferts de propriété par mois. Veuillez réessayer dans $displayTime.';
+  }
+
+  @override
+  String get transferLimitSecurityNote =>
+      'Cette limite aide à prévenir les abus et garantit la sécurité de tous les membres de la famille.';
+
+  @override
+  String get tooManyTransferAttemptsNote =>
+      'Vous avez effectué trop de tentatives de transfert. Veuillez patienter avant de réessayer.';
+
+  @override
+  String get pendingTransferTitle => 'Transfert en attente';
+
+  @override
+  String pendingTransferDesc(String name) {
+    return 'Vous avez un transfert en cours vers $name. Entrez le code reçu par email pour confirmer, ou annulez le transfert.';
+  }
+
+  @override
+  String get withdrawVerifyTitle => 'Vérifiez votre identité';
+
+  @override
+  String get withdrawVerifySubtitle =>
+      'La vérification d\'identité est requise avant de pouvoir retirer des fonds. Cela ne prend qu\'une minute.';
+
+  @override
+  String get withdrawStep1Title => 'Vérifiez votre pièce d\'identité';
+
+  @override
+  String get withdrawStep1Desc =>
+      'Soumettez votre pièce d\'identité officielle pour une vérification rapide.';
+
+  @override
+  String get withdrawStep2Title => 'Attendez l\'approbation';
+
+  @override
+  String get withdrawStep2Desc =>
+      'Notre équipe examine vos documents — généralement en quelques minutes.';
+
+  @override
+  String get withdrawStep3Title => 'Retirez vos fonds';
+
+  @override
+  String get withdrawStep3Desc =>
+      'Une fois vérifié, vous pouvez retirer de vos aides sélectionnées.';
+
+  @override
+  String get continueVerification => 'Continuer la vérification';
+
+  @override
+  String get underReview => 'En cours d\'examen';
+
+  @override
+  String get retryVerification => 'Réessayer la vérification';
+
+  @override
+  String get withdrawReady => 'Prêt à retirer';
+
+  @override
+  String get withdrawalQuota => 'Quota de retrait';
+
+  @override
+  String get withdrawalDetails => 'Vos aides sélectionnées';
+
+  @override
+  String get withdrawalsThisYear => 'Retraits cette année';
+
+  @override
+  String get noWithdrawalsLeft => 'Plus de retraits disponibles cette année';
+
+  @override
+  String withdrawalsRemaining(int count) {
+    return '$count retraits restants';
+  }
+
+  @override
+  String get noAidSelectedYet => 'Aucune aide sélectionnée';
+
+  @override
+  String get noAidSelectedDesc =>
+      'Sélectionnez une aide pour voir les détails de retrait et les montants disponibles.';
+
+  @override
+  String get changeAid => 'Changer la sélection d\'aide';
+
+  @override
+  String get withdrawn => 'Retiré';
+
+  @override
+  String get expired => 'Expiré';
+
+  @override
+  String get upcoming => 'À venir';
+
+  @override
+  String get withdrawnOn => 'Retiré le';
+
+  @override
+  String get withdrawalWindow => 'Fenêtre de retrait';
+
+  @override
+  String get aidDates => 'Dates de l\'aide';
+
+  @override
+  String get viewPacks => 'Voir les packs';
 }

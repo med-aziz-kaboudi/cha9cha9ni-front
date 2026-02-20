@@ -449,6 +449,9 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
             lastName: response.user?.lastName,
             fullName: response.user?.fullName,
             email: response.user?.email,
+            phone: response.user?.phone,
+            profilePictureUrl: response.user?.profilePictureUrl,
+            identityVerified: response.user?.identityVerified,
           );
 
           // Check if user has a family
