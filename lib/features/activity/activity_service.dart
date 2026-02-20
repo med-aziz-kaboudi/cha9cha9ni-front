@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/services/socket_service.dart';
+import '../rewards/rewards_api_service.dart';
 import '../rewards/rewards_model.dart';
 import '../rewards/rewards_service.dart';
 
@@ -14,6 +15,7 @@ class ActivityService {
   ActivityService._internal();
 
   final _rewardsService = RewardsService();
+  final _rewardsApiService = RewardsApiService();
   final _socketService = SocketService();
   final _uuid = const Uuid();
 
@@ -271,6 +273,44 @@ class ActivityService {
   /// Get the last N activities (for home screen)
   List<RewardActivity> getRecentActivities({int count = 7}) {
     return _activities.take(count).toList();
+  }
+
+  /// Fetch activities from server with optional source filter and pagination
+  /// Returns a [PaginatedActivities] result with cursor for loading more
+  Future<PaginatedActivities> fetchFilteredActivities({
+    String? source,
+    String? cursor,
+    int limit = 20,
+  }) async {
+    try {
+      return await _rewardsApiService.fetchActivities(
+        source: source,
+        cursor: cursor,
+        limit: limit,
+      );
+    } catch (e) {
+      debugPrint('📊 ActivityService: Failed to fetch filtered activities - $e');
+      rethrow;
+    }
+  }
+
+  /// Convert [ActivityType] to the backend source string for API calls
+  static String? activityTypeToSource(ActivityType? type) {
+    if (type == null) return null;
+    switch (type) {
+      case ActivityType.adWatched:
+        return 'ad_watch';
+      case ActivityType.dailyCheckIn:
+        return 'daily_checkin';
+      case ActivityType.topUp:
+        return 'topup';
+      case ActivityType.referral:
+        return 'referral';
+      case ActivityType.redemption:
+        return 'redemption';
+      case ActivityType.unknown:
+        return null;
+    }
   }
 
   /// Check if cache is fresh (within threshold)

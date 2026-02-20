@@ -1186,5 +1186,6 @@
   "withdrawnOn": "Withdrawn on",
   "withdrawalWindow": "Withdrawal Window",
   "aidDates": "Aid Dates",
-  "viewPacks": "View Packs"
+  "viewPacks": "View Packs",
+  "loadMore": "Load More"
 }

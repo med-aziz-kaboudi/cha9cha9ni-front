@@ -4179,6 +4179,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View Packs'**
   String get viewPacks;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get loadMore;
 }
 
 class _AppLocalizationsDelegate

@@ -377,3 +377,27 @@ class CanRedeemResult {
     );
   }
 }
+
+/// Paginated activities response from the server
+class PaginatedActivities {
+  final List<RewardActivity> activities;
+  final String? nextCursor;
+  final bool hasMore;
+
+  PaginatedActivities({
+    required this.activities,
+    this.nextCursor,
+    required this.hasMore,
+  });
+
+  factory PaginatedActivities.fromJson(Map<String, dynamic> json) {
+    return PaginatedActivities(
+      activities: (json['activities'] as List<dynamic>?)
+              ?.map((a) => RewardActivity.fromJson(a))
+              .toList() ??
+          [],
+      nextCursor: json['nextCursor'],
+      hasMore: json['hasMore'] ?? false,
+    );
+  }
+}

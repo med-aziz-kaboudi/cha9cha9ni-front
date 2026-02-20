@@ -188,4 +188,33 @@ class RewardsApiService {
       throw Exception(error['message'] ?? 'Failed to check redeem status');
     }
   }
+
+  /// Fetch paginated activities with optional source filter
+  /// [source] - filter by type: ad_watch, daily_checkin, topup, referral, redemption
+  /// [cursor] - ISO date string for cursor-based pagination
+  /// [limit] - max items per page (default 20, max 50)
+  Future<PaginatedActivities> fetchActivities({
+    String? source,
+    String? cursor,
+    int? limit,
+  }) async {
+    final queryParams = <String, String>{};
+    if (source != null) queryParams['source'] = source;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    if (limit != null) queryParams['limit'] = limit.toString();
+
+    final queryString = queryParams.isNotEmpty
+        ? '?${queryParams.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}'
+        : '';
+
+    final response = await _makeRequest('GET', '/rewards/activities$queryString');
+
+    if (response.statusCode == 200) {
+      final data = _safeJsonDecode(response);
+      return PaginatedActivities.fromJson(data);
+    } else {
+      final error = _safeJsonDecode(response);
+      throw Exception(error['message'] ?? 'Failed to fetch activities');
+    }
+  }
 }

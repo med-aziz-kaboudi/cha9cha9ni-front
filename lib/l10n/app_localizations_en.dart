@@ -2286,4 +2286,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewPacks => 'View Packs';
+
+  @override
+  String get loadMore => 'Load More';
 }

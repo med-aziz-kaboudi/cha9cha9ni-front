@@ -2275,4 +2275,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get viewPacks => 'عرض الباقات';
+
+  @override
+  String get loadMore => 'تحميل المزيد';
 }

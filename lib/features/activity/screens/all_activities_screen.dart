@@ -51,6 +51,11 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
   String? _currentUserId;
   String? _currentUserName;
 
+  // Server-side pagination (used when a type filter is active)
+  bool _hasMore = false;
+  String? _nextCursor;
+  bool _isLoadingMore = false;
+
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
 
@@ -108,9 +113,23 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
     }
   }
 
+  /// Apply filters — uses server-side fetch when a type filter is selected,
+  /// client-side filtering when showing all types
   void _applyFilters() {
-    List<RewardActivity> result = List.from(_allActivities);
+    if (_typeFilter != null) {
+      // When a type filter is active, fetch from server (async)
+      _fetchServerFiltered();
+      return;
+    }
 
+    // No type filter → use local data with client-side time/member filtering
+    _hasMore = false;
+    _nextCursor = null;
+    _filteredActivities = _applyLocalFilters(List.from(_allActivities));
+  }
+
+  /// Apply time and member filters client-side on the given list
+  List<RewardActivity> _applyLocalFilters(List<RewardActivity> result) {
     // Apply time filter
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -169,24 +188,65 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
         break;
     }
 
-    // Apply type filter
-    if (_typeFilter != null) {
-      result = result.where((a) => a.activityType == _typeFilter).toList();
-    }
-
     // Apply member filter (show only my activities)
     if (_showOnlyMyActivities && _currentUserId != null) {
-      // Filter by memberId if available, fallback to name comparison
       result = result.where((a) {
         if (a.memberId != null) {
           return a.memberId == _currentUserId;
         }
-        // Fallback: case-insensitive name comparison
         return a.memberName.toLowerCase() == (_currentUserName ?? '').toLowerCase();
       }).toList();
     }
 
-    _filteredActivities = result;
+    return result;
+  }
+
+  /// Fetch activities from server with the active type filter
+  Future<void> _fetchServerFiltered({bool loadMore = false}) async {
+    if (_isLoadingMore) return;
+
+    if (!loadMore) {
+      // New filter — reset pagination
+      _nextCursor = null;
+      if (mounted) setState(() => _isLoading = true);
+    } else {
+      if (mounted) setState(() => _isLoadingMore = true);
+    }
+
+    try {
+      final source = ActivityService.activityTypeToSource(_typeFilter);
+      final result = await _activityService.fetchFilteredActivities(
+        source: source,
+        cursor: loadMore ? _nextCursor : null,
+        limit: 20,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        if (loadMore) {
+          _filteredActivities.addAll(
+            _applyLocalFilters(result.activities),
+          );
+        } else {
+          _filteredActivities = _applyLocalFilters(result.activities);
+        }
+        _hasMore = result.hasMore;
+        _nextCursor = result.nextCursor;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
+
+      if (!loadMore) _animController.forward();
+    } catch (e) {
+      debugPrint('📊 AllActivities: Server filter fetch failed - $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isLoadingMore = false;
+        });
+      }
+    }
   }
 
   String _getTimeFilterLabel(ActivityTimeFilter filter, AppLocalizations l10n) {
@@ -444,6 +504,8 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                       setModalState,
                     ),
                     _buildTypeChip(ActivityType.topUp, l10n, setModalState),
+                    _buildTypeChip(ActivityType.referral, l10n, setModalState),
+                    _buildTypeChip(ActivityType.redemption, l10n, setModalState),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -702,8 +764,13 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
                           color: AppColors.secondary,
                           child: ListView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                            itemCount: groupedActivities.length,
+                            itemCount: groupedActivities.length + (_hasMore || _isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
+                              // Load More button at the end
+                              if (index >= groupedActivities.length) {
+                                return _buildLoadMoreButton(l10n);
+                              }
+
                               final dateKey = groupedActivities.keys.elementAt(
                                 index,
                               );
@@ -917,6 +984,41 @@ class _AllActivitiesScreenState extends State<AllActivitiesScreen>
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadMoreButton(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Center(
+        child: _isLoadingMore
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.secondary,
+                ),
+              )
+            : TextButton.icon(
+                onPressed: () => _fetchServerFiltered(loadMore: true),
+                icon: const Icon(Icons.expand_more_rounded, size: 20),
+                label: Text(l10n.loadMore),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }

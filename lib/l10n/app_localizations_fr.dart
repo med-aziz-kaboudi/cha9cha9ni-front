@@ -2314,4 +2314,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get viewPacks => 'Voir les packs';
+
+  @override
+  String get loadMore => 'Charger plus';
 }
