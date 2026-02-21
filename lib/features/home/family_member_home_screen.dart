@@ -120,6 +120,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   // Balance
   final _topUpService = TopUpService();
   double _familyBalance = 0.0;
+  bool _isLoadingBalance = true;
+  bool _isLoadingPoints = true;
   StreamSubscription<BalanceUpdatedData>? _balanceUpdatedSubscription;
 
   // Pack/Selected Aid
@@ -322,6 +324,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
     if (cachedPoints != null && mounted) {
       setState(() {
         _familyPoints = cachedPoints;
+        _isLoadingPoints = false;
       });
     }
 
@@ -331,12 +334,18 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
       if (mounted) {
         setState(() {
           _familyPoints = data.totalPoints;
+          _isLoadingPoints = false;
         });
         // Update cache
         await prefs.setInt('rewards_total_points', data.totalPoints);
       }
     } catch (e) {
       debugPrint('Failed to load family points: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingPoints = false;
+        });
+      }
     }
   }
 
@@ -367,16 +376,34 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   /// Load family balance from top-up service (always fresh from API)
   Future<void> _loadFamilyBalance() async {
     try {
+      // Load cached balance first for instant display
+      final prefs = await SharedPreferences.getInstance();
+      final cachedBalance = prefs.getDouble('family_balance');
+      if (cachedBalance != null && mounted) {
+        setState(() {
+          _familyBalance = cachedBalance;
+          _isLoadingBalance = false;
+        });
+      }
+
       debugPrint('💰 Fetching fresh balance from API...');
       final balance = await _topUpService.getFamilyBalance();
       if (mounted) {
         debugPrint('💰 Balance fetched: $balance');
         setState(() {
           _familyBalance = balance;
+          _isLoadingBalance = false;
         });
+        // Update cache
+        await prefs.setDouble('family_balance', balance);
       }
     } catch (e) {
       debugPrint('❌ Failed to load family balance: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingBalance = false;
+        });
+      }
     }
   }
 
@@ -2198,6 +2225,8 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             child: HomeHeaderWidget(
               balance: NumberFormatter.formatBalance(_familyBalance),
               points: _familyPoints,
+              isLoadingBalance: _isLoadingBalance,
+              isLoadingPoints: _isLoadingPoints,
               onTopUp: () => _navigateToTopUp(context),
               onStatement: () => _navigateToStatement(context),
               showWithdraw: false, // Hide withdraw for members
@@ -2266,38 +2295,38 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
   Widget _buildNextWithdrawalCard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    // Get emoji for aid type
-    String getAidEmoji(String aidName) {
+    // Get icon for aid type
+    IconData getAidIcon(String aidName) {
       switch (aidName.toLowerCase()) {
         case 'eid_fitr':
-          return '🕌';
+          return Icons.mosque_rounded;
         case 'eid_adha':
-          return '🐑';
+          return Icons.mosque_rounded;
         case 'ramadan':
-          return '🌙';
+          return Icons.nightlight_round;
         case 'moulid':
-          return '☪️';
+          return Icons.auto_awesome_rounded;
         case 'new_year':
-          return '🎉';
+          return Icons.celebration_rounded;
         case 'ashura':
-          return '🕯️';
+          return Icons.auto_awesome_rounded;
         case 'valentines':
-          return '❤️';
+          return Icons.favorite_rounded;
         case 'rentrée':
         case 'rentree':
-          return '📚';
+          return Icons.menu_book_rounded;
         case 'mothers_day':
-          return '👩';
+          return Icons.face_rounded;
         case 'fathers_day':
-          return '👨';
+          return Icons.face_rounded;
         default:
-          return '🎊';
+          return Icons.celebration_rounded;
       }
     }
 
-    final aidEmoji = _selectedAid != null
-        ? getAidEmoji(_selectedAid!.aidName)
-        : '🎁';
+    final aidIcon = _selectedAid != null
+        ? getAidIcon(_selectedAid!.aidName)
+        : Icons.card_giftcard_rounded;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2336,7 +2365,7 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
             children: [
               Row(
                 children: [
-                  // Emoji container
+                  // Icon container
                   Container(
                     width: 48,
                     height: 48,
@@ -2347,9 +2376,12 @@ class _FamilyMemberHomeScreenState extends State<FamilyMemberHomeScreen>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
-                      child: Text(
-                        aidEmoji,
-                        style: const TextStyle(fontSize: 24),
+                      child: Icon(
+                        aidIcon,
+                        color: _aidWindowOpen
+                            ? const Color(0xFF00C853)
+                            : const Color(0xFFEE3764),
+                        size: 24,
                       ),
                     ),
                   ),

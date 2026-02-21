@@ -9,6 +9,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/language_selector.dart';
 import '../../../core/services/api_exception.dart';
 import '../../../core/services/token_storage_service.dart';
+import '../../../core/utils/error_sanitizer.dart';
 import '../../../core/services/family_api_service.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/analytics_service.dart';
@@ -471,7 +472,7 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${AppLocalizations.of(context)?.signInFailed ?? 'Sign in failed'}: ${e.toString()}'),
+            content: Text(ErrorSanitizer.message(e, fallback: AppLocalizations.of(context)?.signInFailed ?? 'Sign in failed')),
             backgroundColor: AppColors.primary,
           ),
         );
@@ -495,40 +496,36 @@ class _SignInScreenState extends State<SignInScreen> with WidgetsBindingObserver
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: 'cha9cha9ni://login-callback',
-        authScreenLaunchMode: LaunchMode.externalApplication,
+        authScreenLaunchMode: LaunchMode.inAppBrowserView,
+        queryParams: {
+          'prompt': 'select_account', // Force account picker to show
+        },
       );
       // After OAuth, user will be redirected back to app
       // AppEntry in main.dart will handle the callback and verification
     } on AuthException catch (e) {
-      setState(() {
-        _isAwaitingOAuth = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+      // Only show error if it's a real auth error, not browser closing
+      if (!e.message.toLowerCase().contains('cancel') && 
+          !e.message.toLowerCase().contains('closed')) {
+        setState(() {
+          _isAwaitingOAuth = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+        }
       }
     } catch (e) {
-      setState(() {
-        _isAwaitingOAuth = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${AppLocalizations.of(context)?.googleSignInFailed ?? 'Google sign in failed'}: ${e.toString()}'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      }
+      // Browser closing or redirect can throw - this is normal for OAuth flow
+      // Don't show error - the auth state listener will handle success/failure
+      debugPrint('OAuth browser closed: $e');
     } finally {
-      if (mounted && !_isAwaitingOAuth) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      // Don't reset loading immediately - wait for auth callback
+      // The auth state listener in main.dart will navigate on success
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/number_formatter.dart';
+import '../../../core/widgets/skeleton_loading.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Format points with K/M suffix for display (uses shared formatter)
@@ -12,6 +13,8 @@ String _formatPoints(int points) => formatPoints(points);
 class HomeHeaderWidget extends StatelessWidget {
   final String balance;
   final int points;
+  final bool isLoadingBalance;
+  final bool isLoadingPoints;
   final VoidCallback onTopUp;
   final VoidCallback? onWithdraw;
   final VoidCallback onStatement;
@@ -30,6 +33,8 @@ class HomeHeaderWidget extends StatelessWidget {
     super.key,
     this.balance = '12,769.00 TND',
     this.points = 120,
+    this.isLoadingBalance = false,
+    this.isLoadingPoints = false,
     required this.onTopUp,
     this.onWithdraw,
     required this.onStatement,
@@ -192,15 +197,28 @@ class HomeHeaderWidget extends StatelessWidget {
             children: [
               // Centered balance
               Center(
-                child: Text(
-                  balance,
-                  style: TextStyle(
-                    color: const Color(0xFFFEBC11),
-                    fontSize: balanceAmountSize.clamp(20.0, 28.0),
-                    fontFamily: 'DM Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                child: isLoadingBalance
+                    ? SkeletonShimmer(
+                        baseColor: Colors.white.withValues(alpha: 0.15),
+                        highlightColor: Colors.white.withValues(alpha: 0.35),
+                        child: Container(
+                          width: 140,
+                          height: balanceAmountSize.clamp(20.0, 28.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        balance,
+                        style: TextStyle(
+                          color: const Color(0xFFFEBC11),
+                          fontSize: balanceAmountSize.clamp(20.0, 28.0),
+                          fontFamily: 'DM Sans',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
               ),
               // Points badge - positioned based on RTL
               Positioned(
@@ -208,26 +226,57 @@ class HomeHeaderWidget extends StatelessWidget {
                 left: isRTL ? badgeMargin : null,
                 child: GestureDetector(
                   onTap: onPoints,
-                  child: Container(
-                    key: pointsKey,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: badgePaddingH,
-                      vertical: badgePaddingV,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEBC11),
-                      borderRadius: BorderRadius.circular(badgeRadius),
-                    ),
-                    child: Text(
-                      '🎁 ${_formatPoints(points)} ${l10n.pts}',
-                      style: TextStyle(
-                        color: const Color(0xFF141936),
-                        fontSize: badgeFontSize,
-                        fontFamily: 'Nunito Sans',
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  child: isLoadingPoints
+                      ? SkeletonShimmer(
+                          baseColor: Colors.white.withValues(alpha: 0.15),
+                          highlightColor: Colors.white.withValues(alpha: 0.35),
+                          child: Container(
+                            key: pointsKey,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: badgePaddingH,
+                              vertical: badgePaddingV,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(badgeRadius),
+                            ),
+                            child: SizedBox(
+                              width: 50,
+                              height: badgeFontSize,
+                            ),
+                          ),
+                        )
+                      : Container(
+                          key: pointsKey,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: badgePaddingH,
+                            vertical: badgePaddingV,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEBC11),
+                            borderRadius: BorderRadius.circular(badgeRadius),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.card_giftcard_rounded,
+                                color: const Color(0xFF141936),
+                                size: badgeFontSize + 2,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_formatPoints(points)} ${l10n.pts}',
+                                style: TextStyle(
+                                  color: const Color(0xFF141936),
+                                  fontSize: badgeFontSize,
+                                  fontFamily: 'Nunito Sans',
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
               ),
               // Invisible points badge on opposite side for symmetry
@@ -245,14 +294,25 @@ class HomeHeaderWidget extends StatelessWidget {
                       color: const Color(0xFFFEBC11),
                       borderRadius: BorderRadius.circular(badgeRadius),
                     ),
-                    child: Text(
-                      '🎁 ${_formatPoints(points)} ${l10n.pts}',
-                      style: TextStyle(
-                        color: const Color(0xFF141936),
-                        fontSize: badgeFontSize,
-                        fontFamily: 'Nunito Sans',
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.card_giftcard_rounded,
+                          color: const Color(0xFF141936),
+                          size: badgeFontSize + 2,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${_formatPoints(points)} ${l10n.pts}',
+                          style: TextStyle(
+                            color: const Color(0xFF141936),
+                            fontSize: badgeFontSize,
+                            fontFamily: 'Nunito Sans',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

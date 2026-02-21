@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/api_exception.dart';
 import '../../../core/services/token_storage_service.dart';
+import '../../../core/utils/error_sanitizer.dart';
 import '../models/auth_request_models.dart';
 import '../services/auth_api_service.dart';
 import 'signin_screen.dart';
@@ -250,7 +251,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.verificationFailed(e.toString())),
+          content: Text(AppLocalizations.of(context)!.verificationFailed(ErrorSanitizer.message(e, fallback: AppLocalizations.of(context)!.anErrorOccurred))),
           backgroundColor: Colors.red,
         ),
       );

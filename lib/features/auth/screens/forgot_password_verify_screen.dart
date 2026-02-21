@@ -65,9 +65,8 @@ class _ForgotPasswordVerifyScreenState
   @override
   void initState() {
     super.initState();
-    // Start countdown immediately since code was just sent from signin screen
-    _countdown = 60;
-    _startCountdown();
+    // Load any saved countdown, or start fresh with 60s countdown
+    _loadCountdown();
     _showExpiryInfo();
   }
 
@@ -129,7 +128,18 @@ class _ForgotPasswordVerifyScreenState
         _startCountdown();
       } else {
         await prefs.remove(key);
+        // Start fresh countdown since code was just sent
+        setState(() {
+          _countdown = 60;
+        });
+        _startCountdown();
       }
+    } else {
+      // No saved countdown - start fresh since code was just sent
+      setState(() {
+        _countdown = 60;
+      });
+      _startCountdown();
     }
   }
 

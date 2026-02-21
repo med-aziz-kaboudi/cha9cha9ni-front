@@ -145,7 +145,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enterAllDigits => 'الرجاء إدخال جميع الأرقام الستة';
 
   @override
-  String get emailVerifiedSuccess => '✅ تم التحقق من البريد الإلكتروني بنجاح!';
+  String get emailVerifiedSuccess => 'تم التحقق من البريد الإلكتروني بنجاح!';
 
   @override
   String verificationFailed(String error) {
@@ -1544,7 +1544,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rewardsToBalance => 'إلى الرصيد';
 
   @override
-  String get rewardsCongratulations => 'تهانينا! 🎉';
+  String get rewardsCongratulations => 'تهانينا!';
 
   @override
   String get rewardsAddedToBalance => 'تمت إضافتها إلى رصيدك';
@@ -1880,6 +1880,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String aidSelectedSuccess(String name) {
     return 'تم اختيار $name بنجاح';
   }
+
+  @override
+  String get saveForNextYear => 'احفظ للسنة القادمة';
+
+  @override
+  String selectForYear(int year) {
+    return 'لسنة $year';
+  }
+
+  @override
+  String nextYearWithdrawalInfo(int year) {
+    return 'السحب متاح في $year';
+  }
+
+  @override
+  String get savingForNextYearHint =>
+      'انتهى موعد اختيار هذا العيد لهذا العام. اختره الآن للسنة القادمة!';
+
+  @override
+  String get deadlinePassed => 'انتهى الموعد';
 
   @override
   String get viewOnlyPackInfo => 'فقط مالك العائلة يمكنه إدارة الباقة والأعياد';

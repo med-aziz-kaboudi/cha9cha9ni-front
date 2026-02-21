@@ -746,9 +746,9 @@ class _RewardsContentState extends State<RewardsContent>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildMiniStat('🔥', '$streak', AppLocalizations.of(context)!.rewardsStreak),
+                _buildMiniStat(Icons.local_fire_department_rounded, '$streak', AppLocalizations.of(context)!.rewardsStreak),
                 Container(width: 1, height: 30, color: AppColors.secondary.withValues(alpha: 0.2)),
-                _buildMiniStat('📺', '$adsWatched/5', AppLocalizations.of(context)!.rewardsAds),
+                _buildMiniStat(Icons.smart_display_rounded, '$adsWatched/5', AppLocalizations.of(context)!.rewardsAds),
               ],
             ),
           ),
@@ -758,10 +758,10 @@ class _RewardsContentState extends State<RewardsContent>
     );
   }
 
-  Widget _buildMiniStat(String emoji, String value, String label) {
+  Widget _buildMiniStat(IconData iconData, String value, String label) {
     return Row(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 18)),
+        Icon(iconData, color: AppColors.secondary, size: 20),
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -865,13 +865,24 @@ class _RewardsContentState extends State<RewardsContent>
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            '🔥 ${l10n.rewardsDayStreak(streak)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.local_fire_department_rounded,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                l10n.rewardsDayStreak(streak),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],

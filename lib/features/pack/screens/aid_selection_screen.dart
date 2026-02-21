@@ -183,6 +183,8 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
   Future<bool?> _showConfirmationSheet(AidModel aid) {
     final l10n = AppLocalizations.of(context)!;
     final color = _getAidColor(aid.name);
+    // Next year selection: either backend says so, or deadline passed for current year
+    final isNextYearSelection = aid.canSelectForNextYear || !aid.canSelect;
 
     return showModalBottomSheet<bool>(
       context: context,
@@ -207,6 +209,38 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
               ),
             ),
             const SizedBox(height: 28),
+
+            // Next year badge at top if applicable
+            if (isNextYearSelection) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 18,
+                      color: Colors.blue[700],
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.selectForYear(aid.selectionForYear ?? (DateTime.now().year + 1)),
+                      style: TextStyle(
+                        color: Colors.blue[700],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Icon
             Container(
@@ -239,6 +273,52 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Show next year withdrawal window if applicable
+            if (isNextYearSelection) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      color: Colors.blue[700],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.withdrawalWindow,
+                            style: TextStyle(
+                              color: Colors.blue[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            aid.getNextYearWithdrawalWindowDisplay(),
+                            style: TextStyle(
+                              color: Colors.blue[800],
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Max withdrawal box
             Container(
@@ -292,30 +372,44 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Warning
+            // Next year savings hint or warning
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.08),
+                color: isNextYearSelection 
+                    ? Colors.blue.withOpacity(0.08)
+                    : Colors.orange.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.orange.withOpacity(0.2)),
+                border: Border.all(
+                  color: isNextYearSelection 
+                      ? Colors.blue.withOpacity(0.2)
+                      : Colors.orange.withOpacity(0.2),
+                ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.info_outline_rounded,
-                    color: Colors.orange[700],
+                    isNextYearSelection 
+                        ? Icons.event_available_rounded
+                        : Icons.info_outline_rounded,
+                    color: isNextYearSelection 
+                        ? Colors.blue[700]
+                        : Colors.orange[700],
                     size: 20,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      l10n.aidSelectionWarning,
+                      isNextYearSelection 
+                          ? l10n.savingForNextYearHint
+                          : l10n.aidSelectionWarning,
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.orange[800],
+                        color: isNextYearSelection 
+                            ? Colors.blue[800]
+                            : Colors.orange[800],
                         height: 1.5,
                       ),
                     ),
@@ -332,11 +426,11 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                 width: double.infinity,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.secondary,
+                  color: isNextYearSelection ? Colors.blue : AppColors.secondary,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.secondary.withOpacity(0.3),
+                      color: (isNextYearSelection ? Colors.blue : AppColors.secondary).withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -345,14 +439,18 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.check_circle_rounded,
+                    Icon(
+                      isNextYearSelection 
+                          ? Icons.event_available_rounded
+                          : Icons.check_circle_rounded,
                       color: Colors.white,
                       size: 22,
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      l10n.confirmSelection,
+                      isNextYearSelection 
+                          ? l10n.saveForNextYear
+                          : l10n.confirmSelection,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -898,10 +996,13 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
   ) {
     final isSelected = _isAidSelected(aid);
     final color = _getAidColor(aid.name);
-    final canSelect = !isSelected && canSelectMore;
+    // Check if this is a next year selection (deadline for current year passed)
+    final isNextYearSelection = aid.canSelectForNextYear || (!aid.canSelect && canSelectMore);
+    // User can select if: not already selected, has remaining slots, and aid allows selection (current or next year)
+    final canSelectThisAid = !isSelected && canSelectMore && (aid.canSelect || isNextYearSelection);
 
     return GestureDetector(
-      onTap: canSelect && !_isSelecting ? () => _selectAid(aid) : null,
+      onTap: canSelectThisAid && !_isSelecting ? () => _selectAid(aid) : null,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -950,7 +1051,7 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        // Show aid dates
+                        // Show aid dates (next year dates if selecting for next year)
                         if (aid.aidStartDate != null) ...[
                           const SizedBox(height: 4),
                           Row(
@@ -964,7 +1065,9 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                aid.getAidDatesDisplay(),
+                                isNextYearSelection
+                                    ? aid.getNextYearAidDatesDisplay()
+                                    : aid.getAidDatesDisplay(),
                                 style: TextStyle(
                                   color: isSelected ? Colors.grey[400] : color,
                                   fontSize: 11,
@@ -990,16 +1093,21 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                               const SizedBox(width: 5),
                               Expanded(
                                 child: Text(
-                                  l10n.withdrawWindowLabel(
-                                    aid
-                                        .getWithdrawalWindowDisplay()
-                                        .split(' - ')
-                                        .first,
-                                    aid
-                                        .getWithdrawalWindowDisplay()
-                                        .split(' - ')
-                                        .last,
-                                  ),
+                                  isNextYearSelection
+                                      ? l10n.withdrawWindowLabel(
+                                          aid.getNextYearWithdrawalWindowDisplay().split(' - ').first,
+                                          aid.getNextYearWithdrawalWindowDisplay().split(' - ').last.split(',').first,
+                                        )
+                                      : l10n.withdrawWindowLabel(
+                                          aid
+                                              .getWithdrawalWindowDisplay()
+                                              .split(' - ')
+                                              .first,
+                                          aid
+                                              .getWithdrawalWindowDisplay()
+                                              .split(' - ')
+                                              .last,
+                                        ),
                                   style: TextStyle(
                                     color: isSelected
                                         ? Colors.grey[400]
@@ -1011,8 +1119,44 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                             ],
                           ),
                         ],
+                        // Show next year badge if this is a next year selection
+                        if (isNextYearSelection && !isSelected) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.blue.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.schedule_rounded,
+                                  size: 12,
+                                  color: Colors.blue[700],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  l10n.selectForYear(aid.selectionForYear ?? (DateTime.now().year + 1)),
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         // Show days until aid or withdrawal window status
-                        if (!isSelected && aid.daysUntilAid != null) ...[
+                        if (!isSelected && aid.daysUntilAid != null && !isNextYearSelection) ...[
                           const SizedBox(height: 2),
                           Text(
                             aid.isWithinWindow
@@ -1122,38 +1266,78 @@ class _AidSelectionScreenState extends State<AidSelectionScreen> {
                       ],
                     ),
                   ),
-                  if (!isSelected && canSelect)
-                    GestureDetector(
-                      onTap: _isSelecting ? null : () => _selectAid(aid),
-                      child: Container(
+                  // Selection button - allow selection for current year OR next year
+                  if (!isSelected && canSelectMore) ...[
+                    // Can select (either for this year or next year)
+                    if (canSelectThisAid)
+                      GestureDetector(
+                        onTap: _isSelecting ? null : () => _selectAid(aid),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isNextYearSelection 
+                                ? Colors.blue 
+                                : AppColors.secondary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: _isSelecting
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isNextYearSelection) ...[
+                                      const Icon(
+                                        Icons.event_available_rounded,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                    ],
+                                    Text(
+                                      isNextYearSelection 
+                                          ? l10n.saveForNextYear 
+                                          : l10n.select,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      )
+                    // Deadline fully passed, aid already ended this year - can't select anymore
+                    else
+                      Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                          horizontal: 14,
+                          vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.secondary,
+                          color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: _isSelecting
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                l10n.select,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                        child: Text(
+                          l10n.deadlinePassed,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    )
-                  else if (!isSelected && !canSelect)
+                  ] else if (!isSelected && !canSelectMore)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,

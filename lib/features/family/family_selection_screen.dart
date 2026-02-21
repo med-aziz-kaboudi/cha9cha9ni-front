@@ -7,7 +7,7 @@ import '../../core/services/token_storage_service.dart';
 import '../../core/services/biometric_service.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';import '../../l10n/app_localizations.dart';import '../../main.dart' show PendingVerificationHelper;
+import '../../core/theme/app_text_styles.dart';import '../../core/utils/error_sanitizer.dart';import '../../l10n/app_localizations.dart';import '../../main.dart' show PendingVerificationHelper;
 import '../auth/screens/signin_screen.dart';
 import '../home/family_owner_home_screen.dart';
 import '../home/family_member_home_screen.dart';
@@ -106,7 +106,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed'}: ${e.toString()}'),
+            content: Text(ErrorSanitizer.message(e, fallback: AppLocalizations.of(context)?.signOutFailed ?? 'Sign out failed')),
             backgroundColor: Colors.red,
           ),
         );
@@ -156,7 +156,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${AppLocalizations.of(context)!.failedToCreateFamily}: ${e.toString()}'),
+          content: Text(ErrorSanitizer.message(e, fallback: AppLocalizations.of(context)!.failedToCreateFamily)),
           backgroundColor: Colors.red,
         ),
       );
@@ -212,7 +212,7 @@ class _FamilySelectionScreenState extends State<FamilySelectionScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${AppLocalizations.of(context)!.failedToJoinFamily}: ${e.toString()}'),
+          content: Text(ErrorSanitizer.message(e, fallback: AppLocalizations.of(context)!.failedToJoinFamily)),
           backgroundColor: Colors.red,
         ),
       );

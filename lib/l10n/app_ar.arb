@@ -50,7 +50,7 @@
   },
   "codeExpiresInfo": "ينتهي صلاحية الرمز خلال 15 دقيقة",
   "enterAllDigits": "الرجاء إدخال جميع الأرقام الستة",
-  "emailVerifiedSuccess": "✅ تم التحقق من البريد الإلكتروني بنجاح!",
+  "emailVerifiedSuccess": "تم التحقق من البريد الإلكتروني بنجاح!",
   "verificationFailed": "فشل التحقق: {error}",
   "@verificationFailed": {
     "placeholders": {
@@ -699,7 +699,7 @@
   "rewardsPointsToSpend": "النقاط للاستبدال",
   "rewardsRemainingPoints": "النقاط المتبقية",
   "rewardsToBalance": "إلى الرصيد",
-  "rewardsCongratulations": "تهانينا! 🎉",
+  "rewardsCongratulations": "تهانينا!",
   "rewardsAddedToBalance": "تمت إضافتها إلى رصيدك",
   "rewardsNewBalance": "الرصيد الجديد",
   "rewardsRedemptionSuccess": "تم استبدال {points} نقطة بـ {amount} دينار بنجاح",
@@ -964,6 +964,25 @@
       }
     }
   },
+  "saveForNextYear": "احفظ للسنة القادمة",
+  "selectForYear": "لسنة {year}",
+  "@selectForYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "nextYearWithdrawalInfo": "السحب متاح في {year}",
+  "@nextYearWithdrawalInfo": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "savingForNextYearHint": "انتهى موعد اختيار هذا العيد لهذا العام. اختره الآن للسنة القادمة!",
+  "deadlinePassed": "انتهى الموعد",
   "viewOnlyPackInfo": "فقط مالك العائلة يمكنه إدارة الباقة والأعياد",
   "noAidSelected": "لم يتم اختيار عيد بعد",
   "tapToViewAids": "اضغط لعرض الأعياد القادمة",

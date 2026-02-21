@@ -57,7 +57,7 @@
   },
   "codeExpiresInfo": "The code expires in 15 minutes",
   "enterAllDigits": "Please enter all 6 digits",
-  "emailVerifiedSuccess": "✅ Email verified successfully!",
+  "emailVerifiedSuccess": "Email verified successfully!",
   "verificationFailed": "Verification failed: {error}",
   "@verificationFailed": {
     "placeholders": {
@@ -714,7 +714,7 @@
   "rewardsPointsToSpend": "Points to Spend",
   "rewardsRemainingPoints": "Remaining Points",
   "rewardsToBalance": "to balance",
-  "rewardsCongratulations": "Congratulations! 🎉",
+  "rewardsCongratulations": "Congratulations!",
   "rewardsAddedToBalance": "Added to your balance",
   "rewardsNewBalance": "New Balance",
   "rewardsRedemptionSuccess": "Successfully redeemed {points} points for {amount} TND",
@@ -979,6 +979,25 @@
       }
     }
   },
+  "saveForNextYear": "Save for Next Year",
+  "selectForYear": "For {year}",
+  "@selectForYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "nextYearWithdrawalInfo": "Withdrawal available in {year}",
+  "@nextYearWithdrawalInfo": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "savingForNextYearHint": "This aid's deadline for this year has passed. Select now to save for next year!",
+  "deadlinePassed": "Deadline Passed",
   "viewOnlyPackInfo": "Only the family owner can manage pack and aids",
   "noAidSelected": "No aid selected yet",
   "tapToViewAids": "Tap to view upcoming aids",

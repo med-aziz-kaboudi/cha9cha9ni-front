@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'screens/splash_screen.dart';
 import 'features/onboarding/screens/onboarding_screen.dart';
 import 'features/family/family_selection_screen.dart';
@@ -660,6 +661,13 @@ class _AppEntryState extends State<AppEntry> with WidgetsBindingObserver {
   }) async {
     if (_isHandlingSession && !isNewSignIn) return;
     if (!isNewSignIn) _isHandlingSession = true;
+
+    // Close the in-app browser if it was used for OAuth
+    try {
+      await closeInAppWebView();
+    } catch (e) {
+      debugPrint('Could not close in-app browser: $e');
+    }
 
     // Show loading while processing OAuth
     if (mounted) {

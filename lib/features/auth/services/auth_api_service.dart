@@ -35,7 +35,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Registration failed: ${e.toString()}');
+      throw ApiException(message: 'Registration failed. Please try again.');
     }
   }
 
@@ -59,7 +59,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Login failed: ${e.toString()}');
+      throw ApiException(message: 'Login failed. Please try again.');
     }
   }
 
@@ -91,7 +91,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Supabase login failed: ${e.toString()}');
+      throw ApiException(message: 'Login failed. Please try again.');
     }
   }
 
@@ -115,7 +115,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Email verification failed: ${e.toString()}');
+      throw ApiException(message: 'Email verification failed. Please try again.');
     }
   }
 
@@ -144,7 +144,7 @@ class AuthApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException(
-        message: 'Resend verification failed: ${e.toString()}',
+        message: 'Resend verification failed. Please try again.',
       );
     }
   }
@@ -169,7 +169,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Token refresh failed: ${e.toString()}');
+      throw ApiException(message: 'Session refresh failed. Please login again.');
     }
   }
 
@@ -189,7 +189,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Logout failed: ${e.toString()}');
+      throw ApiException(message: 'Logout failed. Please try again.');
     }
   }
 
@@ -264,7 +264,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Password reset request failed: ${e.toString()}');
+      throw ApiException(message: 'Password reset request failed. Please try again.');
     }
   }
 
@@ -292,7 +292,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Code verification failed: ${e.toString()}');
+      throw ApiException(message: 'Code verification failed. Please try again.');
     }
   }
 
@@ -328,7 +328,7 @@ class AuthApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Password reset failed: ${e.toString()}');
+      throw ApiException(message: 'Password reset failed. Please try again.');
     }
   }
 

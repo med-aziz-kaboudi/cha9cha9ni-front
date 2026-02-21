@@ -40,7 +40,7 @@ class PackApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Failed to get pack data: $e');
+      throw ApiException(message: 'Failed to get pack data. Please try again.');
     }
   }
 
@@ -70,7 +70,7 @@ class PackApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Failed to get packs: $e');
+      throw ApiException(message: 'Failed to get packs. Please try again.');
     }
   }
 
@@ -100,7 +100,7 @@ class PackApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Failed to get aids: $e');
+      throw ApiException(message: 'Failed to get aids. Please try again.');
     }
   }
 
@@ -133,7 +133,7 @@ class PackApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Failed to select aid: $e');
+      throw ApiException(message: 'Failed to select aid. Please try again.');
     }
   }
 
@@ -163,7 +163,7 @@ class PackApiService {
       throw ApiException.networkError();
     } catch (e) {
       if (e is ApiException) rethrow;
-      throw ApiException(message: 'Failed to get ads stats: $e');
+      throw ApiException(message: 'Failed to get ads stats. Please try again.');
     }
   }
 }

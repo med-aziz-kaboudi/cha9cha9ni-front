@@ -361,7 +361,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailVerifiedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'✅ Email verified successfully!'**
+  /// **'Email verified successfully!'**
   String get emailVerifiedSuccess;
 
   /// No description provided for @verificationFailed.
@@ -2929,7 +2929,7 @@ abstract class AppLocalizations {
   /// No description provided for @rewardsCongratulations.
   ///
   /// In en, this message translates to:
-  /// **'Congratulations! 🎉'**
+  /// **'Congratulations!'**
   String get rewardsCongratulations;
 
   /// No description provided for @rewardsAddedToBalance.
@@ -3495,6 +3495,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} has been selected successfully'**
   String aidSelectedSuccess(String name);
+
+  /// No description provided for @saveForNextYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Save for Next Year'**
+  String get saveForNextYear;
+
+  /// No description provided for @selectForYear.
+  ///
+  /// In en, this message translates to:
+  /// **'For {year}'**
+  String selectForYear(int year);
+
+  /// No description provided for @nextYearWithdrawalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal available in {year}'**
+  String nextYearWithdrawalInfo(int year);
+
+  /// No description provided for @savingForNextYearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This aid\'s deadline for this year has passed. Select now to save for next year!'**
+  String get savingForNextYearHint;
+
+  /// No description provided for @deadlinePassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Deadline Passed'**
+  String get deadlinePassed;
 
   /// No description provided for @viewOnlyPackInfo.
   ///

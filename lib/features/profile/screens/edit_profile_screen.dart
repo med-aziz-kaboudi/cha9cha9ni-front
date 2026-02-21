@@ -10,6 +10,7 @@ import '../../../core/services/token_storage_service.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/socket_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/error_sanitizer.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../../l10n/app_localizations.dart';
 import '../services/profile_api_service.dart';
@@ -365,7 +366,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = e.toString().replaceAll('Exception: ', '');
+            _errorMessage = ErrorSanitizer.message(e);
           });
         }
       } else {
@@ -429,7 +430,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
-        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+        AppToast.error(context, ErrorSanitizer.message(e));
       }
     }
   }
@@ -451,7 +452,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       setState(() => _isSendingCode = false);
       if (mounted) {
-        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+        AppToast.error(context, ErrorSanitizer.message(e));
       }
     }
   }
@@ -484,7 +485,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       setState(() => _isSendingCode = false);
       if (mounted) {
-        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+        AppToast.error(context, ErrorSanitizer.message(e));
       }
     }
   }
@@ -513,7 +514,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       setState(() => _isSendingCode = false);
       if (mounted) {
-        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+        AppToast.error(context, ErrorSanitizer.message(e));
       }
     }
   }
@@ -550,7 +551,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       setState(() => _isSendingCode = false);
       if (mounted) {
-        AppToast.error(context, e.toString().replaceAll('Exception: ', ''));
+        AppToast.error(context, ErrorSanitizer.message(e));
       }
     }
   }
@@ -1478,7 +1479,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (mounted) {
         setState(() => _isUploadingPicture = false);
-        String errorMessage = e.toString().replaceAll('Exception: ', '');
+        String errorMessage = ErrorSanitizer.message(e, fallback: l10n.anErrorOccurred);
         AppToast.error(context, errorMessage);
       }
     }

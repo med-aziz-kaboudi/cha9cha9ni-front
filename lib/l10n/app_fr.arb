@@ -50,7 +50,7 @@
   },
   "codeExpiresInfo": "Le code expire dans 15 minutes",
   "enterAllDigits": "Veuillez entrer les 6 chiffres",
-  "emailVerifiedSuccess": "✅ Email vérifié avec succès!",
+  "emailVerifiedSuccess": "Email vérifié avec succès!",
   "verificationFailed": "Échec de la vérification: {error}",
   "@verificationFailed": {
     "placeholders": {
@@ -699,7 +699,7 @@
   "rewardsPointsToSpend": "Points à dépenser",
   "rewardsRemainingPoints": "Points restants",
   "rewardsToBalance": "vers le solde",
-  "rewardsCongratulations": "Félicitations! 🎉",
+  "rewardsCongratulations": "Félicitations!",
   "rewardsAddedToBalance": "Ajouté à votre solde",
   "rewardsNewBalance": "Nouveau solde",
   "rewardsRedemptionSuccess": "Échange réussi de {points} points pour {amount} TND",
@@ -959,6 +959,25 @@
       }
     }
   },
+  "saveForNextYear": "Épargner pour l'année prochaine",
+  "selectForYear": "Pour {year}",
+  "@selectForYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "nextYearWithdrawalInfo": "Retrait disponible en {year}",
+  "@nextYearWithdrawalInfo": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "savingForNextYearHint": "La date limite de cette aide pour cette année est passée. Sélectionnez maintenant pour épargner pour l'année prochaine !",
+  "deadlinePassed": "Date limite passée",
   "viewOnlyPackInfo": "Seul le propriétaire de la famille peut gérer le pack et les aides",
   "noAidSelected": "Aucune aide sélectionnée",
   "tapToViewAids": "Appuyez pour voir les aides à venir",

@@ -145,7 +145,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterAllDigits => 'Please enter all 6 digits';
 
   @override
-  String get emailVerifiedSuccess => '✅ Email verified successfully!';
+  String get emailVerifiedSuccess => 'Email verified successfully!';
 
   @override
   String verificationFailed(String error) {
@@ -1549,7 +1549,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rewardsToBalance => 'to balance';
 
   @override
-  String get rewardsCongratulations => 'Congratulations! 🎉';
+  String get rewardsCongratulations => 'Congratulations!';
 
   @override
   String get rewardsAddedToBalance => 'Added to your balance';
@@ -1886,6 +1886,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String aidSelectedSuccess(String name) {
     return '$name has been selected successfully';
   }
+
+  @override
+  String get saveForNextYear => 'Save for Next Year';
+
+  @override
+  String selectForYear(int year) {
+    return 'For $year';
+  }
+
+  @override
+  String nextYearWithdrawalInfo(int year) {
+    return 'Withdrawal available in $year';
+  }
+
+  @override
+  String get savingForNextYearHint =>
+      'This aid\'s deadline for this year has passed. Select now to save for next year!';
+
+  @override
+  String get deadlinePassed => 'Deadline Passed';
 
   @override
   String get viewOnlyPackInfo =>

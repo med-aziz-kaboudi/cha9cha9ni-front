@@ -72,6 +72,11 @@ class AidModel {
   final int? daysUntilAid;
   final int? daysUntilWithdrawalOpen;
   final String? selectionDeadline; // YYYY-MM-DD
+  // Next year selection fields
+  final bool canSelectForNextYear;
+  final String? nextYearWithdrawalStartDate; // YYYY-MM-DD
+  final String? nextYearWithdrawalEndDate; // YYYY-MM-DD
+  final int? selectionForYear; // Which year this selection applies to
 
   AidModel({
     required this.id,
@@ -94,6 +99,10 @@ class AidModel {
     this.daysUntilAid,
     this.daysUntilWithdrawalOpen,
     this.selectionDeadline,
+    this.canSelectForNextYear = false,
+    this.nextYearWithdrawalStartDate,
+    this.nextYearWithdrawalEndDate,
+    this.selectionForYear,
   });
 
   factory AidModel.fromJson(Map<String, dynamic> json) {
@@ -131,6 +140,10 @@ class AidModel {
       daysUntilAid: json['daysUntilAid'],
       daysUntilWithdrawalOpen: json['daysUntilWithdrawalOpen'],
       selectionDeadline: json['selectionDeadline'],
+      canSelectForNextYear: json['canSelectForNextYear'] ?? false,
+      nextYearWithdrawalStartDate: json['nextYearWithdrawalStartDate'],
+      nextYearWithdrawalEndDate: json['nextYearWithdrawalEndDate'],
+      selectionForYear: json['selectionForYear'],
     );
   }
 
@@ -175,6 +188,48 @@ class AidModel {
     return '${months[aidStart!.month - 1]} ${aidStart!.day} - ${months[aidEnd!.month - 1]} ${aidEnd!.day}, ${aidStart!.year}';
   }
 
+  /// Get NEXT YEAR aid dates display using the correct dates from backend
+  /// For Islamic holidays, this returns the proper lunar calendar dates (e.g., "Feb 7 - Mar 8, 2027" for Ramadan)
+  String getNextYearAidDatesDisplay() {
+    // Use the correct next year dates from backend
+    if (nextYearWithdrawalStart != null) {
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      
+      if (nextYearWithdrawalEnd == null || nextYearWithdrawalStart!.day == nextYearWithdrawalEnd!.day) {
+        return '${months[nextYearWithdrawalStart!.month - 1]} ${nextYearWithdrawalStart!.day}, ${nextYearWithdrawalStart!.year}';
+      }
+      
+      if (nextYearWithdrawalStart!.month == nextYearWithdrawalEnd!.month) {
+        return '${months[nextYearWithdrawalStart!.month - 1]} ${nextYearWithdrawalStart!.day}-${nextYearWithdrawalEnd!.day}, ${nextYearWithdrawalStart!.year}';
+      }
+      
+      return '${months[nextYearWithdrawalStart!.month - 1]} ${nextYearWithdrawalStart!.day} - ${months[nextYearWithdrawalEnd!.month - 1]} ${nextYearWithdrawalEnd!.day}, ${nextYearWithdrawalStart!.year}';
+    }
+    
+    // Fallback: add 1 year to current dates (for non-Islamic fixed holidays)
+    if (aidStart == null) return 'Date TBD';
+    
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    final nextYear = aidStart!.year + 1;
+    
+    if (aidEnd == null || aidStart!.day == aidEnd!.day) {
+      return '${months[aidStart!.month - 1]} ${aidStart!.day}, $nextYear';
+    }
+    
+    if (aidStart!.month == aidEnd!.month) {
+      return '${months[aidStart!.month - 1]} ${aidStart!.day}-${aidEnd!.day}, $nextYear';
+    }
+    
+    return '${months[aidStart!.month - 1]} ${aidStart!.day} - ${months[aidEnd!.month - 1]} ${aidEnd!.day}, $nextYear';
+  }
+
   /// Get withdrawal window display
   String getWithdrawalWindowDisplay() {
     if (withdrawalStart == null || withdrawalEnd == null) return 'Anytime';
@@ -209,6 +264,38 @@ class AidModel {
 
   /// Check if selection deadline has passed
   bool get isSelectionDeadlinePassed => !canSelect;
+
+  /// Get next year withdrawal window as DateTime
+  DateTime? get nextYearWithdrawalStart => nextYearWithdrawalStartDate != null 
+      ? DateTime.parse(nextYearWithdrawalStartDate!) 
+      : null;
+  DateTime? get nextYearWithdrawalEnd => nextYearWithdrawalEndDate != null 
+      ? DateTime.parse(nextYearWithdrawalEndDate!) 
+      : null;
+
+  /// Get next year withdrawal window display
+  String getNextYearWithdrawalWindowDisplay() {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    // Use backend-provided next year dates if available
+    if (nextYearWithdrawalStart != null && nextYearWithdrawalEnd != null) {
+      return '${months[nextYearWithdrawalStart!.month - 1]} ${nextYearWithdrawalStart!.day} - ${months[nextYearWithdrawalEnd!.month - 1]} ${nextYearWithdrawalEnd!.day}, ${nextYearWithdrawalStart!.year}';
+    }
+    
+    // Fallback: calculate from current year dates + 1 year
+    if (withdrawalStart != null && withdrawalEnd != null) {
+      final nextYear = withdrawalStart!.year + 1;
+      return '${months[withdrawalStart!.month - 1]} ${withdrawalStart!.day} - ${months[withdrawalEnd!.month - 1]} ${withdrawalEnd!.day}, $nextYear';
+    }
+    
+    return 'Date TBD';
+  }
+
+  /// Check if this aid can be selected (either for current or next year)
+  bool get canBeSelected => canSelect || canSelectForNextYear;
 
   /// Get the number of days in the withdrawal window
   int? get withdrawalWindowDays {

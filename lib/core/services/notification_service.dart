@@ -250,6 +250,12 @@ class NotificationService {
       return;
     }
 
+    // Don't start a new connection attempt while one is in progress
+    if (_isConnecting) {
+      debugPrint('🔔 NotificationSocket: Connection already in progress');
+      return;
+    }
+
     // Disconnect existing connection if any
     disconnectSocket();
 

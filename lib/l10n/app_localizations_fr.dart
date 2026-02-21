@@ -147,7 +147,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enterAllDigits => 'Veuillez entrer les 6 chiffres';
 
   @override
-  String get emailVerifiedSuccess => '✅ Email vérifié avec succès!';
+  String get emailVerifiedSuccess => 'Email vérifié avec succès!';
 
   @override
   String verificationFailed(String error) {
@@ -1574,7 +1574,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rewardsToBalance => 'vers le solde';
 
   @override
-  String get rewardsCongratulations => 'Félicitations! 🎉';
+  String get rewardsCongratulations => 'Félicitations!';
 
   @override
   String get rewardsAddedToBalance => 'Ajouté à votre solde';
@@ -1914,6 +1914,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String aidSelectedSuccess(String name) {
     return '$name a été sélectionnée avec succès';
   }
+
+  @override
+  String get saveForNextYear => 'Épargner pour l\'année prochaine';
+
+  @override
+  String selectForYear(int year) {
+    return 'Pour $year';
+  }
+
+  @override
+  String nextYearWithdrawalInfo(int year) {
+    return 'Retrait disponible en $year';
+  }
+
+  @override
+  String get savingForNextYearHint =>
+      'La date limite de cette aide pour cette année est passée. Sélectionnez maintenant pour épargner pour l\'année prochaine !';
+
+  @override
+  String get deadlinePassed => 'Date limite passée';
 
   @override
   String get viewOnlyPackInfo =>

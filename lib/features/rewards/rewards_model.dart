@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Model representing family rewards data
 class RewardsData {
   final String familyId;
@@ -177,6 +179,23 @@ enum ActivityType {
         return '🎉';
       case ActivityType.unknown:
         return '⭐';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ActivityType.adWatched:
+        return Icons.smart_display_rounded;
+      case ActivityType.dailyCheckIn:
+        return Icons.verified_rounded;
+      case ActivityType.topUp:
+        return Icons.payments_rounded;
+      case ActivityType.referral:
+        return Icons.group_add_rounded;
+      case ActivityType.redemption:
+        return Icons.redeem_rounded;
+      case ActivityType.unknown:
+        return Icons.auto_awesome_rounded;
     }
   }
 }
